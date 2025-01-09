@@ -9,6 +9,10 @@ import {
   Mail,
   Coffee,
   MoreVertical,
+  Bell,
+  FileText,
+  Link,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const mockContact = {
   id: 1,
@@ -52,11 +58,25 @@ const mockContact = {
   ],
   notes: "",
   giftIdeas: ["Vintage Wine Collection 🍷", "Spa Day Package 💆‍♀️"],
+  timeline: [
+    { type: "call", date: "2024-03-15", description: "Phone Call", icon: <Phone className="h-4 w-4" /> },
+    { type: "email", date: "2024-03-10", description: "Email Follow-up", icon: <Mail className="h-4 w-4" /> },
+    { type: "meeting", date: "2024-03-01", description: "Coffee Meeting", icon: <Coffee className="h-4 w-4" /> },
+  ],
+  tags: ["Mentor", "Tech Industry", "Book Club"],
+  socialMedia: {
+    linkedin: "https://linkedin.com/in/olivia",
+    twitter: "https://twitter.com/olivia",
+  },
+  lastContact: "March 15, 2024",
+  nextCheckup: "April 15, 2024",
+  checkupInterval: "2 weeks",
 };
 
 export function ContactProfile() {
   const [giftIdeas, setGiftIdeas] = useState(mockContact.giftIdeas);
   const [newGiftIdea, setNewGiftIdea] = useState("");
+  const [isNotesOpen, setIsNotesOpen] = useState(true);
 
   const addGiftIdea = () => {
     if (newGiftIdea.trim()) {
@@ -86,10 +106,62 @@ export function ContactProfile() {
                 <span className="text-sm text-gray-600">
                   🎂 {mockContact.birthday} (turns {mockContact.age + 1})
                 </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Gift className="h-4 w-4 mr-2" />
+                      Gift Ideas
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <div className="p-2">
+                      <div className="flex space-x-2">
+                        <Input
+                          placeholder="Add gift idea..."
+                          value={newGiftIdea}
+                          onChange={(e) => setNewGiftIdea(e.target.value)}
+                        />
+                        <Button size="sm" onClick={addGiftIdea}>
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                    {giftIdeas.map((idea, index) => (
+                      <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex items-center space-x-2 mt-2">
+                {Object.entries(mockContact.socialMedia).map(([platform, url]) => (
+                  <a
+                    key={platform}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    <Link className="h-4 w-4" />
+                  </a>
+                ))}
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Bell className="h-4 w-4 mr-2" />
+                  Reminder
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Every week</DropdownMenuItem>
+                <DropdownMenuItem>Every 2 weeks</DropdownMenuItem>
+                <DropdownMenuItem>Monthly</DropdownMenuItem>
+                <DropdownMenuItem>Custom...</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline">
               <Save className="h-4 w-4 mr-2" />
               Save
@@ -131,72 +203,42 @@ export function ContactProfile() {
             </CardContent>
           </Card>
 
-          {/* Up Next Section */}
+          {/* Contact Frequency */}
           <Card>
             <CardHeader>
-              <CardTitle>Up Next</CardTitle>
+              <CardTitle>Contact Frequency</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600">Last Contact:</p>
+                <p className="text-lg font-semibold">{mockContact.lastContact} (Phone Call)</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Next Check-up:</p>
+                <p className="text-lg font-semibold flex items-center">
+                  {mockContact.nextCheckup}
+                  <span className="ml-2 text-green-600 text-sm">In {mockContact.checkupInterval}</span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Timeline */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Activity Timeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockContact.upcomingEvents.map((event, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <span className="text-xl">{event.icon}</span>
+                {mockContact.timeline.map((event, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="bg-gray-100 p-2 rounded-full">
+                      {event.icon}
+                    </div>
                     <div>
-                      <p className="font-medium">{event.name}</p>
-                      <p className="text-sm text-gray-600">{event.time}</p>
+                      <p className="font-medium">{event.description}</p>
+                      <p className="text-sm text-gray-600">{event.date}</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Friendship Score */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Friendship Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary">
-                  {mockContact.friendshipScore}
-                </div>
-                <p className="text-gray-600">Strong Connection</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Who Knows Whom */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Who Knows Whom</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockContact.relatedContacts.map((contact, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={contact.avatar}
-                        alt={contact.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="font-medium">{contact.name}</p>
-                        <p className="text-sm text-gray-600">{contact.email}</p>
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Remove Connection</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 ))}
               </div>
@@ -204,45 +246,74 @@ export function ContactProfile() {
           </Card>
         </div>
 
-        {/* Notes Section */}
+        {/* Notes Section with Categories */}
+        <Collapsible open={isNotesOpen} onOpenChange={setIsNotesOpen}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Notes</CardTitle>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  {isNotesOpen ? "Hide" : "Show"}
+                </Button>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex space-x-2">
+                    {["Personal", "Work", "Follow-up"].map((category) => (
+                      <Badge key={category} variant="outline">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                  <Textarea
+                    placeholder="Add your notes here..."
+                    className="min-h-[200px]"
+                  />
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+
+        {/* Custom Tags */}
         <Card>
           <CardHeader>
-            <CardTitle>Notes</CardTitle>
+            <CardTitle>Tags</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="Add your notes here..."
-              className="min-h-[200px]"
-            />
+            <div className="flex flex-wrap gap-2">
+              {mockContact.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  <Tag className="h-3 w-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+              <Button variant="outline" size="sm">
+                <Plus className="h-3 w-3 mr-1" />
+                Add Tag
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Gift Ideas Button */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Gift className="h-4 w-4 mr-2" />
-              Gift Ideas
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <div className="p-2">
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Add gift idea..."
-                  value={newGiftIdea}
-                  onChange={(e) => setNewGiftIdea(e.target.value)}
-                />
-                <Button size="sm" onClick={addGiftIdea}>
-                  Add
-                </Button>
+        {/* Friendship Score with Progress Bar */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Relationship Strength</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Friendship Score</span>
+                <span className="text-sm text-gray-600">{mockContact.friendshipScore}%</span>
               </div>
+              <Progress value={mockContact.friendshipScore} className="h-2" />
+              <p className="text-sm text-gray-600 mt-2">Strong Connection</p>
             </div>
-            {giftIdeas.map((idea, index) => (
-              <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
