@@ -13,6 +13,9 @@ import {
   FileText,
   Link,
   Tag,
+  Instagram,
+  Linkedin,
+  Twitter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,12 +80,25 @@ export function ContactProfile() {
   const [giftIdeas, setGiftIdeas] = useState(mockContact.giftIdeas);
   const [newGiftIdea, setNewGiftIdea] = useState("");
   const [isNotesOpen, setIsNotesOpen] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContact, setEditedContact] = useState({
+    name: mockContact.name,
+    title: mockContact.title,
+    email: mockContact.email,
+    businessPhone: mockContact.businessPhone,
+    mobilePhone: mockContact.mobilePhone,
+    birthday: mockContact.birthday,
+  });
 
   const addGiftIdea = () => {
     if (newGiftIdea.trim()) {
       setGiftIdeas([...giftIdeas, newGiftIdea.trim()]);
       setNewGiftIdea("");
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
   };
 
   return (
@@ -97,82 +113,117 @@ export function ContactProfile() {
               className="w-20 h-20 rounded-full object-cover"
             />
             <div>
-              <h1 className="text-2xl font-bold">{mockContact.name}</h1>
-              <p className="text-gray-600">{mockContact.title}</p>
+              {isEditing ? (
+                <Input
+                  value={editedContact.name}
+                  onChange={(e) => setEditedContact({ ...editedContact, name: e.target.value })}
+                  className="text-2xl font-bold mb-2"
+                />
+              ) : (
+                <h1 className="text-2xl font-bold">{mockContact.name}</h1>
+              )}
+              {isEditing ? (
+                <Input
+                  value={editedContact.title}
+                  onChange={(e) => setEditedContact({ ...editedContact, title: e.target.value })}
+                  className="text-gray-600 mb-2"
+                />
+              ) : (
+                <p className="text-gray-600">{mockContact.title}</p>
+              )}
               <div className="flex items-center space-x-2 mt-2">
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   {mockContact.relationship}
                 </Badge>
                 <span className="text-sm text-gray-600">
-                  🎂 {mockContact.birthday} (turns {mockContact.age + 1})
+                  🎂 {isEditing ? (
+                    <Input
+                      value={editedContact.birthday}
+                      onChange={(e) => setEditedContact({ ...editedContact, birthday: e.target.value })}
+                      className="inline-block w-32"
+                    />
+                  ) : (
+                    `${mockContact.birthday} (turns ${mockContact.age + 1})`
+                  )}
                 </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Gift className="h-4 w-4 mr-2" />
-                      Gift Ideas
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56">
-                    <div className="p-2">
-                      <div className="flex space-x-2">
-                        <Input
-                          placeholder="Add gift idea..."
-                          value={newGiftIdea}
-                          onChange={(e) => setNewGiftIdea(e.target.value)}
-                        />
-                        <Button size="sm" onClick={addGiftIdea}>
-                          Add
-                        </Button>
+                <div className="flex space-x-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Gift className="h-4 w-4 mr-2" />
+                        Gift Ideas
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <div className="p-2">
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Add gift idea..."
+                            value={newGiftIdea}
+                            onChange={(e) => setNewGiftIdea(e.target.value)}
+                          />
+                          <Button size="sm" onClick={addGiftIdea}>
+                            Add
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    {giftIdeas.map((idea, index) => (
-                      <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      {giftIdeas.map((idea, index) => (
+                        <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Reminder
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>Every week</DropdownMenuItem>
+                      <DropdownMenuItem>Every 2 weeks</DropdownMenuItem>
+                      <DropdownMenuItem>Monthly</DropdownMenuItem>
+                      <DropdownMenuItem>Custom...</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
               <div className="flex items-center space-x-2 mt-2">
-                {Object.entries(mockContact.socialMedia).map(([platform, url]) => (
-                  <a
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <Link className="h-4 w-4" />
-                  </a>
-                ))}
+                <a
+                  href={`https://instagram.com/${mockContact.socialMedia?.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-pink-600"
+                >
+                  <Instagram className="h-4 w-4" />
+                </a>
+                <a
+                  href={mockContact.socialMedia?.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-blue-600"
+                >
+                  <Linkedin className="h-4 w-4" />
+                </a>
+                <a
+                  href={mockContact.socialMedia?.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-blue-400"
+                >
+                  <Twitter className="h-4 w-4" />
+                </a>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Bell className="h-4 w-4 mr-2" />
-                  Reminder
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Every week</DropdownMenuItem>
-                <DropdownMenuItem>Every 2 weeks</DropdownMenuItem>
-                <DropdownMenuItem>Monthly</DropdownMenuItem>
-                <DropdownMenuItem>Custom...</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline">
-              <Save className="h-4 w-4 mr-2" />
-              Save
+            <Button variant="outline" onClick={handleEdit}>
+              <Edit className="h-4 w-4 mr-2" />
+              {isEditing ? "Save" : "Edit"}
             </Button>
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               New
-            </Button>
-            <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
             </Button>
             <Button variant="destructive">
               <Trash className="h-4 w-4 mr-2" />
@@ -190,15 +241,36 @@ export function ContactProfile() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-gray-400" />
-                <span>{mockContact.email}</span>
+                {isEditing ? (
+                  <Input
+                    value={editedContact.email}
+                    onChange={(e) => setEditedContact({ ...editedContact, email: e.target.value })}
+                  />
+                ) : (
+                  <span>{mockContact.email}</span>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-gray-400" />
-                <span>{mockContact.businessPhone} (Business)</span>
+                {isEditing ? (
+                  <Input
+                    value={editedContact.businessPhone}
+                    onChange={(e) => setEditedContact({ ...editedContact, businessPhone: e.target.value })}
+                  />
+                ) : (
+                  <span>{mockContact.businessPhone} (Business)</span>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-gray-400" />
-                <span>{mockContact.mobilePhone} (Mobile)</span>
+                {isEditing ? (
+                  <Input
+                    value={editedContact.mobilePhone}
+                    onChange={(e) => setEditedContact({ ...editedContact, mobilePhone: e.target.value })}
+                  />
+                ) : (
+                  <span>{mockContact.mobilePhone} (Mobile)</span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -280,37 +352,60 @@ export function ContactProfile() {
         {/* Custom Tags */}
         <Card>
           <CardHeader>
-            <CardTitle>Tags</CardTitle>
+            <CardTitle>Top Tags</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {mockContact.tags.map((tag, index) => (
+              {mockContact.tags.slice(0, 3).map((tag, index) => (
                 <Badge key={index} variant="secondary">
                   <Tag className="h-3 w-3 mr-1" />
                   {tag}
                 </Badge>
               ))}
-              <Button variant="outline" size="sm">
-                <Plus className="h-3 w-3 mr-1" />
-                Add Tag
-              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Friendship Score with Progress Bar */}
+        {/* Relationship Strength with Family Members */}
         <Card>
           <CardHeader>
             <CardTitle>Relationship Strength</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Friendship Score</span>
-                <span className="text-sm text-gray-600">{mockContact.friendshipScore}%</span>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Friendship Score</span>
+                  <span className="text-sm text-gray-600">{mockContact.friendshipScore}%</span>
+                </div>
+                <Progress value={mockContact.friendshipScore} className="h-2" />
+                <p className="text-sm text-gray-600">Strong Connection</p>
               </div>
-              <Progress value={mockContact.friendshipScore} className="h-2" />
-              <p className="text-sm text-gray-600 mt-2">Strong Connection</p>
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Family Members</h4>
+                <div className="space-y-2">
+                  {mockContact.relatedContacts.map((contact, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <img
+                        src={contact.avatar}
+                        alt={contact.name}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{contact.name}</p>
+                        <p className="text-xs text-gray-600">{contact.email}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Networking Score</h4>
+                <div className="flex items-center space-x-2">
+                  <Progress value={85} className="h-2 flex-grow" />
+                  <span className="text-sm text-gray-600">85%</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
