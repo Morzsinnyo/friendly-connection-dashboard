@@ -70,6 +70,7 @@ const mockContact = {
   socialMedia: {
     linkedin: "https://linkedin.com/in/olivia",
     twitter: "https://twitter.com/olivia",
+    instagram: "https://instagram.com/olivia" // Added this line
   },
   lastContact: "March 15, 2024",
   nextCheckup: "April 15, 2024",
