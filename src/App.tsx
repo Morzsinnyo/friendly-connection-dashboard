@@ -49,16 +49,14 @@ const App = () => (
             path="/"
             element={
               <ProtectedRoute>
-                <DashboardLayout>
-                  <Routes>
-                    <Route index element={<Index />} />
-                    <Route path="contact/create" element={<CreateContact />} />
-                    <Route path="contact/:id" element={<ContactProfile />} />
-                  </Routes>
-                </DashboardLayout>
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<Index />} />
+            <Route path="contact/create" element={<CreateContact />} />
+            <Route path="contact/:id" element={<ContactProfile />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
