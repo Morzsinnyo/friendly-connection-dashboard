@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -20,6 +20,21 @@ export function CreateActivity() {
   const [meetingLink, setMeetingLink] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get the current user's ID when component mounts
+    const getCurrentUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+      } else {
+        navigate("/auth");
+      }
+    };
+
+    getCurrentUser();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +48,15 @@ export function CreateActivity() {
       return;
     }
 
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create an activity",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase.from("events").insert({
         title,
@@ -41,6 +65,7 @@ export function CreateActivity() {
         meeting_link: meetingLink,
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
+        user_id: userId,
       });
 
       if (error) throw error;
