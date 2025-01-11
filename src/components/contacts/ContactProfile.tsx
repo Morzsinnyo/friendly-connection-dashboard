@@ -63,7 +63,9 @@ export function ContactProfile() {
 
       if (!data) {
         console.error('No contact found with ID:', id);
-        throw new Error('Contact not found');
+        navigate('/'); // Redirect to contacts list if contact not found
+        toast.error('Contact not found');
+        return null;
       }
       
       console.log('Contact data successfully fetched:', data);
@@ -71,12 +73,13 @@ export function ContactProfile() {
     },
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes (renamed from cacheTime)
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
     retry: 2,
     meta: {
       onError: (error: Error) => {
         console.error('Query error:', error);
         toast.error('Failed to load contact information');
+        navigate('/'); // Redirect to contacts list on error
       }
     }
   });
@@ -176,18 +179,26 @@ export function ContactProfile() {
   };
 
   if (isLoading) {
-    console.log('Loading contact data...');
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading contact information...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (error) {
-    console.error('Error in contact profile:', error);
-    return <div className="p-6">Error loading contact information</div>;
-  }
-
-  if (!contact) {
-    console.error('No contact data available');
-    return <div className="p-6">Contact not found</div>;
+  if (error || !contact) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-destructive">Contact Not Found</h2>
+          <p className="text-muted-foreground">The contact you're looking for doesn't exist or you don't have permission to view it.</p>
+          <Button onClick={() => navigate('/')}>Return to Contacts</Button>
+        </div>
+      </div>
+    );
   }
 
   console.log('Rendering contact profile with data:', contact);
