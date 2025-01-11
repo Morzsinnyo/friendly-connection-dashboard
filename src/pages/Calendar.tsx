@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Select,
@@ -8,15 +8,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { CreateEventModal } from "@/components/calendar/CreateEventModal";
 
 const Calendar = () => {
-  const [date, setDate] = React.useState<Date>(new Date());
-  const [view, setView] = React.useState<"month" | "week" | "day">("month");
+  const [date, setDate] = useState<Date>(new Date());
+  const [view, setView] = useState<"month" | "week" | "day">("month");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: events, isLoading } = useQuery({
@@ -69,6 +72,13 @@ const Calendar = () => {
 
   const handleToday = () => {
     setDate(new Date());
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+      setIsModalOpen(true);
+    }
   };
 
   return (
@@ -131,7 +141,7 @@ const Calendar = () => {
           <CalendarComponent
             mode="single"
             selected={date}
-            onSelect={(newDate) => newDate && setDate(newDate)}
+            onSelect={handleDateSelect}
             className="rounded-md"
           />
         </div>
@@ -156,6 +166,17 @@ const Calendar = () => {
               </div>
             ))}
           </div>
+        )}
+
+        {selectedDate && (
+          <CreateEventModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedDate(null);
+            }}
+            selectedDate={selectedDate}
+          />
         )}
       </div>
     </div>
