@@ -51,9 +51,11 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/contact/:id" element={<ContactProfile />} />
-                    <Route path="/contact/create" element={<CreateContact />} />
+                    <Route index element={<Index />} />
+                    <Route path="contact">
+                      <Route path=":id" element={<ContactProfile />} />
+                      <Route path="create" element={<CreateContact />} />
+                    </Route>
                   </Routes>
                 </DashboardLayout>
               </ProtectedRoute>
