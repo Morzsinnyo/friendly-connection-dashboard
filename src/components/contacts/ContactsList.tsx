@@ -54,6 +54,10 @@ export function ContactsList() {
       (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const handleContactClick = (contactId: string) => {
+    navigate(`/contact/${contactId}`);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col space-y-4">
@@ -122,7 +126,11 @@ export function ContactsList() {
               </thead>
               <tbody>
                 {filteredContacts.map((contact) => (
-                  <tr key={contact.id} className="border-b last:border-b-0">
+                  <tr 
+                    key={contact.id} 
+                    className="border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
+                    onClick={() => handleContactClick(contact.id)}
+                  >
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
                         {contact.avatar_url ? (
@@ -163,7 +171,10 @@ export function ContactsList() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => navigate(`/contact/${contact.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleContactClick(contact.id);
+                        }}
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
