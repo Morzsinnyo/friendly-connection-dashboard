@@ -215,12 +215,15 @@ const Calendar = () => {
             onSelect={(newDate) => newDate && setDate(newDate)}
             className="rounded-md"
             components={{
-              Day: ({ date: dayDate, ...props }) => (
-                <div className="relative w-full h-full">
-                  <div {...props} />
-                  <EventCreationHoverCard date={dayDate} />
-                </div>
-              ),
+              Day: ({ date: dayDate, ...props }) => {
+                const { className, ...rest } = props;
+                return (
+                  <div className="relative w-full h-full">
+                    <div className={className} {...rest} />
+                    <EventCreationHoverCard date={dayDate} />
+                  </div>
+                );
+              },
             }}
           />
         </div>
