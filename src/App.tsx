@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
+import PlannedActivities from "./pages/PlannedActivities";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route index element={<Index />} />
             <Route path="contact/create" element={<CreateContact />} />
             <Route path="contact/:id" element={<ContactProfile />} />
+            <Route path="activities" element={<PlannedActivities />} />
           </Route>
         </Routes>
       </BrowserRouter>

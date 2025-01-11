@@ -1,4 +1,4 @@
-import { Calendar, Home, Settings, List, UserCircle2 } from "lucide-react";
+import { UserCircle2, Settings, List } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,11 +16,6 @@ const items = [
     title: "Contacts",
     url: "/",
     icon: UserCircle2,
-  },
-  {
-    title: "Calendar",
-    url: "/calendar",
-    icon: Calendar,
   },
   {
     title: "Planned Activities",
