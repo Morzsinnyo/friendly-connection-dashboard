@@ -72,6 +72,11 @@ export function CreateContact() {
         if (data) avatarUrl = data.path;
       }
 
+      // Convert the birthday Date to ISO string if it exists
+      const formattedBirthday = formData.birthday
+        ? formData.birthday.toISOString().split('T')[0]
+        : null;
+
       const { error } = await supabase.from("contacts").insert({
         user_id: user.id,
         full_name: formData.fullName,
@@ -79,7 +84,7 @@ export function CreateContact() {
         business_phone: formData.businessPhone,
         mobile_phone: formData.mobilePhone,
         status: formData.status,
-        birthday: formData.birthday,
+        birthday: formattedBirthday,
         notes: formData.notes,
         avatar_url: avatarUrl,
       });
