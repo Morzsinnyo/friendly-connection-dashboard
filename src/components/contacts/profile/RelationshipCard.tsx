@@ -1,8 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface RelationshipCardProps {
   friendshipScore: number;
+  contactId: string;
   relatedContacts: Array<{
     name: string;
     email: string;
@@ -10,24 +15,42 @@ interface RelationshipCardProps {
   }>;
 }
 
-export function RelationshipCard({ friendshipScore, relatedContacts }: RelationshipCardProps) {
+export function RelationshipCard({ friendshipScore, contactId, relatedContacts }: RelationshipCardProps) {
+  const [score, setScore] = useState(friendshipScore);
+  const queryClient = useQueryClient();
+
+  const updateFriendshipScoreMutation = useMutation({
+    mutationFn: async (newScore: number) => {
+      const { error } = await supabase
+        .from('contacts')
+        .update({ friendship_score: newScore })
+        .eq('id', contactId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+      toast.success('Friendship score updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update friendship score');
+      console.error('Error updating friendship score:', error);
+    },
+  });
+
+  const handleScoreChange = (value: number[]) => {
+    setScore(value[0]);
+    updateFriendshipScoreMutation.mutate(value[0]);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Relationship Strength</CardTitle>
+        <CardTitle>Related Contacts</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Friendship Score</span>
-              <span className="text-sm text-gray-600">{friendshipScore}%</span>
-            </div>
-            <Progress value={friendshipScore} className="h-2" />
-            <p className="text-sm text-gray-600">Strong Connection</p>
-          </div>
           <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2">Family Members</h4>
             <div className="space-y-2">
               {relatedContacts.map((contact, index) => (
                 <div key={index} className="flex items-center space-x-2">
@@ -42,13 +65,6 @@ export function RelationshipCard({ friendshipScore, relatedContacts }: Relations
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-          <div className="mt-4">
-            <h4 className="text-sm font-medium mb-2">Networking Score</h4>
-            <div className="flex items-center space-x-2">
-              <Progress value={85} className="h-2 flex-grow" />
-              <span className="text-sm text-gray-600">85%</span>
             </div>
           </div>
         </div>

@@ -124,6 +124,8 @@ export function ContactProfile() {
             avatar: contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '',
             relationship: "Contact",
             age: 0,
+            tags: contact.tags || [],
+            friendship_score: contact.friendship_score || 0,
           }}
           isEditing={isEditing}
           editedContact={editedContact}
@@ -168,6 +170,12 @@ export function ContactProfile() {
           </Card>
 
           <ContactTimeline timeline={mockTimeline} />
+
+          <RelationshipCard
+            friendshipScore={contact.friendship_score || 0}
+            contactId={contact.id}
+            relatedContacts={mockRelatedContacts}
+          />
         </div>
 
         <Collapsible open={isNotesOpen} onOpenChange={setIsNotesOpen}>
@@ -183,13 +191,6 @@ export function ContactProfile() {
             <CollapsibleContent>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex space-x-2">
-                    {["Personal", "Work", "Follow-up"].map((category) => (
-                      <Badge key={category} variant="outline">
-                        {category}
-                      </Badge>
-                    ))}
-                  </div>
                   <Textarea
                     placeholder="Add your notes here..."
                     className="min-h-[200px]"
@@ -200,27 +201,6 @@ export function ContactProfile() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {["Friend", "Work", "Family"].map((tag, index) => (
-                <Badge key={index} variant="secondary">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <RelationshipCard
-          friendshipScore={90}
-          relatedContacts={mockRelatedContacts}
-        />
       </div>
     </div>
   );

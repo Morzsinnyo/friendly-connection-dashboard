@@ -17,6 +17,7 @@ export type Database = {
           company: string | null
           created_at: string
           email: string | null
+          friendship_score: number | null
           full_name: string
           gift_ideas: string[] | null
           id: string
@@ -25,6 +26,7 @@ export type Database = {
           mobile_phone: string | null
           notes: string | null
           status: string | null
+          tags: string[] | null
           updated_at: string
           user_id: string
         }
@@ -35,6 +37,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          friendship_score?: number | null
           full_name: string
           gift_ideas?: string[] | null
           id?: string
@@ -43,6 +46,7 @@ export type Database = {
           mobile_phone?: string | null
           notes?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -53,6 +57,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          friendship_score?: number | null
           full_name?: string
           gift_ideas?: string[] | null
           id?: string
@@ -61,6 +66,7 @@ export type Database = {
           mobile_phone?: string | null
           notes?: string | null
           status?: string | null
+          tags?: string[] | null
           updated_at?: string
           user_id?: string
         }
