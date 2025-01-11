@@ -26,7 +26,6 @@ export type Database = {
           mobile_phone: string | null
           notes: string | null
           related_contacts: string[] | null
-          scheduled_followup: string | null
           status: string | null
           tags: string[] | null
           updated_at: string
@@ -48,7 +47,6 @@ export type Database = {
           mobile_phone?: string | null
           notes?: string | null
           related_contacts?: string[] | null
-          scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
           updated_at?: string
@@ -70,7 +68,6 @@ export type Database = {
           mobile_phone?: string | null
           notes?: string | null
           related_contacts?: string[] | null
-          scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
           updated_at?: string

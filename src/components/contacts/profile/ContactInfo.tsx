@@ -15,18 +15,6 @@ export function ContactInfo({
   editedContact,
   setEditedContact,
 }: ContactInfoProps) {
-  const calculateAge = (birthday: string) => {
-    if (!birthday) return null;
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age + 1; // Add 1 to show the age they'll be turning this year
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -66,15 +54,6 @@ export function ContactInfo({
             <span>{contact.mobilePhone} (Mobile)</span>
           )}
         </div>
-        {contact.birthday && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-600">Birthday:</p>
-            <p>{new Date(contact.birthday).toLocaleDateString()}</p>
-            <p className="text-sm text-green-600 mt-1">
-              Turning {calculateAge(contact.birthday)} this year
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

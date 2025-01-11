@@ -1,7 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,11 +45,8 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle>Related Contacts</CardTitle>
-        <Button variant="ghost" size="icon">
-          <Plus className="h-4 w-4" />
-        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
