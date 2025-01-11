@@ -1,6 +1,6 @@
 import { ContactsList } from "@/components/contacts/ContactsList";
 
-export const Index = () => {
+const Index = () => {
   return <ContactsList />;
 };
 
