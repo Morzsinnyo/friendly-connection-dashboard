@@ -21,9 +21,9 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 
 const statusOptions = [
   "Family Member",
+  "Friend",
   "Close Friend",
   "Business Contact",
-  "Acquaintance",
   "Other",
 ];
 
@@ -39,8 +39,33 @@ export function CreateContact() {
     birthday: null as Date | null,
     notes: "",
   });
+  const [errors, setErrors] = useState({
+    fullName: "",
+    email: "",
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      fullName: "",
+      email: "",
+    };
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+      isValid = false;
+    }
+
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -50,6 +75,16 @@ export function CreateContact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please check the form for errors",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -122,7 +157,9 @@ export function CreateContact() {
       </div>
 
       <div>
-        <Label htmlFor="fullName">Full Name</Label>
+        <Label htmlFor="fullName">
+          Full Name <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="fullName"
           required
@@ -130,8 +167,11 @@ export function CreateContact() {
           onChange={(e) =>
             setFormData({ ...formData, fullName: e.target.value })
           }
-          className="mt-1"
+          className={cn("mt-1", errors.fullName && "border-red-500")}
         />
+        {errors.fullName && (
+          <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+        )}
       </div>
 
       <div>
@@ -141,8 +181,11 @@ export function CreateContact() {
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="mt-1"
+          className={cn("mt-1", errors.email && "border-red-500")}
         />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+        )}
       </div>
 
       <div>
@@ -229,16 +272,26 @@ export function CreateContact() {
         />
       </div>
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating Contact
-          </>
-        ) : (
-          "Create Contact"
-        )}
-      </Button>
+      <div className="flex gap-4">
+        <Button type="submit" disabled={isLoading} className="flex-1">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Contact
+            </>
+          ) : (
+            "Create Contact"
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => navigate("/")}
+          className="flex-1"
+        >
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 }
