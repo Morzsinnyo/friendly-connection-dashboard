@@ -9,7 +9,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Clock, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const activityTypes = [
+  { value: "in-person", label: "In Person" },
+  { value: "phone", label: "Phone Call" },
+  { value: "zoom", label: "Video Call" },
+];
 
 export function CreateActivity() {
   const navigate = useNavigate();
@@ -21,6 +28,10 @@ export function CreateActivity() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [userId, setUserId] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("10:00");
+  const [participants, setParticipants] = useState("");
+  const [activityType, setActivityType] = useState("");
 
   useEffect(() => {
     // Get the current user's ID when component mounts
@@ -58,14 +69,25 @@ export function CreateActivity() {
     }
 
     try {
+      // Combine date and time
+      const startDateTime = new Date(startDate);
+      const [startHours, startMinutes] = startTime.split(':');
+      startDateTime.setHours(parseInt(startHours), parseInt(startMinutes));
+
+      const endDateTime = new Date(endDate);
+      const [endHours, endMinutes] = endTime.split(':');
+      endDateTime.setHours(parseInt(endHours), parseInt(endMinutes));
+
       const { error } = await supabase.from("events").insert({
         title,
         description,
         location,
         meeting_link: meetingLink,
-        start_time: startDate.toISOString(),
-        end_time: endDate.toISOString(),
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
         user_id: userId,
+        guests: participants ? participants.split(',').map(p => p.trim()) : [],
+        color: activityType, // Using the activity type as the color for now
       });
 
       if (error) throw error;
@@ -114,58 +136,108 @@ export function CreateActivity() {
           />
         </div>
 
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Activity Type</label>
+          <Select value={activityType} onValueChange={setActivityType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              {activityTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium">Start Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
+            <label className="block text-sm font-medium">Start Date & Time</label>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <div className="relative">
+                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="pl-9"
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium">End Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
+            <label className="block text-sm font-medium">End Date & Time</label>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <div className="relative">
+                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="pl-9"
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            With Whom?
+          </label>
+          <Input
+            placeholder="Enter names separated by commas"
+            value={participants}
+            onChange={(e) => setParticipants(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">
