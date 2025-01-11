@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,11 +14,15 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 export function ContactProfile() {
   const { id } = useParams();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [date, setDate] = useState<Date>();
   const queryClient = useQueryClient();
   
   const { data: contact, isLoading } = useQuery({
@@ -33,57 +37,42 @@ export function ContactProfile() {
       if (error) throw error;
       return data;
     },
+    enabled: !!id,
   });
 
-  const updateGiftIdeasMutation = useMutation({
-    mutationFn: async (newGiftIdeas: string[]) => {
+  const updateFollowupMutation = useMutation({
+    mutationFn: async (date: Date) => {
       const { error } = await supabase
         .from('contacts')
-        .update({ gift_ideas: newGiftIdeas })
+        .update({ scheduled_followup: date.toISOString() })
         .eq('id', id);
       
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', id] });
-      toast.success('Gift idea added successfully');
+      toast.success('Follow-up scheduled successfully');
     },
     onError: (error) => {
-      toast.error('Failed to add gift idea');
-      console.error('Error updating gift ideas:', error);
+      toast.error('Failed to schedule follow-up');
+      console.error('Error scheduling follow-up:', error);
     },
   });
 
-  const [editedContact, setEditedContact] = useState({
-    name: '',
-    title: '',
-    email: '',
-    businessPhone: '',
-    mobilePhone: '',
-    birthday: '',
-  });
-
-  useEffect(() => {
-    if (contact) {
-      setEditedContact({
-        name: contact.full_name,
-        title: contact.status || '',
-        email: contact.email || '',
-        businessPhone: contact.business_phone || '',
-        mobilePhone: contact.mobile_phone || '',
-        birthday: contact.birthday || '',
-      });
+  const calculateAge = (birthday: string) => {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
-  }, [contact]);
-
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
+    return age + 1; // Add 1 to show the age they'll be turning this year
   };
 
-  const handleAddGiftIdea = (newIdea: string) => {
-    if (!contact?.gift_ideas) return;
-    const updatedGiftIdeas = [...contact.gift_ideas, newIdea];
-    updateGiftIdeasMutation.mutate(updatedGiftIdeas);
+  const handleScheduleFollowup = (selectedDate: Date) => {
+    setDate(selectedDate);
+    updateFollowupMutation.mutate(selectedDate);
   };
 
   if (isLoading) {
@@ -160,11 +149,28 @@ export function ContactProfile() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Next Check-up:</p>
-                <p className="text-lg font-semibold flex items-center">
-                  Coming soon
-                  <span className="ml-2 text-green-600 text-sm">Not scheduled</span>
-                </p>
+                <p className="text-sm text-gray-600">Next Follow-up:</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-semibold">
+                    {contact.scheduled_followup ? format(new Date(contact.scheduled_followup), 'PPP') : 'Not scheduled'}
+                  </p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="ml-2">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule Now
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={date}
+                        onSelect={(date) => date && handleScheduleFollowup(date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </CardContent>
           </Card>
