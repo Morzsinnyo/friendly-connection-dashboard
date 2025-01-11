@@ -144,16 +144,16 @@ export function CreateContact() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <Card className="max-w-2xl mx-auto bg-zinc-900 border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Create New Contact</CardTitle>
+    <div className="min-h-screen bg-[#F2FCE2] p-6">
+      <Card className="max-w-2xl mx-auto bg-white border-green-100 shadow-sm">
+        <CardHeader className="border-b border-green-50">
+          <CardTitle className="text-2xl font-bold text-center text-green-800">Create New Contact</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center justify-center mb-8">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-zinc-800 flex items-center justify-center mb-2 overflow-hidden">
+                <div className="w-32 h-32 rounded-full bg-green-50 flex items-center justify-center mb-2 overflow-hidden">
                   {avatar ? (
                     <img
                       src={URL.createObjectURL(avatar)}
@@ -161,7 +161,7 @@ export function CreateContact() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-16 h-16 text-zinc-400" />
+                    <User className="w-16 h-16 text-green-400" />
                   )}
                 </div>
                 <Input
@@ -174,7 +174,7 @@ export function CreateContact() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-2 w-full text-sm flex items-center justify-center gap-2"
+                  className="mt-2 w-full text-sm flex items-center justify-center gap-2 border-green-200 hover:bg-green-50"
                   onClick={() => document.getElementById("avatar")?.click()}
                 >
                   <Upload className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function CreateContact() {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fullName" className="text-zinc-400">
+                <Label htmlFor="fullName" className="text-green-700">
                   <User className="w-4 h-4 inline mr-2" />
                   Full Name *
                 </Label>
@@ -197,7 +197,7 @@ export function CreateContact() {
                     setFormData({ ...formData, fullName: e.target.value })
                   }
                   className={cn(
-                    "bg-zinc-800 border-zinc-700 text-white",
+                    "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
                     errors.fullName && "border-red-500"
                   )}
                 />
@@ -207,7 +207,7 @@ export function CreateContact() {
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-zinc-400">
+                <Label htmlFor="email" className="text-green-700">
                   <Mail className="w-4 h-4 inline mr-2" />
                   Email
                 </Label>
@@ -217,7 +217,7 @@ export function CreateContact() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className={cn(
-                    "bg-zinc-800 border-zinc-700 text-white",
+                    "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
                     errors.email && "border-red-500"
                   )}
                 />
@@ -227,7 +227,7 @@ export function CreateContact() {
               </div>
 
               <div>
-                <Label htmlFor="businessPhone" className="text-zinc-400">
+                <Label htmlFor="businessPhone" className="text-green-700">
                   <Phone className="w-4 h-4 inline mr-2" />
                   Business Phone
                 </Label>
@@ -237,12 +237,12 @@ export function CreateContact() {
                   onChange={(e) =>
                     setFormData({ ...formData, businessPhone: e.target.value })
                   }
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
                 />
               </div>
 
               <div>
-                <Label htmlFor="mobilePhone" className="text-zinc-400">
+                <Label htmlFor="mobilePhone" className="text-green-700">
                   <Phone className="w-4 h-4 inline mr-2" />
                   Mobile Phone
                 </Label>
@@ -252,22 +252,22 @@ export function CreateContact() {
                   onChange={(e) =>
                     setFormData({ ...formData, mobilePhone: e.target.value })
                   }
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
                 />
               </div>
 
               <div>
-                <Label htmlFor="status" className="text-zinc-400">Status</Label>
+                <Label htmlFor="status" className="text-green-700">Status</Label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) => setFormData({ ...formData, status: value })}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                  <SelectTrigger className="bg-white border-green-200 text-green-900">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                  <SelectContent className="bg-white border-green-200">
                     {statusOptions.map((status) => (
-                      <SelectItem key={status} value={status} className="text-white">
+                      <SelectItem key={status} value={status} className="text-green-900">
                         {status}
                       </SelectItem>
                     ))}
@@ -276,7 +276,7 @@ export function CreateContact() {
               </div>
 
               <div>
-                <Label className="text-zinc-400">
+                <Label className="text-green-700">
                   <CalendarIcon className="w-4 h-4 inline mr-2" />
                   Birthday
                 </Label>
@@ -285,7 +285,7 @@ export function CreateContact() {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-zinc-800 border-zinc-700",
+                        "w-full justify-start text-left font-normal bg-white border-green-200",
                         !formData.birthday && "text-muted-foreground"
                       )}
                     >
@@ -296,25 +296,25 @@ export function CreateContact() {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-zinc-800">
+                  <PopoverContent className="w-auto p-0 bg-white">
                     <Calendar
                       mode="single"
                       selected={formData.birthday || undefined}
                       onSelect={(date) => setFormData({ ...formData, birthday: date })}
                       initialFocus
-                      className="bg-zinc-800"
+                      className="bg-white"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
 
               <div>
-                <Label htmlFor="notes" className="text-zinc-400">Notes</Label>
+                <Label htmlFor="notes" className="text-green-700">Notes</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white min-h-[100px]"
+                  className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400 min-h-[100px]"
                 />
               </div>
             </div>
@@ -324,14 +324,14 @@ export function CreateContact() {
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/")}
-                className="w-full bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+                className="w-full bg-white border-green-200 text-green-700 hover:bg-green-50"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={isLoading} 
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
               >
                 {isLoading ? (
                   <>
