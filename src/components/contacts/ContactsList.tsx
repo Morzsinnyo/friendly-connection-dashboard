@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Import, Filter, Grid, List, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Import, Filter, Grid, List, ChevronRight, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,64 +11,47 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockContacts = [
-  {
-    id: 1,
-    name: "Olivia Anderson",
-    email: "oliviaanderson12@gmail.com",
-    phone: "+62 85292410704",
-    status: "Family Member",
-    lastContact: "2024-01-15",
-    avatar: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=40&h=40&fit=crop",
-  },
-  {
-    id: 2,
-    name: "James Wilson",
-    email: "james.wilson@gmail.com",
-    phone: "+1 555-0123",
-    status: "Close Friend",
-    lastContact: "2024-01-20",
-    avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=40&h=40&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Emma Thompson",
-    email: "emma.t@gmail.com",
-    phone: "+44 20 7123 4567",
-    status: "Business Contact",
-    lastContact: "2024-01-25",
-    avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=40&h=40&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Michael Chen",
-    email: "m.chen@gmail.com",
-    phone: "+86 10 8765 4321",
-    status: "Family Member",
-    lastContact: "2024-01-28",
-    avatar: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=40&h=40&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Sophie Martin",
-    email: "sophie.m@gmail.com",
-    phone: "+33 1 23 45 67 89",
-    status: "Close Friend",
-    lastContact: "2024-01-30",
-    avatar: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=40&h=40&fit=crop",
-  },
-];
+interface Contact {
+  id: string;
+  full_name: string;
+  email: string;
+  business_phone: string;
+  mobile_phone: string;
+  status: string;
+  last_contact: string;
+  avatar_url: string;
+}
 
 export function ContactsList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const navigate = useNavigate();
 
-  const filteredContacts = mockContacts.filter(
+  useEffect(() => {
+    const fetchContacts = async () => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .order("full_name");
+
+      if (error) {
+        console.error("Error fetching contacts:", error);
+        return;
+      }
+
+      setContacts(data || []);
+    };
+
+    fetchContacts();
+  }, []);
+
+  const filteredContacts = contacts.filter(
     (contact) =>
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+      contact.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -87,6 +70,13 @@ export function ContactsList() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <Button 
+              variant="default"
+              onClick={() => navigate("/contact/create")}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Contact
+            </Button>
             <Button variant="outline" size="sm">
               <Import className="h-4 w-4 mr-2" />
               Import
@@ -135,12 +125,18 @@ export function ContactsList() {
                   <tr key={contact.id} className="border-b last:border-b-0">
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                        <img
-                          src={contact.avatar}
-                          alt={contact.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <span className="font-medium">{contact.name}</span>
+                        {contact.avatar_url ? (
+                          <img
+                            src={`${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}`}
+                            alt={contact.full_name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            {contact.full_name.charAt(0)}
+                          </div>
+                        )}
+                        <span className="font-medium">{contact.full_name}</span>
                       </div>
                     </td>
                     <td className="p-4">
@@ -149,7 +145,7 @@ export function ContactsList() {
                           {contact.email}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {contact.phone}
+                          {contact.business_phone || contact.mobile_phone}
                         </span>
                       </div>
                     </td>
@@ -160,7 +156,7 @@ export function ContactsList() {
                     </td>
                     <td className="p-4">
                       <span className="text-sm text-gray-600">
-                        {contact.lastContact}
+                        {contact.last_contact}
                       </span>
                     </td>
                     <td className="p-4">
