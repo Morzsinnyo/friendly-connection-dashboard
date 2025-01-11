@@ -86,6 +86,59 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          end_time: string
+          guests: string[] | null
+          id: string
+          location: string | null
+          meeting_link: string | null
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          guests?: string[] | null
+          id?: string
+          location?: string | null
+          meeting_link?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          guests?: string[] | null
+          id?: string
+          location?: string | null
+          meeting_link?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
