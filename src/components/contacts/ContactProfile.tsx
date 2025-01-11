@@ -22,18 +22,34 @@ export function ContactProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
   
-  const { data: contact, isLoading } = useQuery({
+  console.log('ContactProfile rendered with ID:', id);
+  
+  const { data: contact, isLoading, error } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
-      if (!id) throw new Error('Contact ID is required');
+      console.log('Fetching contact data for ID:', id);
+      if (!id) {
+        console.error('No contact ID provided');
+        throw new Error('Contact ID is required');
+      }
       
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contact:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('No contact found for ID:', id);
+        throw new Error('Contact not found');
+      }
+
+      console.log('Contact data fetched:', data);
       return data;
     },
     enabled: !!id,
@@ -41,6 +57,8 @@ export function ContactProfile() {
 
   const updateGiftIdeasMutation = useMutation({
     mutationFn: async (newGiftIdeas: string[]) => {
+      if (!id) throw new Error('Contact ID is required');
+      
       const { error } = await supabase
         .from('contacts')
         .update({ gift_ideas: newGiftIdeas })
@@ -97,6 +115,14 @@ export function ContactProfile() {
 
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-red-500">
+        Error loading contact: {error instanceof Error ? error.message : 'Unknown error'}
+      </div>
+    );
   }
 
   if (!contact || !id) {
