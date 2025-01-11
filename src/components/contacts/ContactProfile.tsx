@@ -12,12 +12,14 @@ import { ContactTimeline } from "./profile/ContactTimeline";
 import { RelationshipCard } from "./profile/RelationshipCard";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export function ContactProfile() {
   const { id } = useParams();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
   
   const { data: contact, isLoading } = useQuery({
     queryKey: ['contact', id],
@@ -30,6 +32,25 @@ export function ContactProfile() {
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  const updateGiftIdeasMutation = useMutation({
+    mutationFn: async (newGiftIdeas: string[]) => {
+      const { error } = await supabase
+        .from('contacts')
+        .update({ gift_ideas: newGiftIdeas })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', id] });
+      toast.success('Gift idea added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add gift idea');
+      console.error('Error updating gift ideas:', error);
     },
   });
 
@@ -57,6 +78,12 @@ export function ContactProfile() {
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
+  };
+
+  const handleAddGiftIdea = (newIdea: string) => {
+    if (!contact?.gift_ideas) return;
+    const updatedGiftIdeas = [...contact.gift_ideas, newIdea];
+    updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
   if (isLoading) {
@@ -102,8 +129,8 @@ export function ContactProfile() {
           editedContact={editedContact}
           setEditedContact={setEditedContact}
           handleEdit={handleEdit}
-          giftIdeas={[]}
-          setGiftIdeas={() => {}}
+          giftIdeas={contact.gift_ideas || []}
+          onAddGiftIdea={handleAddGiftIdea}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

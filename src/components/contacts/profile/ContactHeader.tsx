@@ -17,7 +17,7 @@ interface ContactHeaderProps {
   setEditedContact: (contact: any) => void;
   handleEdit: () => void;
   giftIdeas: string[];
-  setGiftIdeas: (ideas: string[]) => void;
+  onAddGiftIdea: (idea: string) => void;
 }
 
 export function ContactHeader({
@@ -27,13 +27,13 @@ export function ContactHeader({
   setEditedContact,
   handleEdit,
   giftIdeas,
-  setGiftIdeas,
+  onAddGiftIdea,
 }: ContactHeaderProps) {
   const [newGiftIdea, setNewGiftIdea] = useState("");
 
   const addGiftIdea = () => {
     if (newGiftIdea.trim()) {
-      setGiftIdeas([...giftIdeas, newGiftIdea.trim()]);
+      onAddGiftIdea(newGiftIdea.trim());
       setNewGiftIdea("");
     }
   };
@@ -42,7 +42,7 @@ export function ContactHeader({
     <div className="flex justify-between items-start">
       <div className="flex items-start space-x-4">
         <img
-          src={contact.avatar}
+          src={contact.avatar || "/placeholder.svg"}
           alt={contact.name}
           className="w-20 h-20 rounded-full object-cover"
         />
@@ -77,7 +77,7 @@ export function ContactHeader({
                   className="inline-block w-32"
                 />
               ) : (
-                `${contact.birthday} (turns ${contact.age + 1})`
+                contact.birthday
               )}
             </span>
             <div className="flex space-x-2">
@@ -85,7 +85,7 @@ export function ContactHeader({
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Gift className="h-4 w-4 mr-2" />
-                    Gift Ideas
+                    Gift Ideas ({giftIdeas.length})
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -95,6 +95,11 @@ export function ContactHeader({
                         placeholder="Add gift idea..."
                         value={newGiftIdea}
                         onChange={(e) => setNewGiftIdea(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            addGiftIdea();
+                          }
+                        }}
                       />
                       <Button size="sm" onClick={addGiftIdea}>
                         Add
