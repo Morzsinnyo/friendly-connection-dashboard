@@ -1,35 +1,15 @@
 import { useState } from "react";
-import {
-  Gift,
-  Save,
-  Plus,
-  Edit,
-  Trash,
-  Phone,
-  Mail,
-  Coffee,
-  MoreVertical,
-  Bell,
-  FileText,
-  Link,
-  Tag,
-  Instagram,
-  Linkedin,
-  Twitter,
-} from "lucide-react";
+import { Instagram, Linkedin, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { Tag } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ContactHeader } from "./profile/ContactHeader";
+import { ContactInfo } from "./profile/ContactInfo";
+import { ContactTimeline } from "./profile/ContactTimeline";
+import { RelationshipCard } from "./profile/RelationshipCard";
 
 const mockContact = {
   id: 1,
@@ -70,7 +50,7 @@ const mockContact = {
   socialMedia: {
     linkedin: "https://linkedin.com/in/olivia",
     twitter: "https://twitter.com/olivia",
-    instagram: "https://instagram.com/olivia" // Added this line
+    instagram: "https://instagram.com/olivia"
   },
   lastContact: "March 15, 2024",
   nextCheckup: "April 15, 2024",
@@ -79,7 +59,6 @@ const mockContact = {
 
 export function ContactProfile() {
   const [giftIdeas, setGiftIdeas] = useState(mockContact.giftIdeas);
-  const [newGiftIdea, setNewGiftIdea] = useState("");
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContact, setEditedContact] = useState({
@@ -91,13 +70,6 @@ export function ContactProfile() {
     birthday: mockContact.birthday,
   });
 
-  const addGiftIdea = () => {
-    if (newGiftIdea.trim()) {
-      setGiftIdeas([...giftIdeas, newGiftIdea.trim()]);
-      setNewGiftIdea("");
-    }
-  };
-
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
@@ -105,178 +77,24 @@ export function ContactProfile() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex justify-between items-start">
-          <div className="flex items-start space-x-4">
-            <img
-              src={mockContact.avatar}
-              alt={mockContact.name}
-              className="w-20 h-20 rounded-full object-cover"
-            />
-            <div>
-              {isEditing ? (
-                <Input
-                  value={editedContact.name}
-                  onChange={(e) => setEditedContact({ ...editedContact, name: e.target.value })}
-                  className="text-2xl font-bold mb-2"
-                />
-              ) : (
-                <h1 className="text-2xl font-bold">{mockContact.name}</h1>
-              )}
-              {isEditing ? (
-                <Input
-                  value={editedContact.title}
-                  onChange={(e) => setEditedContact({ ...editedContact, title: e.target.value })}
-                  className="text-gray-600 mb-2"
-                />
-              ) : (
-                <p className="text-gray-600">{mockContact.title}</p>
-              )}
-              <div className="flex items-center space-x-2 mt-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {mockContact.relationship}
-                </Badge>
-                <span className="text-sm text-gray-600">
-                  🎂 {isEditing ? (
-                    <Input
-                      value={editedContact.birthday}
-                      onChange={(e) => setEditedContact({ ...editedContact, birthday: e.target.value })}
-                      className="inline-block w-32"
-                    />
-                  ) : (
-                    `${mockContact.birthday} (turns ${mockContact.age + 1})`
-                  )}
-                </span>
-                <div className="flex space-x-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Gift className="h-4 w-4 mr-2" />
-                        Gift Ideas
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <div className="p-2">
-                        <div className="flex space-x-2">
-                          <Input
-                            placeholder="Add gift idea..."
-                            value={newGiftIdea}
-                            onChange={(e) => setNewGiftIdea(e.target.value)}
-                          />
-                          <Button size="sm" onClick={addGiftIdea}>
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                      {giftIdeas.map((idea, index) => (
-                        <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Bell className="h-4 w-4 mr-2" />
-                        Reminder
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem>Every week</DropdownMenuItem>
-                      <DropdownMenuItem>Every 2 weeks</DropdownMenuItem>
-                      <DropdownMenuItem>Monthly</DropdownMenuItem>
-                      <DropdownMenuItem>Custom...</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 mt-2">
-                <a
-                  href={`https://instagram.com/${mockContact.socialMedia?.instagram}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-pink-600"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-                <a
-                  href={mockContact.socialMedia?.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-blue-600"
-                >
-                  <Linkedin className="h-4 w-4" />
-                </a>
-                <a
-                  href={mockContact.socialMedia?.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-blue-400"
-                >
-                  <Twitter className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
-              {isEditing ? "Save" : "Edit"}
-            </Button>
-            <Button variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              New
-            </Button>
-            <Button variant="destructive">
-              <Trash className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          </div>
-        </div>
+        <ContactHeader
+          contact={mockContact}
+          isEditing={isEditing}
+          editedContact={editedContact}
+          setEditedContact={setEditedContact}
+          handleEdit={handleEdit}
+          giftIdeas={giftIdeas}
+          setGiftIdeas={setGiftIdeas}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-gray-400" />
-                {isEditing ? (
-                  <Input
-                    value={editedContact.email}
-                    onChange={(e) => setEditedContact({ ...editedContact, email: e.target.value })}
-                  />
-                ) : (
-                  <span>{mockContact.email}</span>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-gray-400" />
-                {isEditing ? (
-                  <Input
-                    value={editedContact.businessPhone}
-                    onChange={(e) => setEditedContact({ ...editedContact, businessPhone: e.target.value })}
-                  />
-                ) : (
-                  <span>{mockContact.businessPhone} (Business)</span>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-gray-400" />
-                {isEditing ? (
-                  <Input
-                    value={editedContact.mobilePhone}
-                    onChange={(e) => setEditedContact({ ...editedContact, mobilePhone: e.target.value })}
-                  />
-                ) : (
-                  <span>{mockContact.mobilePhone} (Mobile)</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <ContactInfo
+            contact={mockContact}
+            isEditing={isEditing}
+            editedContact={editedContact}
+            setEditedContact={setEditedContact}
+          />
 
-          {/* Contact Frequency */}
           <Card>
             <CardHeader>
               <CardTitle>Contact Frequency</CardTitle>
@@ -296,30 +114,9 @@ export function ContactProfile() {
             </CardContent>
           </Card>
 
-          {/* Timeline */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Activity Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockContact.timeline.map((event, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="bg-gray-100 p-2 rounded-full">
-                      {event.icon}
-                    </div>
-                    <div>
-                      <p className="font-medium">{event.description}</p>
-                      <p className="text-sm text-gray-600">{event.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <ContactTimeline timeline={mockContact.timeline} />
         </div>
 
-        {/* Notes Section with Categories */}
         <Collapsible open={isNotesOpen} onOpenChange={setIsNotesOpen}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -350,7 +147,6 @@ export function ContactProfile() {
           </Card>
         </Collapsible>
 
-        {/* Custom Tags */}
         <Card>
           <CardHeader>
             <CardTitle>Top Tags</CardTitle>
@@ -367,49 +163,10 @@ export function ContactProfile() {
           </CardContent>
         </Card>
 
-        {/* Relationship Strength with Family Members */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Relationship Strength</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium">Friendship Score</span>
-                  <span className="text-sm text-gray-600">{mockContact.friendshipScore}%</span>
-                </div>
-                <Progress value={mockContact.friendshipScore} className="h-2" />
-                <p className="text-sm text-gray-600">Strong Connection</p>
-              </div>
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Family Members</h4>
-                <div className="space-y-2">
-                  {mockContact.relatedContacts.map((contact, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <img
-                        src={contact.avatar}
-                        alt={contact.name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{contact.name}</p>
-                        <p className="text-xs text-gray-600">{contact.email}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Networking Score</h4>
-                <div className="flex items-center space-x-2">
-                  <Progress value={85} className="h-2 flex-grow" />
-                  <span className="text-sm text-gray-600">85%</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <RelationshipCard
+          friendshipScore={mockContact.friendshipScore}
+          relatedContacts={mockContact.relatedContacts}
+        />
       </div>
     </div>
   );
