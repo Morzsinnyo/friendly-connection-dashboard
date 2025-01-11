@@ -229,16 +229,26 @@ export function CreateContact() {
         />
       </div>
 
-      <Button type="submit" disabled={isLoading} className="w-full">
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating Contact
-          </>
-        ) : (
-          "Create Contact"
-        )}
-      </Button>
+      <div className="flex gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => navigate("/")}
+          className="w-full"
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Contact
+            </>
+          ) : (
+            "Create Contact"
+          )}
+        </Button>
+      </div>
     </form>
   );
 }

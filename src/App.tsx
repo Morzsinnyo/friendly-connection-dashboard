@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isAuthenticated === null) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return isAuthenticated ? children : <Navigate to="/auth" />;
@@ -51,9 +51,9 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/contact/:id" element={<ContactProfile />} />
-                    <Route path="/contact/create" element={<CreateContact />} />
+                    <Route index element={<Index />} />
+                    <Route path="contact/create" element={<CreateContact />} />
+                    <Route path="contact/:id" element={<ContactProfile />} />
                   </Routes>
                 </DashboardLayout>
               </ProtectedRoute>
