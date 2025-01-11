@@ -27,6 +27,8 @@ export function CreateContact() {
     status: "",
     birthday: null as Date | null,
     notes: "",
+    jobTitle: "",
+    company: "",
   });
   const [errors, setErrors] = useState({
     fullName: "",
@@ -110,6 +112,8 @@ export function CreateContact() {
         birthday: formattedBirthday,
         notes: formData.notes,
         avatar_url: avatarUrl,
+        job_title: formData.jobTitle,
+        company: formData.company,
       });
 
       if (error) throw error;

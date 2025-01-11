@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gift, Edit, Trash, Plus, Bell } from "lucide-react";
+import { Gift, Edit, Trash, Plus, Bell, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,22 @@ export function ContactHeader({
     }
   };
 
+  const calculateAge = (birthday: string) => {
+    if (!birthday) return null;
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    const nextBirthday = new Date(birthDate);
+    nextBirthday.setFullYear(today.getFullYear() + (m < 0 ? 0 : 1));
+    return { currentAge: age, nextAge: age + 1 };
+  };
+
+  const ageInfo = contact.birthday ? calculateAge(contact.birthday) : null;
+
   return (
     <div className="flex justify-between items-start">
       <div className="flex items-start space-x-4">
@@ -56,30 +72,43 @@ export function ContactHeader({
           ) : (
             <h1 className="text-2xl font-bold">{contact.name}</h1>
           )}
-          {isEditing ? (
-            <Input
-              value={editedContact.title}
-              onChange={(e) => setEditedContact({ ...editedContact, title: e.target.value })}
-              className="text-gray-600 mb-2"
-            />
-          ) : (
-            <p className="text-gray-600">{contact.title}</p>
+          
+          {(contact.job_title || contact.company) && (
+            <div className="flex items-center gap-2 text-gray-600 mb-2">
+              <Briefcase className="h-4 w-4" />
+              {isEditing ? (
+                <div className="space-y-2">
+                  <Input
+                    value={editedContact.jobTitle}
+                    onChange={(e) => setEditedContact({ ...editedContact, jobTitle: e.target.value })}
+                    placeholder="Job Title"
+                    className="text-sm"
+                  />
+                  <Input
+                    value={editedContact.company}
+                    onChange={(e) => setEditedContact({ ...editedContact, company: e.target.value })}
+                    placeholder="Company"
+                    className="text-sm"
+                  />
+                </div>
+              ) : (
+                <span>
+                  {contact.job_title} {contact.job_title && contact.company && "at"} {contact.company}
+                </span>
+              )}
+            </div>
           )}
+          
           <div className="flex items-center space-x-2 mt-2">
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               {contact.relationship}
             </Badge>
-            <span className="text-sm text-gray-600">
-              🎂 {isEditing ? (
-                <Input
-                  value={editedContact.birthday}
-                  onChange={(e) => setEditedContact({ ...editedContact, birthday: e.target.value })}
-                  className="inline-block w-32"
-                />
-              ) : (
-                contact.birthday
-              )}
-            </span>
+            {contact.birthday && (
+              <span className="text-sm text-gray-600">
+                🎂 {new Date(contact.birthday).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+                {ageInfo && ` (turns ${ageInfo.nextAge})`}
+              </span>
+            )}
             <div className="flex space-x-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

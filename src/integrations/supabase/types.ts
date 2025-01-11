@@ -14,11 +14,13 @@ export type Database = {
           avatar_url: string | null
           birthday: string | null
           business_phone: string | null
+          company: string | null
           created_at: string
           email: string | null
           full_name: string
           gift_ideas: string[] | null
           id: string
+          job_title: string | null
           last_contact: string | null
           mobile_phone: string | null
           notes: string | null
@@ -30,11 +32,13 @@ export type Database = {
           avatar_url?: string | null
           birthday?: string | null
           business_phone?: string | null
+          company?: string | null
           created_at?: string
           email?: string | null
           full_name: string
           gift_ideas?: string[] | null
           id?: string
+          job_title?: string | null
           last_contact?: string | null
           mobile_phone?: string | null
           notes?: string | null
@@ -46,11 +50,13 @@ export type Database = {
           avatar_url?: string | null
           birthday?: string | null
           business_phone?: string | null
+          company?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           gift_ideas?: string[] | null
           id?: string
+          job_title?: string | null
           last_contact?: string | null
           mobile_phone?: string | null
           notes?: string | null

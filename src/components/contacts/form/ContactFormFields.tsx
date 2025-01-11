@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, User, Instagram, Linkedin, X } from "lucide-react";
+import { Phone, Mail, User, Instagram, Linkedin, X, Briefcase } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,6 +19,8 @@ interface ContactFormFieldsProps {
     status: string;
     birthday: Date | null;
     notes: string;
+    jobTitle: string;
+    company: string;
   };
   errors: {
     fullName: string;
@@ -59,6 +61,32 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
         {errors.fullName && (
           <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
         )}
+      </div>
+
+      <div>
+        <Label htmlFor="jobTitle" className="text-green-700">
+          <Briefcase className="w-4 h-4 inline mr-2" />
+          Job Title
+        </Label>
+        <Input
+          id="jobTitle"
+          value={formData.jobTitle}
+          onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="company" className="text-green-700">
+          <Briefcase className="w-4 h-4 inline mr-2" />
+          Company
+        </Label>
+        <Input
+          id="company"
+          value={formData.company}
+          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+        />
       </div>
 
       <div>
