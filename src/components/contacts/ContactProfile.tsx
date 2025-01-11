@@ -65,9 +65,11 @@ export function ContactProfile() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes (renamed from cacheTime)
     retry: 2,
-    onError: (error) => {
-      console.error('Query error:', error);
-      toast.error('Failed to load contact information');
+    meta: {
+      onError: (error: Error) => {
+        console.error('Query error:', error);
+        toast.error('Failed to load contact information');
+      }
     }
   });
 
