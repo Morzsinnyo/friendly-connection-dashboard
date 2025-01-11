@@ -3,6 +3,7 @@ import { Gift, Edit, Trash, Plus, Bell, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,12 +31,17 @@ export function ContactHeader({
   onAddGiftIdea,
 }: ContactHeaderProps) {
   const [newGiftIdea, setNewGiftIdea] = useState("");
+  const navigate = useNavigate();
 
   const addGiftIdea = () => {
     if (newGiftIdea.trim()) {
       onAddGiftIdea(newGiftIdea.trim());
       setNewGiftIdea("");
     }
+  };
+
+  const handleEditClick = () => {
+    navigate(`/contact/create?edit=${contact.id}`);
   };
 
   const calculateAge = (birthday: string) => {
@@ -63,39 +69,14 @@ export function ContactHeader({
           className="w-20 h-20 rounded-full object-cover"
         />
         <div>
-          {isEditing ? (
-            <Input
-              value={editedContact.name}
-              onChange={(e) => setEditedContact({ ...editedContact, name: e.target.value })}
-              className="text-2xl font-bold mb-2"
-            />
-          ) : (
-            <h1 className="text-2xl font-bold">{contact.name}</h1>
-          )}
+          <h1 className="text-2xl font-bold">{contact.name}</h1>
           
           {(contact.job_title || contact.company) && (
             <div className="flex items-center gap-2 text-gray-600 mb-2">
               <Briefcase className="h-4 w-4" />
-              {isEditing ? (
-                <div className="space-y-2">
-                  <Input
-                    value={editedContact.jobTitle}
-                    onChange={(e) => setEditedContact({ ...editedContact, jobTitle: e.target.value })}
-                    placeholder="Job Title"
-                    className="text-sm"
-                  />
-                  <Input
-                    value={editedContact.company}
-                    onChange={(e) => setEditedContact({ ...editedContact, company: e.target.value })}
-                    placeholder="Company"
-                    className="text-sm"
-                  />
-                </div>
-              ) : (
-                <span>
-                  {contact.job_title} {contact.job_title && contact.company && "at"} {contact.company}
-                </span>
-              )}
+              <span>
+                {contact.job_title} {contact.job_title && contact.company && "at"} {contact.company}
+              </span>
             </div>
           )}
           
@@ -159,9 +140,9 @@ export function ContactHeader({
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <Button variant="outline" onClick={handleEdit}>
+        <Button variant="outline" onClick={handleEditClick}>
           <Edit className="h-4 w-4 mr-2" />
-          {isEditing ? "Save" : "Edit"}
+          Edit
         </Button>
         <Button variant="outline">
           <Plus className="h-4 w-4 mr-2" />

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactFormFields } from "./form/ContactFormFields";
 import { AvatarUpload } from "./form/AvatarUpload";
+import { useQuery } from "@tanstack/react-query";
 
 const statusOptions = [
   "Family Member",
@@ -17,6 +18,8 @@ const statusOptions = [
 ];
 
 export function CreateContact() {
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
   const [isLoading, setIsLoading] = useState(false);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [formData, setFormData] = useState({
@@ -36,6 +39,40 @@ export function CreateContact() {
   });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Fetch contact data if in edit mode
+  const { data: contactData } = useQuery({
+    queryKey: ['contact', editId],
+    queryFn: async () => {
+      if (!editId) return null;
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', editId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!editId,
+  });
+
+  // Populate form data when editing
+  useEffect(() => {
+    if (contactData) {
+      setFormData({
+        fullName: contactData.full_name,
+        email: contactData.email || '',
+        businessPhone: contactData.business_phone || '',
+        mobilePhone: contactData.mobile_phone || '',
+        status: contactData.status || '',
+        birthday: contactData.birthday ? new Date(contactData.birthday) : null,
+        notes: contactData.notes || '',
+        jobTitle: contactData.job_title || '',
+        company: contactData.company || '',
+      });
+    }
+  }, [contactData]);
 
   const validateForm = () => {
     let isValid = true;
@@ -102,7 +139,7 @@ export function CreateContact() {
         ? formData.birthday.toISOString().split('T')[0]
         : null;
 
-      const { error } = await supabase.from("contacts").insert({
+      const contactData = {
         user_id: user.id,
         full_name: formData.fullName,
         email: formData.email,
@@ -111,17 +148,35 @@ export function CreateContact() {
         status: formData.status,
         birthday: formattedBirthday,
         notes: formData.notes,
-        avatar_url: avatarUrl,
         job_title: formData.jobTitle,
         company: formData.company,
-      });
+        ...(avatarUrl && { avatar_url: avatarUrl }),
+      };
 
-      if (error) throw error;
+      if (editId) {
+        const { error } = await supabase
+          .from("contacts")
+          .update(contactData)
+          .eq('id', editId);
 
-      toast({
-        title: "Success",
-        description: "Contact created successfully",
-      });
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Contact updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from("contacts")
+          .insert([contactData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Contact created successfully",
+        });
+      }
 
       navigate("/");
     } catch (error: any) {
@@ -140,7 +195,7 @@ export function CreateContact() {
       <Card className="max-w-2xl mx-auto bg-white border-green-100 shadow-sm">
         <CardHeader className="border-b border-green-50">
           <CardTitle className="text-2xl font-bold text-center text-green-800">
-            Create New Contact
+            {editId ? 'Edit Contact' : 'Create New Contact'}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -174,10 +229,10 @@ export function CreateContact() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Contact
+                    {editId ? 'Updating Contact' : 'Creating Contact'}
                   </>
                 ) : (
-                  "Create Contact"
+                  editId ? 'Update Contact' : 'Create Contact'
                 )}
               </Button>
             </div>
