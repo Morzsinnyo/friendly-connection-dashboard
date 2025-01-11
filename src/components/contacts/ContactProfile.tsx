@@ -10,13 +10,14 @@ import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { ContactTimeline } from "./profile/ContactTimeline";
 import { RelationshipCard } from "./profile/RelationshipCard";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function ContactProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
@@ -89,6 +90,11 @@ export function ContactProfile() {
     updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
+  const getAvatarUrl = (avatarPath: string | null) => {
+    if (!avatarPath) return null;
+    return `${supabase.storage.from('avatars').getPublicUrl(avatarPath).data.publicUrl}`;
+  };
+
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
   }
@@ -111,7 +117,7 @@ export function ContactProfile() {
             ...contact,
             name: contact.full_name,
             title: contact.status || '',
-            avatar: contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '',
+            avatar: contact.avatar_url ? getAvatarUrl(contact.avatar_url) : '',
             relationship: "Contact",
             age: 0,
             tags: contact.tags || [],
