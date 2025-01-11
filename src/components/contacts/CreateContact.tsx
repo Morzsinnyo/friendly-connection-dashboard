@@ -17,7 +17,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Phone, Mail, User } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 const statusOptions = [
   "Family Member",
@@ -109,146 +110,189 @@ export function CreateContact() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-6">
-      <div>
-        <Label htmlFor="avatar">Profile Image (Optional)</Label>
-        <Input
-          id="avatar"
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="mt-1"
-        />
-      </div>
+    <div className="min-h-screen bg-black text-white p-6">
+      <Card className="max-w-2xl mx-auto bg-zinc-900 border-zinc-800">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center mb-8">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center mb-2">
+                {avatar ? (
+                  <img
+                    src={URL.createObjectURL(avatar)}
+                    alt="Preview"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-zinc-400" />
+                )}
+              </div>
+              <Input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-2 w-full text-sm"
+                onClick={() => document.getElementById("avatar")?.click()}
+              >
+                Upload Photo
+              </Button>
+            </div>
+          </div>
 
-      <div>
-        <Label htmlFor="fullName">Full Name</Label>
-        <Input
-          id="fullName"
-          required
-          value={formData.fullName}
-          onChange={(e) =>
-            setFormData({ ...formData, fullName: e.target.value })
-          }
-          className="mt-1"
-        />
-      </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="fullName" className="text-zinc-400">Full Name</Label>
+                <Input
+                  id="fullName"
+                  required
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                />
+              </div>
 
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="mt-1"
-        />
-      </div>
+              <div>
+                <Label htmlFor="email" className="text-zinc-400">
+                  <Mail className="w-4 h-4 inline mr-2" />
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                />
+              </div>
 
-      <div>
-        <Label htmlFor="businessPhone">Business Phone</Label>
-        <Input
-          id="businessPhone"
-          value={formData.businessPhone}
-          onChange={(e) =>
-            setFormData({ ...formData, businessPhone: e.target.value })
-          }
-          className="mt-1"
-        />
-      </div>
+              <div>
+                <Label htmlFor="businessPhone" className="text-zinc-400">
+                  <Phone className="w-4 h-4 inline mr-2" />
+                  Business Phone
+                </Label>
+                <Input
+                  id="businessPhone"
+                  value={formData.businessPhone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, businessPhone: e.target.value })
+                  }
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                />
+              </div>
 
-      <div>
-        <Label htmlFor="mobilePhone">Mobile Phone</Label>
-        <Input
-          id="mobilePhone"
-          value={formData.mobilePhone}
-          onChange={(e) =>
-            setFormData({ ...formData, mobilePhone: e.target.value })
-          }
-          className="mt-1"
-        />
-      </div>
+              <div>
+                <Label htmlFor="mobilePhone" className="text-zinc-400">
+                  <Phone className="w-4 h-4 inline mr-2" />
+                  Mobile Phone
+                </Label>
+                <Input
+                  id="mobilePhone"
+                  value={formData.mobilePhone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mobilePhone: e.target.value })
+                  }
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                />
+              </div>
 
-      <div>
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) => setFormData({ ...formData, status: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusOptions.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+              <div>
+                <Label htmlFor="status" className="text-zinc-400">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-800 border-zinc-700">
+                    {statusOptions.map((status) => (
+                      <SelectItem key={status} value={status} className="text-white">
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      <div>
-        <Label>Birthday</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.birthday && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.birthday ? (
-                format(formData.birthday, "PPP")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={formData.birthday || undefined}
-              onSelect={(date) => setFormData({ ...formData, birthday: date })}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+              <div>
+                <Label className="text-zinc-400">
+                  <CalendarIcon className="w-4 h-4 inline mr-2" />
+                  Birthday
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-zinc-800 border-zinc-700",
+                        !formData.birthday && "text-muted-foreground"
+                      )}
+                    >
+                      {formData.birthday ? (
+                        format(formData.birthday, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-zinc-800">
+                    <Calendar
+                      mode="single"
+                      selected={formData.birthday || undefined}
+                      onSelect={(date) => setFormData({ ...formData, birthday: date })}
+                      initialFocus
+                      className="bg-zinc-800"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-      <div>
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea
-          id="notes"
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="mt-1"
-          rows={4}
-        />
-      </div>
+              <div>
+                <Label htmlFor="notes" className="text-zinc-400">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="bg-zinc-800 border-zinc-700 text-white min-h-[100px]"
+                />
+              </div>
+            </div>
 
-      <div className="flex gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => navigate("/")}
-          className="w-full"
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Contact
-            </>
-          ) : (
-            "Create Contact"
-          )}
-        </Button>
-      </div>
-    </form>
+            <div className="flex gap-4 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/")}
+                className="w-full bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isLoading} 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Contact
+                  </>
+                ) : (
+                  "Create Contact"
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
