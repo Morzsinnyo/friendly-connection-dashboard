@@ -8,11 +8,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Link, Users, AlignLeft } from "lucide-react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Input } from "@/components/ui/input";
 
 const Calendar = () => {
   const [date, setDate] = React.useState<Date>(new Date());
@@ -70,6 +76,81 @@ const Calendar = () => {
   const handleToday = () => {
     setDate(new Date());
   };
+
+  const EventCreationHoverCard = ({ date }: { date: Date }) => (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <div className="w-full h-full cursor-pointer" />
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 p-0" align="start">
+        <div className="p-4 space-y-4">
+          <Input
+            type="text"
+            placeholder="New event title"
+            className="border-0 p-0 text-lg font-medium focus-visible:ring-0"
+          />
+          
+          <div className="text-sm text-muted-foreground">
+            {format(date, "EEEE, MMM d")}
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm">
+            <Input
+              type="time"
+              defaultValue="09:30"
+              className="w-24"
+            />
+            <span>→</span>
+            <Input
+              type="time"
+              defaultValue="10:00"
+              className="w-24"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Add guest"
+              className="border-0 p-0 focus-visible:ring-0"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Link className="h-4 w-4" />
+            <Input
+              type="url"
+              placeholder="Add meeting link"
+              className="border-0 p-0 focus-visible:ring-0"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <AlignLeft className="h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Add description"
+              className="border-0 p-0 focus-visible:ring-0"
+            />
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <div className="w-6 h-6 rounded-full bg-blue-200 cursor-pointer hover:ring-2 ring-offset-2" />
+            <div className="w-6 h-6 rounded-full bg-green-200 cursor-pointer hover:ring-2 ring-offset-2" />
+            <div className="w-6 h-6 rounded-full bg-yellow-200 cursor-pointer hover:ring-2 ring-offset-2" />
+            <div className="w-6 h-6 rounded-full bg-red-200 cursor-pointer hover:ring-2 ring-offset-2" />
+            <div className="w-6 h-6 rounded-full bg-purple-200 cursor-pointer hover:ring-2 ring-offset-2" />
+          </div>
+
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+            <Button variant="outline" size="sm">Cancel</Button>
+            <Button size="sm">Save</Button>
+          </div>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
 
   return (
     <div className="flex h-full">
@@ -133,6 +214,14 @@ const Calendar = () => {
             selected={date}
             onSelect={(newDate) => newDate && setDate(newDate)}
             className="rounded-md"
+            components={{
+              Day: ({ date: dayDate, ...props }) => (
+                <div className="relative w-full h-full">
+                  <div {...props} />
+                  <EventCreationHoverCard date={dayDate} />
+                </div>
+              ),
+            }}
           />
         </div>
 
