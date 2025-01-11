@@ -75,7 +75,7 @@ export function ContactsList() {
               onClick={() => navigate("/contact/create")}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Contact
+              Create
             </Button>
             <Button variant="outline" size="sm">
               <Import className="h-4 w-4 mr-2" />
