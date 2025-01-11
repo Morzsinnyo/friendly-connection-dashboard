@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { format, differenceInYears } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface EditedContact {
   name: string;
@@ -29,6 +36,7 @@ export function ContactProfile() {
   const navigate = useNavigate();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const queryClient = useQueryClient();
   
   console.log('ContactProfile mounted with ID:', id);
@@ -72,6 +80,42 @@ export function ContactProfile() {
       }
     }
   });
+
+  const updateFollowupMutation = useMutation({
+    mutationFn: async (date: Date) => {
+      const { error } = await supabase
+        .from('contacts')
+        .update({ scheduled_followup: date.toISOString() })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', id] });
+      toast.success('Follow-up scheduled successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to schedule follow-up');
+      console.error('Error scheduling follow-up:', error);
+    },
+  });
+
+  const handleScheduleFollowup = (date: Date) => {
+    updateFollowupMutation.mutate(date);
+    setSelectedDate(undefined);
+  };
+
+  const calculateAge = (birthday: string) => {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    const age = differenceInYears(today, birthDate);
+    const nextBirthday = new Date(birthDate);
+    nextBirthday.setFullYear(today.getFullYear());
+    if (nextBirthday < today) {
+      nextBirthday.setFullYear(today.getFullYear() + 1);
+    }
+    return age + 1;
+  };
 
   const [editedContact, setEditedContact] = useState<EditedContact>({
     name: '',
@@ -177,7 +221,7 @@ export function ContactProfile() {
             title: contact.status || '',
             avatar: contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '',
             relationship: "Contact",
-            age: 0,
+            age: contact.birthday ? calculateAge(contact.birthday) : undefined,
             tags: contact.tags || [],
             friendship_score: contact.friendship_score || 0,
           }}
@@ -214,11 +258,30 @@ export function ContactProfile() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Next Check-up:</p>
-                <p className="text-lg font-semibold flex items-center">
-                  Coming soon
-                  <span className="ml-2 text-green-600 text-sm">Not scheduled</span>
-                </p>
+                <p className="text-sm text-gray-600">Next Follow-up:</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-lg font-semibold">
+                    {contact.scheduled_followup 
+                      ? format(new Date(contact.scheduled_followup), 'PPP')
+                      : 'Not scheduled'}
+                  </p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule Now
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && handleScheduleFollowup(date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </CardContent>
           </Card>
