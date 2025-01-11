@@ -18,11 +18,28 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
+interface EditedContact {
+  full_name: string;
+  email: string;
+  business_phone: string;
+  mobile_phone: string;
+  status: string;
+  gift_ideas: string[];
+}
+
 export function ContactProfile() {
   const { id } = useParams();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [date, setDate] = useState<Date>();
+  const [editedContact, setEditedContact] = useState<EditedContact>({
+    full_name: '',
+    email: '',
+    business_phone: '',
+    mobile_phone: '',
+    status: '',
+    gift_ideas: [],
+  });
   const queryClient = useQueryClient();
   
   const { data: contact, isLoading } = useQuery({
@@ -32,7 +49,7 @@ export function ContactProfile() {
         .from('contacts')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -58,6 +75,32 @@ export function ContactProfile() {
       console.error('Error scheduling follow-up:', error);
     },
   });
+
+  const handleEdit = () => {
+    if (isEditing) {
+      // Save changes
+      // Implementation would go here
+      setIsEditing(false);
+    } else {
+      setEditedContact({
+        full_name: contact?.full_name || '',
+        email: contact?.email || '',
+        business_phone: contact?.business_phone || '',
+        mobile_phone: contact?.mobile_phone || '',
+        status: contact?.status || '',
+        gift_ideas: contact?.gift_ideas || [],
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleAddGiftIdea = (idea: string) => {
+    if (contact) {
+      const updatedGiftIdeas = [...(contact.gift_ideas || []), idea];
+      // Implementation would go here
+      console.log('Adding gift idea:', idea);
+    }
+  };
 
   const calculateAge = (birthday: string) => {
     const birthDate = new Date(birthday);
@@ -112,7 +155,7 @@ export function ContactProfile() {
             title: contact.status || '',
             avatar: contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '',
             relationship: "Contact",
-            age: 0,
+            age: contact.birthday ? calculateAge(contact.birthday) : 0,
             tags: contact.tags || [],
             friendship_score: contact.friendship_score || 0,
           }}
