@@ -23,6 +23,8 @@ interface RelationshipCardProps {
 }
 
 export function RelationshipCard({ contactId }: RelationshipCardProps) {
+  console.log('RelationshipCard rendered with contactId:', contactId);
+  
   const queryClient = useQueryClient();
   const [isSelectingContact, setIsSelectingContact] = useState(false);
 
@@ -30,28 +32,44 @@ export function RelationshipCard({ contactId }: RelationshipCardProps) {
   const { data: availableContacts } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
+      console.log('Fetching available contacts');
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching available contacts:', error);
+        throw error;
+      }
+      console.log('Available contacts fetched:', data);
       return data;
     },
   });
 
   // Fetch related contacts
-  const { data: contact } = useQuery({
+  const { data: contact, isError: isContactError } = useQuery({
     queryKey: ['contact', contactId],
     queryFn: async () => {
+      console.log('Fetching contact details for ID:', contactId);
+      if (!contactId) {
+        console.error('No contactId provided');
+        throw new Error('Contact ID is required');
+      }
+
       const { data, error } = await supabase
         .from('contacts')
         .select('related_contacts')
         .eq('id', contactId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contact:', error);
+        throw error;
+      }
+      console.log('Contact details fetched:', data);
       return data;
     },
+    enabled: !!contactId,
   });
 
   // Fetch details of related contacts
@@ -59,24 +77,37 @@ export function RelationshipCard({ contactId }: RelationshipCardProps) {
     queryKey: ['related-contacts', contact?.related_contacts],
     enabled: !!contact?.related_contacts?.length,
     queryFn: async () => {
+      console.log('Fetching related contacts details');
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url')
         .in('id', contact.related_contacts || []);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching related contacts details:', error);
+        throw error;
+      }
+      console.log('Related contacts details fetched:', data);
       return data;
     },
   });
 
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (newRelatedContacts: string[]) => {
+      console.log('Updating related contacts:', newRelatedContacts);
+      if (!contactId) {
+        throw new Error('Contact ID is required');
+      }
+
       const { error } = await supabase
         .from('contacts')
         .update({ related_contacts: newRelatedContacts })
         .eq('id', contactId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating related contacts:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
@@ -90,6 +121,7 @@ export function RelationshipCard({ contactId }: RelationshipCardProps) {
   });
 
   const handleAddRelatedContact = (newContactId: string) => {
+    console.log('Adding related contact:', newContactId);
     const currentRelated = contact?.related_contacts || [];
     if (!currentRelated.includes(newContactId)) {
       updateRelatedContactsMutation.mutate([...currentRelated, newContactId]);
@@ -98,11 +130,25 @@ export function RelationshipCard({ contactId }: RelationshipCardProps) {
   };
 
   const handleRemoveRelatedContact = (contactIdToRemove: string) => {
+    console.log('Removing related contact:', contactIdToRemove);
     const currentRelated = contact?.related_contacts || [];
     updateRelatedContactsMutation.mutate(
       currentRelated.filter(id => id !== contactIdToRemove)
     );
   };
+
+  if (isContactError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Related Contacts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-red-500">Error loading related contacts</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
