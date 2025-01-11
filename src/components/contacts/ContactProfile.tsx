@@ -24,6 +24,8 @@ export function ContactProfile() {
   const { data: contact, isLoading } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
+      if (!id) throw new Error('Contact ID is required');
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
@@ -33,6 +35,7 @@ export function ContactProfile() {
       if (error) throw error;
       return data;
     },
+    enabled: !!id,
   });
 
   const updateGiftIdeasMutation = useMutation({
@@ -90,7 +93,7 @@ export function ContactProfile() {
     return <div className="p-6">Loading...</div>;
   }
 
-  if (!contact) {
+  if (!contact || !id) {
     return <div className="p-6">Contact not found</div>;
   }
 
@@ -98,19 +101,6 @@ export function ContactProfile() {
     { type: "call", date: "2024-03-15", description: "Phone Call", icon: <Phone className="h-4 w-4" /> },
     { type: "email", date: "2024-03-10", description: "Email Follow-up", icon: <Mail className="h-4 w-4" /> },
     { type: "meeting", date: "2024-03-01", description: "Coffee Meeting", icon: <Coffee className="h-4 w-4" /> },
-  ];
-
-  const mockRelatedContacts = [
-    {
-      name: "James Wilson",
-      email: "james.w@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=40&h=40&fit=crop",
-    },
-    {
-      name: "Emma Thompson",
-      email: "emma.t@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=40&h=40&fit=crop",
-    },
   ];
 
   return (
@@ -172,9 +162,9 @@ export function ContactProfile() {
           <ContactTimeline timeline={mockTimeline} />
 
           <RelationshipCard
+            contactId={id}
             friendshipScore={contact.friendship_score || 0}
-            contactId={contact.id}
-            relatedContacts={mockRelatedContacts}
+            relatedContacts={[]}
           />
         </div>
 
