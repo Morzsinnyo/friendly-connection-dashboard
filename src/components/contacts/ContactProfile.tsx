@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Instagram, Linkedin, Twitter } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
