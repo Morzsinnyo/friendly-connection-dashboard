@@ -58,6 +58,7 @@ const App = () => (
             <Route path="contact/create" element={<CreateContact />} />
             <Route path="contact/:id" element={<ContactProfile />} />
             <Route path="activities" element={<PlannedActivities />} />
+            <Route path="activities/create" element={<CreateActivity />} />
           </Route>
         </Routes>
       </BrowserRouter>
