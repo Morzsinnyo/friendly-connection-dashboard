@@ -10,55 +10,33 @@ import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { ContactTimeline } from "./profile/ContactTimeline";
 import { RelationshipCard } from "./profile/RelationshipCard";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function ContactProfile() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
   
-  console.log('ContactProfile rendered with ID:', id);
-  
-  const { data: contact, isLoading, error } = useQuery({
+  const { data: contact, isLoading } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
-      console.log('Fetching contact data for ID:', id);
-      if (!id) {
-        console.error('No contact ID provided');
-        throw new Error('Contact ID is required');
-      }
-      
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', id)
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error fetching contact:', error);
-        throw error;
-      }
-      
-      if (!data) {
-        console.error('No contact found for ID:', id);
-        throw new Error('Contact not found');
-      }
-
-      console.log('Contact data fetched:', data);
+      if (error) throw error;
       return data;
     },
-    enabled: !!id,
   });
 
   const updateGiftIdeasMutation = useMutation({
     mutationFn: async (newGiftIdeas: string[]) => {
-      if (!id) throw new Error('Contact ID is required');
-      
       const { error } = await supabase
         .from('contacts')
         .update({ gift_ideas: newGiftIdeas })
@@ -108,24 +86,11 @@ export function ContactProfile() {
     updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
-  const getAvatarUrl = (avatarPath: string | null) => {
-    if (!avatarPath) return null;
-    return `${supabase.storage.from('avatars').getPublicUrl(avatarPath).data.publicUrl}`;
-  };
-
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
   }
 
-  if (error) {
-    return (
-      <div className="p-6 text-red-500">
-        Error loading contact: {error instanceof Error ? error.message : 'Unknown error'}
-      </div>
-    );
-  }
-
-  if (!contact || !id) {
+  if (!contact) {
     return <div className="p-6">Contact not found</div>;
   }
 
@@ -133,6 +98,19 @@ export function ContactProfile() {
     { type: "call", date: "2024-03-15", description: "Phone Call", icon: <Phone className="h-4 w-4" /> },
     { type: "email", date: "2024-03-10", description: "Email Follow-up", icon: <Mail className="h-4 w-4" /> },
     { type: "meeting", date: "2024-03-01", description: "Coffee Meeting", icon: <Coffee className="h-4 w-4" /> },
+  ];
+
+  const mockRelatedContacts = [
+    {
+      name: "James Wilson",
+      email: "james.w@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=40&h=40&fit=crop",
+    },
+    {
+      name: "Emma Thompson",
+      email: "emma.t@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=40&h=40&fit=crop",
+    },
   ];
 
   return (
@@ -143,7 +121,7 @@ export function ContactProfile() {
             ...contact,
             name: contact.full_name,
             title: contact.status || '',
-            avatar: contact.avatar_url ? getAvatarUrl(contact.avatar_url) : '',
+            avatar: contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '',
             relationship: "Contact",
             age: 0,
             tags: contact.tags || [],
@@ -194,9 +172,9 @@ export function ContactProfile() {
           <ContactTimeline timeline={mockTimeline} />
 
           <RelationshipCard
-            contactId={id}
             friendshipScore={contact.friendship_score || 0}
-            relatedContacts={[]}
+            contactId={contact.id}
+            relatedContacts={mockRelatedContacts}
           />
         </div>
 
