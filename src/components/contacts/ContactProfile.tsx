@@ -50,6 +50,14 @@ export function ContactProfile() {
         throw new Error('No contact ID provided');
       }
 
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) {
+        console.error('No authenticated user found');
+        throw new Error('Authentication required');
+      }
+
+      console.log('Fetching contact with query:', { id, userId: session.session.user.id });
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
@@ -63,8 +71,8 @@ export function ContactProfile() {
 
       if (!data) {
         console.error('No contact found with ID:', id);
-        navigate('/'); // Redirect to contacts list if contact not found
         toast.error('Contact not found');
+        navigate('/');
         return null;
       }
       
@@ -79,7 +87,7 @@ export function ContactProfile() {
       onError: (error: Error) => {
         console.error('Query error:', error);
         toast.error('Failed to load contact information');
-        navigate('/'); // Redirect to contacts list on error
+        navigate('/');
       }
     }
   });
