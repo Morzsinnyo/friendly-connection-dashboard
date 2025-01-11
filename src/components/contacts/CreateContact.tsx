@@ -17,8 +17,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, Phone, Mail, User } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { CalendarIcon, Loader2, Phone, Mail, User, Upload } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const statusOptions = [
   "Family Member",
@@ -40,8 +40,33 @@ export function CreateContact() {
     birthday: null as Date | null,
     notes: "",
   });
+  const [errors, setErrors] = useState({
+    fullName: "",
+    email: "",
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      fullName: "",
+      email: "",
+    };
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+      isValid = false;
+    }
+
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -51,6 +76,16 @@ export function CreateContact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please check the form for errors",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -73,7 +108,6 @@ export function CreateContact() {
         if (data) avatarUrl = data.path;
       }
 
-      // Convert the birthday Date to ISO string if it exists
       const formattedBirthday = formData.birthday
         ? formData.birthday.toISOString().split('T')[0]
         : null;
@@ -112,42 +146,49 @@ export function CreateContact() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <Card className="max-w-2xl mx-auto bg-zinc-900 border-zinc-800">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Create New Contact</CardTitle>
+        </CardHeader>
         <CardContent className="p-6">
-          <div className="flex items-center justify-center mb-8">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-zinc-800 flex items-center justify-center mb-2">
-                {avatar ? (
-                  <img
-                    src={URL.createObjectURL(avatar)}
-                    alt="Preview"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <User className="w-12 h-12 text-zinc-400" />
-                )}
-              </div>
-              <Input
-                id="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-2 w-full text-sm"
-                onClick={() => document.getElementById("avatar")?.click()}
-              >
-                Upload Photo
-              </Button>
-            </div>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex items-center justify-center mb-8">
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-zinc-800 flex items-center justify-center mb-2 overflow-hidden">
+                  {avatar ? (
+                    <img
+                      src={URL.createObjectURL(avatar)}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-16 h-16 text-zinc-400" />
+                  )}
+                </div>
+                <Input
+                  id="avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2 w-full text-sm flex items-center justify-center gap-2"
+                  onClick={() => document.getElementById("avatar")?.click()}
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Photo
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fullName" className="text-zinc-400">Full Name</Label>
+                <Label htmlFor="fullName" className="text-zinc-400">
+                  <User className="w-4 h-4 inline mr-2" />
+                  Full Name *
+                </Label>
                 <Input
                   id="fullName"
                   required
@@ -155,8 +196,14 @@ export function CreateContact() {
                   onChange={(e) =>
                     setFormData({ ...formData, fullName: e.target.value })
                   }
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className={cn(
+                    "bg-zinc-800 border-zinc-700 text-white",
+                    errors.fullName && "border-red-500"
+                  )}
                 />
+                {errors.fullName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                )}
               </div>
 
               <div>
@@ -169,8 +216,14 @@ export function CreateContact() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className={cn(
+                    "bg-zinc-800 border-zinc-700 text-white",
+                    errors.email && "border-red-500"
+                  )}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
 
               <div>
