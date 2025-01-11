@@ -10,30 +10,70 @@ import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { ContactTimeline } from "./profile/ContactTimeline";
 import { RelationshipCard } from "./profile/RelationshipCard";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface EditedContact {
+  name: string;
+  title: string;
+  email: string;
+  businessPhone: string;
+  mobilePhone: string;
+  birthday: string;
+}
+
 export function ContactProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
   
-  const { data: contact, isLoading } = useQuery({
+  const { data: contact, isLoading, error } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
+      console.log('Fetching contact data for ID:', id);
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching contact:', error);
+        throw error;
+      }
+      
+      console.log('Contact data received:', data);
       return data;
     },
+    enabled: !!id,
   });
+
+  const [editedContact, setEditedContact] = useState<EditedContact>({
+    name: '',
+    title: '',
+    email: '',
+    businessPhone: '',
+    mobilePhone: '',
+    birthday: '',
+  });
+
+  useEffect(() => {
+    if (contact) {
+      console.log('Updating edited contact state with:', contact);
+      setEditedContact({
+        name: contact.full_name || '',
+        title: contact.status || '',
+        email: contact.email || '',
+        businessPhone: contact.business_phone || '',
+        mobilePhone: contact.mobile_phone || '',
+        birthday: contact.birthday || '',
+      });
+    }
+  }, [contact]);
 
   const updateGiftIdeasMutation = useMutation({
     mutationFn: async (newGiftIdeas: string[]) => {
@@ -54,28 +94,6 @@ export function ContactProfile() {
     },
   });
 
-  const [editedContact, setEditedContact] = useState({
-    name: '',
-    title: '',
-    email: '',
-    businessPhone: '',
-    mobilePhone: '',
-    birthday: '',
-  });
-
-  useEffect(() => {
-    if (contact) {
-      setEditedContact({
-        name: contact.full_name,
-        title: contact.status || '',
-        email: contact.email || '',
-        businessPhone: contact.business_phone || '',
-        mobilePhone: contact.mobile_phone || '',
-        birthday: contact.birthday || '',
-      });
-    }
-  }, [contact]);
-
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
@@ -88,6 +106,11 @@ export function ContactProfile() {
 
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
+  }
+
+  if (error) {
+    console.error('Error in contact profile:', error);
+    return <div className="p-6">Error loading contact information</div>;
   }
 
   if (!contact) {
