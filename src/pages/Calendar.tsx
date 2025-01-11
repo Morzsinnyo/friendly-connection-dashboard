@@ -19,6 +19,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
+import { DayProps } from "react-day-picker";
 
 const Calendar = () => {
   const [date, setDate] = React.useState<Date>(new Date());
@@ -215,7 +216,7 @@ const Calendar = () => {
             onSelect={(newDate) => newDate && setDate(newDate)}
             className="rounded-md"
             components={{
-              Day: ({ date: dayDate, ...props }) => {
+              Day: ({ date: dayDate, ...props }: DayProps) => {
                 const { className, ...rest } = props;
                 return (
                   <div className="relative w-full h-full">
