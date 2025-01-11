@@ -31,25 +31,44 @@ export function ContactProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
   
+  console.log('ContactProfile mounted with ID:', id);
+
   const { data: contact, isLoading, error } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
-      console.log('Fetching contact data for ID:', id);
+      console.log('Starting contact fetch for ID:', id);
+      if (!id) {
+        console.error('No contact ID provided');
+        throw new Error('No contact ID provided');
+      }
+
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        console.error('Error fetching contact:', error);
+        console.error('Supabase error fetching contact:', error);
         throw error;
       }
+
+      if (!data) {
+        console.error('No contact found with ID:', id);
+        throw new Error('Contact not found');
+      }
       
-      console.log('Contact data received:', data);
+      console.log('Contact data successfully fetched:', data);
       return data;
     },
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    cacheTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    retry: 2,
+    onError: (error) => {
+      console.error('Query error:', error);
+      toast.error('Failed to load contact information');
+    }
   });
 
   const [editedContact, setEditedContact] = useState<EditedContact>({
@@ -62,6 +81,7 @@ export function ContactProfile() {
   });
 
   useEffect(() => {
+    console.log('Contact data changed:', contact);
     if (contact) {
       console.log('Updating edited contact state with:', contact);
       setEditedContact({
@@ -77,12 +97,16 @@ export function ContactProfile() {
 
   const updateGiftIdeasMutation = useMutation({
     mutationFn: async (newGiftIdeas: string[]) => {
+      console.log('Updating gift ideas:', newGiftIdeas);
       const { error } = await supabase
         .from('contacts')
         .update({ gift_ideas: newGiftIdeas })
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating gift ideas:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', id] });
@@ -100,11 +124,13 @@ export function ContactProfile() {
 
   const handleAddGiftIdea = (newIdea: string) => {
     if (!contact?.gift_ideas) return;
+    console.log('Adding new gift idea:', newIdea);
     const updatedGiftIdeas = [...contact.gift_ideas, newIdea];
     updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
   if (isLoading) {
+    console.log('Loading contact data...');
     return <div className="p-6">Loading...</div>;
   }
 
@@ -114,8 +140,11 @@ export function ContactProfile() {
   }
 
   if (!contact) {
+    console.error('No contact data available');
     return <div className="p-6">Contact not found</div>;
   }
+
+  console.log('Rendering contact profile with data:', contact);
 
   const mockTimeline = [
     { type: "call", date: "2024-03-15", description: "Phone Call", icon: <Phone className="h-4 w-4" /> },
