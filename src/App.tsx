@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
-import { Index } from "./pages/Index";
-import { Auth } from "./pages/Auth";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import CalendarPage from "./pages/Calendar";
 
 function App() {
