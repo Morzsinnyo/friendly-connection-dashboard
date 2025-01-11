@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
 import PlannedActivities from "./pages/PlannedActivities";
+import { CreateActivity } from "./components/activities/CreateActivity";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 
