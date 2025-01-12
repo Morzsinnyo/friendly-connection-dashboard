@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Edit, Trash, Plus, Bell, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
