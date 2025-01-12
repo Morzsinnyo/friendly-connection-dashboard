@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { ActivityFormFields } from "./form/ActivityFormFields";
+import { format } from "date-fns";
 
 export function CreateActivity() {
   const navigate = useNavigate();
