@@ -13,14 +13,15 @@ export function CreateActivity() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const participantFromUrl = searchParams.get('participant');
+  const dateFromUrl = searchParams.get('date');
   const isEditMode = !!id;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<Date | undefined>(dateFromUrl ? new Date(dateFromUrl) : undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(dateFromUrl ? new Date(dateFromUrl) : undefined);
   const [userId, setUserId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");

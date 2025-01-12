@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, differenceInYears } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Clock, Users } from "lucide-react";
@@ -59,6 +59,11 @@ export function ActivityFormFields({
   activityType,
   setActivityType,
 }: ActivityFormFieldsProps) {
+  const calculateAge = (date: Date) => {
+    const today = new Date();
+    return differenceInYears(today, date);
+  };
+
   return (
     <>
       <div className="space-y-2">
@@ -136,6 +141,11 @@ export function ActivityFormFields({
               />
             </div>
           </div>
+          {startDate && (
+            <p className="text-sm text-muted-foreground">
+              Turns {calculateAge(startDate)} years old
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
