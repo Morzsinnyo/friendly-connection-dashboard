@@ -1,1 +1,9 @@
 project_id = "bxvdvwjmybeixtarqwig"
+
+[api]
+enabled = true
+url = "https://bxvdvwjmybeixtarqwig.supabase.co"
+
+[functions]
+[functions.send-reminder]
+verify_jwt = false
