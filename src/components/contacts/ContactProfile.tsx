@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
-import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar, Bell } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Tag } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { ContactTimeline } from "./profile/ContactTimeline";
@@ -218,50 +212,6 @@ export function ContactProfile() {
     },
   ];
 
-  const updateReminderMutation = useMutation({
-    mutationFn: async ({ frequency, nextReminder }: { frequency: string, nextReminder: Date }) => {
-      console.log('Updating reminder settings:', { frequency, nextReminder });
-      const { error } = await supabase
-        .from('contacts')
-        .update({
-          reminder_frequency: frequency,
-          next_reminder: nextReminder.toISOString()
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact', id] });
-      toast.success('Reminder scheduled successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to schedule reminder');
-      console.error('Error scheduling reminder:', error);
-    },
-  });
-
-  const handleSetReminder = (frequency: string) => {
-    const now = new Date();
-    let nextReminder = new Date();
-
-    switch (frequency) {
-      case 'daily':
-        nextReminder.setDate(now.getDate() + 1);
-        break;
-      case 'weekly':
-        nextReminder.setDate(now.getDate() + 7);
-        break;
-      case 'monthly':
-        nextReminder.setMonth(now.getMonth() + 1);
-        break;
-      default:
-        return;
-    }
-
-    updateReminderMutation.mutate({ frequency, nextReminder });
-  };
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
@@ -333,40 +283,6 @@ export function ContactProfile() {
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Reminder Frequency:</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-lg font-semibold">
-                    {contact.reminder_frequency 
-                      ? contact.reminder_frequency.charAt(0).toUpperCase() + contact.reminder_frequency.slice(1)
-                      : 'Not set'}
-                  </p>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Bell className="h-4 w-4 mr-2" />
-                        Set Reminder
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => handleSetReminder('daily')}>
-                        Daily
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSetReminder('weekly')}>
-                        Weekly
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleSetReminder('monthly')}>
-                        Monthly
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                {contact.next_reminder && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Next reminder: {format(new Date(contact.next_reminder), 'PPP')}
-                  </p>
-                )}
               </div>
             </CardContent>
           </Card>
