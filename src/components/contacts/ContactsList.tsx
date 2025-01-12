@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Import, Filter, Grid, List, ChevronRight, Plus } from "lucide-react";
+import { Search, Filter, Grid, List, ChevronRight, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Contact {
   id: string;
@@ -22,12 +32,19 @@ interface Contact {
   status: string;
   last_contact: string;
   avatar_url: string;
+  company: string;
+  job_title: string;
+  tags: string[];
 }
 
 export function ContactsList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterCompany, setFilterCompany] = useState<string[]>([]);
+  const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
+  const [availableCompanies, setAvailableCompanies] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,16 +60,31 @@ export function ContactsList() {
       }
 
       setContacts(data || []);
+
+      // Extract unique statuses and companies
+      const statuses = [...new Set(data?.map(contact => contact.status).filter(Boolean))];
+      const companies = [...new Set(data?.map(contact => contact.company).filter(Boolean))];
+      
+      setAvailableStatuses(statuses);
+      setAvailableCompanies(companies);
     };
 
     fetchContacts();
   }, []);
 
-  const filteredContacts = contacts.filter(
-    (contact) =>
+  const filteredContacts = contacts.filter(contact => {
+    const matchesSearch = 
       contact.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+      (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesStatus = filterStatus.length === 0 || 
+      (contact.status && filterStatus.includes(contact.status));
+
+    const matchesCompany = filterCompany.length === 0 || 
+      (contact.company && filterCompany.includes(contact.company));
+
+    return matchesSearch && matchesStatus && matchesCompany;
+  });
 
   const handleContactClick = (contactId: string) => {
     navigate(`/contact/${contactId}`);
@@ -81,14 +113,76 @@ export function ContactsList() {
               <Plus className="h-4 w-4 mr-2" />
               Create
             </Button>
-            <Button variant="outline" size="sm">
-              <Import className="h-4 w-4 mr-2" />
-              Import
-            </Button>
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Filter Contacts</SheetTitle>
+                  <SheetDescription>
+                    Select criteria to filter your contacts
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="py-4 space-y-4">
+                  <div className="space-y-4">
+                    <Label>Status</Label>
+                    <div className="space-y-2">
+                      {availableStatuses.map((status) => (
+                        <div key={status} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`status-${status}`}
+                            checked={filterStatus.includes(status)}
+                            onCheckedChange={(checked) => {
+                              setFilterStatus(prev =>
+                                checked
+                                  ? [...prev, status]
+                                  : prev.filter(s => s !== status)
+                              );
+                            }}
+                          />
+                          <label
+                            htmlFor={`status-${status}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {status}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <Label>Company</Label>
+                    <div className="space-y-2">
+                      {availableCompanies.map((company) => (
+                        <div key={company} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`company-${company}`}
+                            checked={filterCompany.includes(company)}
+                            onCheckedChange={(checked) => {
+                              setFilterCompany(prev =>
+                                checked
+                                  ? [...prev, company]
+                                  : prev.filter(c => c !== company)
+                              );
+                            }}
+                          />
+                          <label
+                            htmlFor={`company-${company}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {company}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
             <Button
               variant="outline"
               size="sm"

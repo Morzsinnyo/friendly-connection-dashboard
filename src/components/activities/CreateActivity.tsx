@@ -1,23 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock, Users } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
-
-const activityTypes = [
-  { value: "in-person", label: "In Person" },
-  { value: "phone", label: "Phone Call" },
-  { value: "zoom", label: "Video Call" },
-];
+import { ActivityFormFields } from "./form/ActivityFormFields";
 
 export function CreateActivity() {
   const navigate = useNavigate();
@@ -37,7 +24,6 @@ export function CreateActivity() {
   const [participants, setParticipants] = useState("");
   const [activityType, setActivityType] = useState("");
 
-  // Fetch activity data if in edit mode
   const { data: activityData } = useQuery({
     queryKey: ['activity', id],
     queryFn: async () => {
@@ -55,7 +41,6 @@ export function CreateActivity() {
   });
 
   useEffect(() => {
-    // Get the current user's ID when component mounts
     const getCurrentUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -68,7 +53,6 @@ export function CreateActivity() {
     getCurrentUser();
   }, [navigate]);
 
-  // Populate form with activity data when in edit mode
   useEffect(() => {
     if (activityData) {
       const startDateTime = new Date(activityData.start_time);
@@ -109,7 +93,6 @@ export function CreateActivity() {
     }
 
     try {
-      // Combine date and time
       const startDateTime = new Date(startDate);
       const [startHours, startMinutes] = startTime.split(':');
       startDateTime.setHours(parseInt(startHours), parseInt(startMinutes));
@@ -173,155 +156,28 @@ export function CreateActivity() {
       </h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <label htmlFor="title" className="block text-sm font-medium">
-            Title
-          </label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="description" className="block text-sm font-medium">
-            Description
-          </label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Activity Type</label>
-          <Select value={activityType} onValueChange={setActivityType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {activityTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">Start Date & Time</label>
-            <div className="flex gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <div className="relative">
-                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">End Date & Time</label>
-            <div className="flex gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <div className="relative">
-                <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            With Whom?
-          </label>
-          <Input
-            placeholder="Enter names separated by commas"
-            value={participants}
-            onChange={(e) => setParticipants(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="location" className="block text-sm font-medium">
-            Location (optional)
-          </label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="meetingLink" className="block text-sm font-medium">
-            Meeting Link (optional)
-          </label>
-          <Input
-            id="meetingLink"
-            type="url"
-            value={meetingLink}
-            onChange={(e) => setMeetingLink(e.target.value)}
-          />
-        </div>
+        <ActivityFormFields
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+          location={location}
+          setLocation={setLocation}
+          meetingLink={meetingLink}
+          setMeetingLink={setMeetingLink}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          startTime={startTime}
+          setStartTime={setStartTime}
+          endTime={endTime}
+          setEndTime={setEndTime}
+          participants={participants}
+          setParticipants={setParticipants}
+          activityType={activityType}
+          setActivityType={setActivityType}
+        />
 
         <div className="flex justify-end space-x-4">
           <Button 
