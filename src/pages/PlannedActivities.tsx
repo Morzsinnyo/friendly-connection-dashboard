@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { MapPin, Users, Video, Phone, CalendarPlus } from "lucide-react";
+import { MapPin, Users, Video, Phone, CalendarPlus, X, Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Event {
   id: string;
@@ -20,7 +21,7 @@ interface Event {
 const PlannedActivities = () => {
   const navigate = useNavigate();
   
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading, refetch } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
       console.log("Fetching events...");
@@ -38,6 +39,23 @@ const PlannedActivities = () => {
       return data as Event[];
     },
   });
+
+  const handleDelete = async (eventId: string) => {
+    try {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+
+      if (error) throw error;
+
+      toast.success("Activity deleted successfully");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete activity");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -83,9 +101,28 @@ const PlannedActivities = () => {
               {dayEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow"
+                  className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow relative"
                 >
-                  <div className="flex justify-between items-start">
+                  <div className="absolute top-4 right-4 flex flex-col gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => handleDelete(event.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                      onClick={() => navigate(`/activities/edit/${event.id}`)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-between items-start pr-16">
                     <div className="space-y-2">
                       <div className="text-gray-500">
                         {format(new Date(event.start_time), "H:mm")}
