@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,11 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface RelationshipCardProps {
   friendshipScore: number;
   contactId: string;
-  relatedContacts: Array<{
-    name: string;
-    email: string;
-    avatar: string;
-  }>;
 }
 
 export function RelationshipCard({ friendshipScore, contactId }: RelationshipCardProps) {
@@ -29,6 +24,8 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
   const { data: currentContact } = useQuery({
     queryKey: ['contact', contactId],
     queryFn: async () => {
+      if (!contactId) return null;
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('related_contacts')
@@ -38,20 +35,24 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
       if (error) throw error;
       return data;
     },
+    enabled: !!contactId
   });
 
   // Fetch all available contacts
   const { data: availableContacts } = useQuery({
-    queryKey: ['available-contacts'],
+    queryKey: ['available-contacts', contactId],
     queryFn: async () => {
+      if (!contactId) return [];
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url')
         .neq('id', contactId);
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
+    enabled: !!contactId
   });
 
   // Fetch related contacts details
@@ -66,15 +67,22 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
         .in('id', currentContact.related_contacts);
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!currentContact?.related_contacts?.length,
   });
 
-  console.log('Related contacts details:', relatedContactsDetails);
+  // Initialize selectedContacts with current related contacts when dialog opens
+  useEffect(() => {
+    if (isOpen && currentContact?.related_contacts) {
+      setSelectedContacts(currentContact.related_contacts);
+    }
+  }, [isOpen, currentContact?.related_contacts]);
 
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (selectedIds: string[]) => {
+      if (!contactId) return;
+      
       console.log('Updating related contacts with:', selectedIds);
       const { error } = await supabase
         .from('contacts')
@@ -107,6 +115,11 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
   const handleSave = () => {
     updateRelatedContactsMutation.mutate(selectedContacts);
   };
+
+  if (!contactId) {
+    console.error('No contactId provided to RelationshipCard');
+    return null;
+  }
 
   return (
     <>
