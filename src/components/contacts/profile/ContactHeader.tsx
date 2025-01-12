@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Gift, Edit, Trash, Plus, Bell, Briefcase, Tag, X } from "lucide-react";
+import { Edit, Trash, Plus, Bell, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -10,11 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { differenceInYears } from "date-fns";
+import { FriendshipScore } from "./header/FriendshipScore";
+import { TagsSection } from "./header/TagsSection";
+import { GiftIdeasDropdown } from "./header/GiftIdeasDropdown";
+import { AgeDisplay } from "./header/AgeDisplay";
 
 interface ContactHeaderProps {
   contact: any;
@@ -35,11 +35,9 @@ export function ContactHeader({
   giftIdeas,
   onAddGiftIdea,
 }: ContactHeaderProps) {
-  const [newGiftIdea, setNewGiftIdea] = useState("");
-  const [newTag, setNewTag] = useState("");
-  const [isAddingTag, setIsAddingTag] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [score, setScore] = useState(contact.friendship_score || 0);
 
   const updateTagsMutation = useMutation({
     mutationFn: async (tags: string[]) => {
@@ -59,22 +57,6 @@ export function ContactHeader({
       console.error('Error updating tags:', error);
     },
   });
-
-  const addTag = () => {
-    if (newTag.trim()) {
-      const updatedTags = [...(contact.tags || []), newTag.trim()];
-      updateTagsMutation.mutate(updatedTags);
-      setNewTag("");
-      setIsAddingTag(false);
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    const updatedTags = (contact.tags || []).filter(tag => tag !== tagToRemove);
-    updateTagsMutation.mutate(updatedTags);
-  };
-
-  const [score, setScore] = useState(contact.friendship_score || 0);
 
   const updateFriendshipScoreMutation = useMutation({
     mutationFn: async (newScore: number) => {
@@ -100,16 +82,14 @@ export function ContactHeader({
     updateFriendshipScoreMutation.mutate(value[0]);
   };
 
-  const calculateNextBirthday = (birthday: string) => {
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    const nextBirthday = new Date(birthDate);
-    nextBirthday.setFullYear(today.getFullYear());
-    if (nextBirthday < today) {
-      nextBirthday.setFullYear(today.getFullYear() + 1);
-    }
-    const age = differenceInYears(nextBirthday, birthDate);
-    return age;
+  const handleAddTag = (newTag: string) => {
+    const updatedTags = [...(contact.tags || []), newTag];
+    updateTagsMutation.mutate(updatedTags);
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updatedTags = (contact.tags || []).filter(tag => tag !== tagToRemove);
+    updateTagsMutation.mutate(updatedTags);
   };
 
   return (
@@ -133,36 +113,13 @@ export function ContactHeader({
               </div>
             )}
 
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg mt-2 mb-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-green-700">Friendship Score</span>
-                  <span className="text-sm text-green-600">{score}</span>
-                </div>
-                <Slider
-                  value={[score]}
-                  onValueChange={handleScoreChange}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <FriendshipScore score={score} onScoreChange={handleScoreChange} />
             
             <div className="flex items-center space-x-2 mt-2">
               <Badge variant="secondary" className="bg-green-100 text-green-800">
                 {contact.relationship}
               </Badge>
-              {contact.birthday && (
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-600">
-                    🎂 {new Date(contact.birthday).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Turns {calculateNextBirthday(contact.birthday)} this year
-                  </span>
-                </div>
-              )}
+              {contact.birthday && <AgeDisplay birthday={contact.birthday} />}
             </div>
           </div>
         </div>
@@ -182,88 +139,14 @@ export function ContactHeader({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        {(contact.tags || []).map((tag, index) => (
-          <div key={index} className="relative group">
-            <Badge variant="secondary" className="pr-6">
-              <Tag className="h-3 w-3 mr-1" />
-              {tag}
-              <button
-                onClick={() => removeTag(tag)}
-                className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="h-3 w-3 text-gray-500 hover:text-gray-700" />
-              </button>
-            </Badge>
-          </div>
-        ))}
-        {isAddingTag ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Enter tag name"
-              className="w-32"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  addTag();
-                }
-              }}
-            />
-            <Button size="sm" onClick={addTag}>
-              Add
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsAddingTag(false)}>
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAddingTag(true)}
-            className="h-6"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      <TagsSection
+        tags={contact.tags || []}
+        onAddTag={handleAddTag}
+        onRemoveTag={handleRemoveTag}
+      />
 
       <div className="flex space-x-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Gift className="h-4 w-4 mr-2" />
-              Gift Ideas ({giftIdeas.length})
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <div className="p-2">
-              <div className="flex space-x-2">
-                <Input
-                  placeholder="Add gift idea..."
-                  value={newGiftIdea}
-                  onChange={(e) => setNewGiftIdea(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      onAddGiftIdea(newGiftIdea);
-                      setNewGiftIdea("");
-                    }
-                  }}
-                />
-                <Button size="sm" onClick={() => {
-                  onAddGiftIdea(newGiftIdea);
-                  setNewGiftIdea("");
-                }}>
-                  Add
-                </Button>
-              </div>
-            </div>
-            {giftIdeas.map((idea, index) => (
-              <DropdownMenuItem key={index}>{idea}</DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <GiftIdeasDropdown giftIdeas={giftIdeas} onAddGiftIdea={onAddGiftIdea} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
