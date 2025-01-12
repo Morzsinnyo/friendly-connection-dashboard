@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface RelationshipCardProps {
   friendshipScore: number;
   contactId: string;
-  relatedContacts: Array<{
+  relatedContacts?: Array<{
     name: string;
     email: string;
     avatar: string;
@@ -26,9 +26,11 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
   console.log('RelationshipCard mounted with contactId:', contactId);
 
   // Fetch the current contact's related_contacts
-  const { data: currentContact } = useQuery({
+  const { data: currentContact, isLoading: isLoadingCurrentContact } = useQuery({
     queryKey: ['contact', contactId],
     queryFn: async () => {
+      if (!contactId) throw new Error('No contact ID provided');
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('related_contacts')
@@ -38,12 +40,15 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
       if (error) throw error;
       return data;
     },
+    enabled: !!contactId,
   });
 
   // Fetch all available contacts
-  const { data: availableContacts } = useQuery({
-    queryKey: ['available-contacts'],
+  const { data: availableContacts, isLoading: isLoadingAvailable } = useQuery({
+    queryKey: ['available-contacts', contactId],
     queryFn: async () => {
+      if (!contactId) throw new Error('No contact ID provided');
+      
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url')
@@ -52,13 +57,14 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
       if (error) throw error;
       return data;
     },
+    enabled: !!contactId,
   });
 
   // Fetch related contacts details
-  const { data: relatedContactsDetails } = useQuery({
+  const { data: relatedContactsDetails, isLoading: isLoadingRelated } = useQuery({
     queryKey: ['related-contacts', contactId],
     queryFn: async () => {
-      if (!currentContact?.related_contacts?.length) return [];
+      if (!contactId || !currentContact?.related_contacts?.length) return [];
       
       const { data, error } = await supabase
         .from('contacts')
@@ -68,13 +74,15 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
       if (error) throw error;
       return data;
     },
-    enabled: !!currentContact?.related_contacts?.length,
+    enabled: !!contactId && !!currentContact?.related_contacts?.length,
   });
 
   console.log('Related contacts details:', relatedContactsDetails);
 
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (selectedIds: string[]) => {
+      if (!contactId) throw new Error('No contact ID provided');
+      
       console.log('Updating related contacts with:', selectedIds);
       const { error } = await supabase
         .from('contacts')
@@ -108,6 +116,12 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
     updateRelatedContactsMutation.mutate(selectedContacts);
   };
 
+  if (!contactId) {
+    return null;
+  }
+
+  const isLoading = isLoadingCurrentContact || isLoadingAvailable || isLoadingRelated;
+
   return (
     <>
       <Card>
@@ -119,7 +133,9 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {relatedContactsDetails && relatedContactsDetails.length > 0 ? (
+            {isLoading ? (
+              <p className="text-sm text-gray-500 text-center py-4">Loading...</p>
+            ) : relatedContactsDetails && relatedContactsDetails.length > 0 ? (
               <div className="space-y-3">
                 {relatedContactsDetails.map((contact) => (
                   <div key={contact.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
@@ -148,7 +164,9 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
             <DialogTitle>Select Contacts</DialogTitle>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
-            {availableContacts?.map((contact) => (
+            {isLoading ? (
+              <p className="text-sm text-gray-500 text-center py-4">Loading contacts...</p>
+            ) : availableContacts?.map((contact) => (
               <div key={contact.id} className="flex items-center space-x-2 p-2">
                 <Checkbox
                   id={contact.id}
