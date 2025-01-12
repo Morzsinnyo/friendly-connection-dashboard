@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,6 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface RelationshipCardProps {
   friendshipScore: number;
   contactId: string;
+  relatedContacts: Array<{
+    name: string;
+    email: string;
+    avatar: string;
+  }>;
 }
 
 export function RelationshipCard({ friendshipScore, contactId }: RelationshipCardProps) {
@@ -21,11 +26,9 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
   console.log('RelationshipCard mounted with contactId:', contactId);
 
   // Fetch the current contact's related_contacts
-  const { data: currentContact, isLoading: isLoadingCurrent } = useQuery({
+  const { data: currentContact } = useQuery({
     queryKey: ['contact', contactId],
     queryFn: async () => {
-      if (!contactId) return null;
-      
       const { data, error } = await supabase
         .from('contacts')
         .select('related_contacts')
@@ -35,28 +38,24 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
       if (error) throw error;
       return data;
     },
-    enabled: !!contactId,
   });
 
   // Fetch all available contacts
-  const { data: availableContacts, isLoading: isLoadingAvailable } = useQuery({
-    queryKey: ['available-contacts', contactId],
+  const { data: availableContacts } = useQuery({
+    queryKey: ['available-contacts'],
     queryFn: async () => {
-      if (!contactId) return [];
-      
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url')
         .neq('id', contactId);
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
-    enabled: !!contactId,
   });
 
   // Fetch related contacts details
-  const { data: relatedContactsDetails, isLoading: isLoadingRelated } = useQuery({
+  const { data: relatedContactsDetails } = useQuery({
     queryKey: ['related-contacts', contactId],
     queryFn: async () => {
       if (!currentContact?.related_contacts?.length) return [];
@@ -67,24 +66,15 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
         .in('id', currentContact.related_contacts);
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
-    enabled: !!contactId && !!currentContact?.related_contacts?.length,
+    enabled: !!currentContact?.related_contacts?.length,
   });
 
   console.log('Related contacts details:', relatedContactsDetails);
 
-  // Initialize selectedContacts with current related contacts when dialog opens
-  useEffect(() => {
-    if (isOpen && currentContact?.related_contacts) {
-      setSelectedContacts(currentContact.related_contacts);
-    }
-  }, [isOpen, currentContact?.related_contacts]);
-
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (selectedIds: string[]) => {
-      if (!contactId) throw new Error('No contact ID provided');
-      
       console.log('Updating related contacts with:', selectedIds);
       const { error } = await supabase
         .from('contacts')
@@ -118,12 +108,6 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
     updateRelatedContactsMutation.mutate(selectedContacts);
   };
 
-  const isLoading = isLoadingCurrent || isLoadingAvailable || isLoadingRelated;
-
-  if (!contactId) {
-    return null;
-  }
-
   return (
     <>
       <Card>
@@ -134,38 +118,34 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
           </Button>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="text-sm text-gray-500 text-center py-4">Loading...</div>
-          ) : (
-            <div className="space-y-4">
-              {relatedContactsDetails && relatedContactsDetails.length > 0 ? (
-                <div className="space-y-3">
-                  {relatedContactsDetails.map((contact) => (
-                    <div key={contact.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
-                      <img
-                        src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
-                        alt={contact.full_name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{contact.full_name}</p>
-                        <p className="text-sm text-gray-500">{contact.email}</p>
-                      </div>
+          <div className="space-y-4">
+            {relatedContactsDetails && relatedContactsDetails.length > 0 ? (
+              <div className="space-y-3">
+                {relatedContactsDetails.map((contact) => (
+                  <div key={contact.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+                    <img
+                      src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
+                      alt={contact.full_name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{contact.full_name}</p>
+                      <p className="text-sm text-gray-500">{contact.email}</p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No related contacts selected</p>
-              )}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">No related contacts selected</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Related Contacts</DialogTitle>
+            <DialogTitle>Select Contacts</DialogTitle>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
             {availableContacts?.map((contact) => (
