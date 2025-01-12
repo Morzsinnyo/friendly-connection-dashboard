@@ -18,12 +18,30 @@ interface RelationshipCardProps {
   }>;
 }
 
-export function RelationshipCard({ friendshipScore, contactId, relatedContacts }: RelationshipCardProps) {
+export function RelationshipCard({ friendshipScore, contactId }: RelationshipCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
-  const { data: contacts } = useQuery({
+  console.log('RelationshipCard mounted with contactId:', contactId);
+
+  // Fetch the current contact's related_contacts
+  const { data: currentContact } = useQuery({
+    queryKey: ['contact', contactId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('related_contacts')
+        .eq('id', contactId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch all available contacts
+  const { data: availableContacts } = useQuery({
     queryKey: ['available-contacts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -36,8 +54,28 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
     },
   });
 
+  // Fetch related contacts details
+  const { data: relatedContactsDetails } = useQuery({
+    queryKey: ['related-contacts', contactId],
+    queryFn: async () => {
+      if (!currentContact?.related_contacts?.length) return [];
+      
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id, full_name, email, avatar_url')
+        .in('id', currentContact.related_contacts);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!currentContact?.related_contacts?.length,
+  });
+
+  console.log('Related contacts details:', relatedContactsDetails);
+
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (selectedIds: string[]) => {
+      console.log('Updating related contacts with:', selectedIds);
       const { error } = await supabase
         .from('contacts')
         .update({ related_contacts: selectedIds })
@@ -47,6 +85,7 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+      queryClient.invalidateQueries({ queryKey: ['related-contacts', contactId] });
       toast.success('Related contacts updated');
       setIsOpen(false);
     },
@@ -80,17 +119,17 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {relatedContacts.length > 0 ? (
+            {relatedContactsDetails && relatedContactsDetails.length > 0 ? (
               <div className="space-y-3">
-                {relatedContacts.map((contact, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+                {relatedContactsDetails.map((contact) => (
+                  <div key={contact.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
                     <img
-                      src={contact.avatar || '/placeholder.svg'}
-                      alt={contact.name}
+                      src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
+                      alt={contact.full_name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{contact.name}</p>
+                      <p className="text-sm font-medium text-gray-900">{contact.full_name}</p>
                       <p className="text-sm text-gray-500">{contact.email}</p>
                     </div>
                   </div>
@@ -109,7 +148,7 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
             <DialogTitle>Select Contacts</DialogTitle>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
-            {contacts?.map((contact) => (
+            {availableContacts?.map((contact) => (
               <div key={contact.id} className="flex items-center space-x-2 p-2">
                 <Checkbox
                   id={contact.id}
@@ -121,7 +160,7 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
                   className="flex items-center space-x-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
                   <img
-                    src={contact.avatar_url || '/placeholder.svg'}
+                    src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
                     alt={contact.full_name}
                     className="w-8 h-8 rounded-full"
                   />
