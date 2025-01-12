@@ -103,6 +103,7 @@ export function ContactProfile() {
   const handleScheduleFollowup = (date: Date) => {
     updateFollowupMutation.mutate(date);
     setSelectedDate(undefined);
+    navigate(`/activities/create?participant=${encodeURIComponent(contact.full_name)}`);
   };
 
   const calculateAge = (birthday: string) => {

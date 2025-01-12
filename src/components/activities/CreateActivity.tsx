@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { ActivityFormFields } from "./form/ActivityFormFields";
@@ -11,6 +11,8 @@ export function CreateActivity() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const participantFromUrl = searchParams.get('participant');
   const isEditMode = !!id;
 
   const [title, setTitle] = useState("");
@@ -22,7 +24,7 @@ export function CreateActivity() {
   const [userId, setUserId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
-  const [participants, setParticipants] = useState("");
+  const [participants, setParticipants] = useState(participantFromUrl || "");
   const [activityType, setActivityType] = useState("");
 
   const { data: activityData } = useQuery({
