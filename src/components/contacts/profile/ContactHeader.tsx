@@ -14,6 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { differenceInYears } from "date-fns";
 
 interface ContactHeaderProps {
   contact: any;
@@ -99,6 +100,18 @@ export function ContactHeader({
     updateFriendshipScoreMutation.mutate(value[0]);
   };
 
+  const calculateNextBirthday = (birthday: string) => {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    const nextBirthday = new Date(birthDate);
+    nextBirthday.setFullYear(today.getFullYear());
+    if (nextBirthday < today) {
+      nextBirthday.setFullYear(today.getFullYear() + 1);
+    }
+    const age = differenceInYears(nextBirthday, birthDate);
+    return age;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-start">
@@ -141,9 +154,14 @@ export function ContactHeader({
                 {contact.relationship}
               </Badge>
               {contact.birthday && (
-                <span className="text-sm text-gray-600">
-                  🎂 {new Date(contact.birthday).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-600">
+                    🎂 {new Date(contact.birthday).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Turns {calculateNextBirthday(contact.birthday)} this year
+                  </span>
+                </div>
               )}
             </div>
           </div>
