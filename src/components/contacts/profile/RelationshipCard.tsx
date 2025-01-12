@@ -80,23 +80,25 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="mt-4">
-              <div className="space-y-2">
+            {relatedContacts.length > 0 ? (
+              <div className="space-y-3">
                 {relatedContacts.map((contact, index) => (
-                  <div key={index} className="flex items-center space-x-2">
+                  <div key={index} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
                     <img
-                      src={contact.avatar}
+                      src={contact.avatar || '/placeholder.svg'}
                       alt={contact.name}
-                      className="w-8 h-8 rounded-full"
+                      className="w-10 h-10 rounded-full object-cover"
                     />
                     <div>
-                      <p className="text-sm font-medium">{contact.name}</p>
-                      <p className="text-xs text-gray-600">{contact.email}</p>
+                      <p className="text-sm font-medium text-gray-900">{contact.name}</p>
+                      <p className="text-sm text-gray-500">{contact.email}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">No related contacts selected</p>
+            )}
           </div>
         </CardContent>
       </Card>
