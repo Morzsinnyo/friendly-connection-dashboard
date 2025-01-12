@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -11,79 +11,33 @@ import { Checkbox } from "@/components/ui/checkbox";
 interface RelationshipCardProps {
   friendshipScore: number;
   contactId: string;
+  relatedContacts: Array<{
+    name: string;
+    email: string;
+    avatar: string;
+  }>;
 }
 
-export function RelationshipCard({ friendshipScore, contactId }: RelationshipCardProps) {
+export function RelationshipCard({ friendshipScore, contactId, relatedContacts }: RelationshipCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
-  console.log('RelationshipCard mounted with contactId:', contactId);
-
-  // Fetch the current contact's related_contacts
-  const { data: currentContact } = useQuery({
-    queryKey: ['contact', contactId],
+  const { data: contacts } = useQuery({
+    queryKey: ['available-contacts'],
     queryFn: async () => {
-      if (!contactId) return null;
-      
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('related_contacts')
-        .eq('id', contactId)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!contactId
-  });
-
-  // Fetch all available contacts
-  const { data: availableContacts } = useQuery({
-    queryKey: ['available-contacts', contactId],
-    queryFn: async () => {
-      if (!contactId) return [];
-      
       const { data, error } = await supabase
         .from('contacts')
         .select('id, full_name, email, avatar_url')
         .neq('id', contactId);
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
-    enabled: !!contactId
   });
-
-  // Fetch related contacts details
-  const { data: relatedContactsDetails } = useQuery({
-    queryKey: ['related-contacts', contactId],
-    queryFn: async () => {
-      if (!currentContact?.related_contacts?.length) return [];
-      
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('id, full_name, email, avatar_url')
-        .in('id', currentContact.related_contacts);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!currentContact?.related_contacts?.length,
-  });
-
-  // Initialize selectedContacts with current related contacts when dialog opens
-  useEffect(() => {
-    if (isOpen && currentContact?.related_contacts) {
-      setSelectedContacts(currentContact.related_contacts);
-    }
-  }, [isOpen, currentContact?.related_contacts]);
 
   const updateRelatedContactsMutation = useMutation({
     mutationFn: async (selectedIds: string[]) => {
-      if (!contactId) return;
-      
-      console.log('Updating related contacts with:', selectedIds);
       const { error } = await supabase
         .from('contacts')
         .update({ related_contacts: selectedIds })
@@ -93,7 +47,6 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
-      queryClient.invalidateQueries({ queryKey: ['related-contacts', contactId] });
       toast.success('Related contacts updated');
       setIsOpen(false);
     },
@@ -116,11 +69,6 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
     updateRelatedContactsMutation.mutate(selectedContacts);
   };
 
-  if (!contactId) {
-    console.error('No contactId provided to RelationshipCard');
-    return null;
-  }
-
   return (
     <>
       <Card>
@@ -132,25 +80,23 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {relatedContactsDetails && relatedContactsDetails.length > 0 ? (
-              <div className="space-y-3">
-                {relatedContactsDetails.map((contact) => (
-                  <div key={contact.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+            <div className="mt-4">
+              <div className="space-y-2">
+                {relatedContacts.map((contact, index) => (
+                  <div key={index} className="flex items-center space-x-2">
                     <img
-                      src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
-                      alt={contact.full_name}
-                      className="w-10 h-10 rounded-full object-cover"
+                      src={contact.avatar}
+                      alt={contact.name}
+                      className="w-8 h-8 rounded-full"
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{contact.full_name}</p>
-                      <p className="text-sm text-gray-500">{contact.email}</p>
+                      <p className="text-sm font-medium">{contact.name}</p>
+                      <p className="text-xs text-gray-600">{contact.email}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-sm text-gray-500 text-center py-4">No related contacts selected</p>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -161,7 +107,7 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
             <DialogTitle>Select Contacts</DialogTitle>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
-            {availableContacts?.map((contact) => (
+            {contacts?.map((contact) => (
               <div key={contact.id} className="flex items-center space-x-2 p-2">
                 <Checkbox
                   id={contact.id}
@@ -173,7 +119,7 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
                   className="flex items-center space-x-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                 >
                   <img
-                    src={contact.avatar_url ? `${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}` : '/placeholder.svg'}
+                    src={contact.avatar_url || '/placeholder.svg'}
                     alt={contact.full_name}
                     className="w-8 h-8 rounded-full"
                   />
