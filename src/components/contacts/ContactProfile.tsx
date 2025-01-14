@@ -109,11 +109,12 @@ export function ContactProfile() {
 
   const updateReminderMutation = useMutation({
     mutationFn: async (reminderFrequency: string) => {
+      const nextReminder = calculateNextReminder(reminderFrequency);
       const { error } = await supabase
         .from('contacts')
         .update({ 
           reminder_frequency: reminderFrequency,
-          next_reminder: calculateNextReminder(reminderFrequency)
+          next_reminder: nextReminder.toISOString() // Convert Date to ISO string
         })
         .eq('id', id);
       
@@ -121,7 +122,6 @@ export function ContactProfile() {
 
       // Add event to Google Calendar
       const calendarId = 'morzsi812@gmail.com';
-      const nextReminder = calculateNextReminder(reminderFrequency);
       const event = {
         'summary': `Time to contact ${contact?.full_name}`,
         'start': {
@@ -136,8 +136,6 @@ export function ContactProfile() {
         ]
       };
 
-      // Note: The actual Google Calendar API integration would need to be implemented
-      // through a backend service or edge function for security reasons
       console.log('Would create calendar event:', event);
     },
     onSuccess: () => {
