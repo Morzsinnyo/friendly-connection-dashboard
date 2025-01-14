@@ -1,4 +1,4 @@
-import { UserCircle2, Settings, List, LogOut } from "lucide-react";
+import { UserCircle2, Settings, List, LogOut, Calendar } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,7 @@ import {
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { GoogleCalendar } from "@/components/calendar/GoogleCalendar";
 
 const items = [
   {
@@ -23,6 +24,11 @@ const items = [
     title: "Planned Activities",
     url: "/activities",
     icon: List,
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
   },
   {
     title: "Settings",
@@ -79,6 +85,12 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Calendar</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <GoogleCalendar />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

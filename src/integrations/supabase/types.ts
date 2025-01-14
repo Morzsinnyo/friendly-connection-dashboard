@@ -24,8 +24,10 @@ export type Database = {
           job_title: string | null
           last_contact: string | null
           mobile_phone: string | null
+          next_reminder: string | null
           notes: string | null
           related_contacts: string[] | null
+          reminder_frequency: string | null
           scheduled_followup: string | null
           status: string | null
           tags: string[] | null
@@ -46,8 +48,10 @@ export type Database = {
           job_title?: string | null
           last_contact?: string | null
           mobile_phone?: string | null
+          next_reminder?: string | null
           notes?: string | null
           related_contacts?: string[] | null
+          reminder_frequency?: string | null
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
@@ -68,8 +72,10 @@ export type Database = {
           job_title?: string | null
           last_contact?: string | null
           mobile_phone?: string | null
+          next_reminder?: string | null
           notes?: string | null
           related_contacts?: string[] | null
+          reminder_frequency?: string | null
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
