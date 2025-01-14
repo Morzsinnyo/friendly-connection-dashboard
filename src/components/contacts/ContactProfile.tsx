@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
-import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar } from "lucide-react";
+import { Instagram, Linkedin, Twitter, Phone, Mail, Coffee, Calendar, Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Tag } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { ContactTimeline } from "./profile/ContactTimeline";
@@ -14,7 +20,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { format, differenceInYears } from "date-fns";
+import { format, differenceInYears, addWeeks, addMonths } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
   Popover,
@@ -37,6 +43,7 @@ export function ContactProfile() {
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedReminder, setSelectedReminder] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
   console.log('ContactProfile mounted with ID:', id);
@@ -100,10 +107,72 @@ export function ContactProfile() {
     },
   });
 
+  const updateReminderMutation = useMutation({
+    mutationFn: async (reminderFrequency: string) => {
+      const { error } = await supabase
+        .from('contacts')
+        .update({ 
+          reminder_frequency: reminderFrequency,
+          next_reminder: calculateNextReminder(reminderFrequency)
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+
+      // Add event to Google Calendar
+      const calendarId = 'morzsi812@gmail.com';
+      const nextReminder = calculateNextReminder(reminderFrequency);
+      const event = {
+        'summary': `Time to contact ${contact?.full_name}`,
+        'start': {
+          'dateTime': nextReminder.toISOString(),
+        },
+        'end': {
+          'dateTime': new Date(nextReminder.getTime() + 30 * 60000).toISOString(), // 30 minutes duration
+        },
+        'recurrence': [
+          `RRULE:FREQ=${reminderFrequency === 'Every week' ? 'WEEKLY' : 
+            reminderFrequency === 'Every 2 weeks' ? 'WEEKLY;INTERVAL=2' : 'MONTHLY'}`
+        ]
+      };
+
+      // Note: The actual Google Calendar API integration would need to be implemented
+      // through a backend service or edge function for security reasons
+      console.log('Would create calendar event:', event);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', id] });
+      toast.success('Reminder frequency updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update reminder frequency');
+      console.error('Error updating reminder frequency:', error);
+    },
+  });
+
+  const calculateNextReminder = (frequency: string): Date => {
+    const today = new Date();
+    switch (frequency) {
+      case 'Every week':
+        return addWeeks(today, 1);
+      case 'Every 2 weeks':
+        return addWeeks(today, 2);
+      case 'Monthly':
+        return addMonths(today, 1);
+      default:
+        return today;
+    }
+  };
+
   const handleScheduleFollowup = (date: Date) => {
     updateFollowupMutation.mutate(date);
     setSelectedDate(undefined);
     navigate(`/activities/create?participant=${encodeURIComponent(contact.full_name)}&date=${encodeURIComponent(date.toISOString())}`);
+  };
+
+  const handleReminderSelect = (frequency: string) => {
+    setSelectedReminder(frequency);
+    updateReminderMutation.mutate(frequency);
   };
 
   const calculateAge = (birthday: string) => {
@@ -319,6 +388,28 @@ export function ContactProfile() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
+
+        <div className="flex space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Bell className="h-4 w-4 mr-2" />
+                Reminder
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleReminderSelect('Every week')}>
+                Every week {selectedReminder === 'Every week' && <Check className="h-4 w-4 ml-2" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleReminderSelect('Every 2 weeks')}>
+                Every 2 weeks {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4 ml-2" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleReminderSelect('Monthly')}>
+                Monthly {selectedReminder === 'Monthly' && <Check className="h-4 w-4 ml-2" />}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
