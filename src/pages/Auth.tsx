@@ -13,20 +13,52 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event);
+        
         if (event === "SIGNED_IN" && session) {
-          navigate("/");
+          // Verify session is valid before navigating
+          const { data: currentSession, error: sessionError } = await supabase.auth.getSession();
+          if (currentSession?.session) {
+            console.log("Valid session found, navigating to home");
+            navigate("/");
+          } else if (sessionError) {
+            console.error("Session error:", sessionError);
+            setErrorMessage(getErrorMessage(sessionError));
+          }
         }
+        
+        if (event === "TOKEN_REFRESHED") {
+          console.log("Token refreshed successfully");
+        }
+
         if (event === "USER_UPDATED") {
           const { error } = await supabase.auth.getSession();
           if (error) {
+            console.error("User update error:", error);
             setErrorMessage(getErrorMessage(error));
           }
         }
+
         if (event === "SIGNED_OUT") {
+          console.log("User signed out");
           setErrorMessage(""); // Clear errors on sign out
         }
       }
     );
+
+    // Check for existing session on component mount
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session) {
+        console.log("Existing session found");
+        navigate("/");
+      } else if (error) {
+        console.error("Session check error:", error);
+        setErrorMessage(getErrorMessage(error));
+      }
+    };
+
+    checkSession();
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -42,6 +74,8 @@ const Auth = () => {
           return "No user found with these credentials.";
         case "invalid_grant":
           return "Invalid login credentials.";
+        case "refresh_token_not_found":
+          return "Your session has expired. Please sign in again.";
         default:
           return error.message;
       }
