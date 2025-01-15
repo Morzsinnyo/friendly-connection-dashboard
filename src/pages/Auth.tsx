@@ -11,18 +11,36 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    // Handle URL fragment for OAuth redirects
+    const handleRedirectState = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.get("access_token")) {
+        console.log("Found access token in URL, checking session...");
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session) {
+          console.log("Valid session found after OAuth redirect");
+          navigate("/");
+        } else if (error) {
+          console.error("Session error after OAuth redirect:", error);
+          setErrorMessage(getErrorMessage(error));
+        }
+      }
+    };
+
+    handleRedirectState();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
         
         if (event === "SIGNED_IN" && session) {
-          // Verify session is valid before navigating
+          console.log("Sign in event detected, checking session validity");
           const { data: currentSession, error: sessionError } = await supabase.auth.getSession();
           if (currentSession?.session) {
-            console.log("Valid session found, navigating to home");
+            console.log("Valid session confirmed, navigating to home");
             navigate("/");
           } else if (sessionError) {
-            console.error("Session error:", sessionError);
+            console.error("Session validation error:", sessionError);
             setErrorMessage(getErrorMessage(sessionError));
           }
         }
@@ -100,6 +118,7 @@ const Auth = () => {
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
           providers={["google"]}
+          redirectTo={`${window.location.origin}`}
           theme="light"
         />
       </div>
