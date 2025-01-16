@@ -13,6 +13,7 @@ const Auth = () => {
   useEffect(() => {
     console.log("Auth component mounted");
     console.log("Current URL:", window.location.href);
+    console.log("Current origin:", window.location.origin);
     
     // Handle URL fragment for OAuth redirects
     const handleRedirectState = async () => {
