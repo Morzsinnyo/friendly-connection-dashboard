@@ -14,6 +14,21 @@ export default defineConfig(({ mode }) => ({
       'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey',
       'Access-Control-Allow-Credentials': 'true'
     },
+    fs: {
+      strict: false,
+      allow: ['..']
+    },
+    middlewareMode: false
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      }
+    }
   },
   plugins: [
     react(),
