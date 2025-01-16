@@ -12,27 +12,44 @@ const Auth = () => {
 
   useEffect(() => {
     console.log("Auth component mounted");
+    console.log("Current URL:", window.location.href);
     
     // Handle URL fragment for OAuth redirects
     const handleRedirectState = async () => {
       try {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get("access_token");
+        console.log("Hash params:", Object.fromEntries(hashParams.entries()));
+        console.log("Access token from URL:", accessToken ? "Found" : "Not found");
         
         if (accessToken) {
           console.log("Found access token in URL, checking session...");
           const { data: { session }, error } = await supabase.auth.getSession();
           
           if (session) {
-            console.log("Valid session found after OAuth redirect");
+            console.log("Valid session found after OAuth redirect:", session);
             navigate("/");
           } else if (error) {
             console.error("Session error after OAuth redirect:", error);
+            console.error("Error details:", {
+              message: error.message,
+              status: error instanceof AuthApiError ? error.status : 'unknown',
+              name: error.name
+            });
             setErrorMessage(getErrorMessage(error));
           }
+        } else {
+          console.log("No access token found in URL");
         }
       } catch (error) {
-        console.error("Error handling redirect:", error);
+        console.error("Error in handleRedirectState:", error);
+        if (error instanceof Error) {
+          console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+          });
+        }
         setErrorMessage("An error occurred during authentication. Please try again.");
       }
     };
@@ -43,20 +60,35 @@ const Auth = () => {
       async (event, session) => {
         try {
           console.log("Auth state changed:", event);
+          console.log("Session in auth state change:", session);
           
           if (event === "SIGNED_IN" && session) {
             console.log("Sign in event detected, checking session validity");
             const { data: currentSession, error: sessionError } = await supabase.auth.getSession();
+            
             if (currentSession?.session) {
               console.log("Valid session confirmed, navigating to home");
+              console.log("Session details:", {
+                user: currentSession.session.user,
+                expiresAt: currentSession.session.expires_at
+              });
               navigate("/");
             } else if (sessionError) {
               console.error("Session validation error:", sessionError);
+              console.error("Session error details:", {
+                message: sessionError.message,
+                status: sessionError instanceof AuthApiError ? sessionError.status : 'unknown'
+              });
               setErrorMessage(getErrorMessage(sessionError));
             }
+          } else {
+            console.log("Auth state change event without session:", event);
           }
         } catch (error) {
           console.error("Error in auth state change handler:", error);
+          if (error instanceof Error) {
+            console.error("Error stack:", error.stack);
+          }
           setErrorMessage("An error occurred while processing your authentication. Please try again.");
         }
       }
@@ -65,27 +97,52 @@ const Auth = () => {
     // Check for existing session on component mount
     const checkSession = async () => {
       try {
+        console.log("Checking for existing session...");
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (session) {
-          console.log("Existing session found");
+          console.log("Existing session found:", {
+            user: session.user,
+            expiresAt: session.expires_at
+          });
           navigate("/");
         } else if (error) {
           console.error("Session check error:", error);
+          console.error("Session check error details:", {
+            message: error.message,
+            status: error instanceof AuthApiError ? error.status : 'unknown'
+          });
           setErrorMessage(getErrorMessage(error));
+        } else {
+          console.log("No existing session found");
         }
       } catch (error) {
-        console.error("Error checking session:", error);
+        console.error("Error in checkSession:", error);
+        if (error instanceof Error) {
+          console.error("Error details:", {
+            message: error.message,
+            stack: error.stack
+          });
+        }
         setErrorMessage("An error occurred while checking your session. Please try again.");
       }
     };
 
     checkSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Auth component unmounting");
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const getErrorMessage = (error: AuthError) => {
-    console.error("Auth error details:", error);
+    console.error("Processing auth error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      name: error.name,
+      status: error instanceof AuthApiError ? error.status : 'unknown'
+    });
     
     if (error instanceof AuthApiError) {
       switch (error.status) {
@@ -102,11 +159,11 @@ const Auth = () => {
         case 429:
           return "Too many requests. Please wait a moment and try again.";
         default:
-          return error.message;
+          return `Authentication error: ${error.message}`;
       }
     }
     
-    return "An unexpected error occurred. Please try again later.";
+    return `Unexpected error: ${error.message}`;
   };
 
   return (
