@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -15,20 +15,25 @@ const Auth = () => {
     
     // Handle URL fragment for OAuth redirects
     const handleRedirectState = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get("access_token");
-      
-      if (accessToken) {
-        console.log("Found access token in URL, checking session...");
-        const { data: { session }, error } = await supabase.auth.getSession();
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
         
-        if (session) {
-          console.log("Valid session found after OAuth redirect");
-          navigate("/");
-        } else if (error) {
-          console.error("Session error after OAuth redirect:", error);
-          setErrorMessage(getErrorMessage(error));
+        if (accessToken) {
+          console.log("Found access token in URL, checking session...");
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (session) {
+            console.log("Valid session found after OAuth redirect");
+            navigate("/");
+          } else if (error) {
+            console.error("Session error after OAuth redirect:", error);
+            setErrorMessage(getErrorMessage(error));
+          }
         }
+      } catch (error) {
+        console.error("Error handling redirect:", error);
+        setErrorMessage("An error occurred during authentication. Please try again.");
       }
     };
 
@@ -36,31 +41,41 @@ const Auth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state changed:", event);
-        
-        if (event === "SIGNED_IN" && session) {
-          console.log("Sign in event detected, checking session validity");
-          const { data: currentSession, error: sessionError } = await supabase.auth.getSession();
-          if (currentSession?.session) {
-            console.log("Valid session confirmed, navigating to home");
-            navigate("/");
-          } else if (sessionError) {
-            console.error("Session validation error:", sessionError);
-            setErrorMessage(getErrorMessage(sessionError));
+        try {
+          console.log("Auth state changed:", event);
+          
+          if (event === "SIGNED_IN" && session) {
+            console.log("Sign in event detected, checking session validity");
+            const { data: currentSession, error: sessionError } = await supabase.auth.getSession();
+            if (currentSession?.session) {
+              console.log("Valid session confirmed, navigating to home");
+              navigate("/");
+            } else if (sessionError) {
+              console.error("Session validation error:", sessionError);
+              setErrorMessage(getErrorMessage(sessionError));
+            }
           }
+        } catch (error) {
+          console.error("Error in auth state change handler:", error);
+          setErrorMessage("An error occurred while processing your authentication. Please try again.");
         }
       }
     );
 
     // Check for existing session on component mount
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (session) {
-        console.log("Existing session found");
-        navigate("/");
-      } else if (error) {
-        console.error("Session check error:", error);
-        setErrorMessage(getErrorMessage(error));
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (session) {
+          console.log("Existing session found");
+          navigate("/");
+        } else if (error) {
+          console.error("Session check error:", error);
+          setErrorMessage(getErrorMessage(error));
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setErrorMessage("An error occurred while checking your session. Please try again.");
       }
     };
 
@@ -70,8 +85,28 @@ const Auth = () => {
   }, [navigate]);
 
   const getErrorMessage = (error: AuthError) => {
-    console.error("Auth error:", error);
-    return error.message;
+    console.error("Auth error details:", error);
+    
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          return "Invalid request. Please check your credentials and try again.";
+        case 401:
+          return "Unauthorized. Please sign in again.";
+        case 403:
+          return "Access forbidden. Please check your permissions.";
+        case 404:
+          return "Resource not found. Please try again later.";
+        case 422:
+          return "Invalid credentials. Please check your email and password.";
+        case 429:
+          return "Too many requests. Please wait a moment and try again.";
+        default:
+          return error.message;
+      }
+    }
+    
+    return "An unexpected error occurred. Please try again later.";
   };
 
   return (
@@ -91,7 +126,7 @@ const Auth = () => {
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
           providers={["google"]}
-          redirectTo={`${window.location.origin}`}
+          redirectTo={window.location.origin}
           theme="light"
         />
       </div>
