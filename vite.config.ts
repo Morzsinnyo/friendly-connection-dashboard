@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => ({
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
       'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey',
-      'Access-Control-Allow-Credentials': 'true'
+      'Access-Control-Allow-Credentials': 'true',
+      'Content-Type': 'application/javascript'
     },
     fs: {
       strict: false,
