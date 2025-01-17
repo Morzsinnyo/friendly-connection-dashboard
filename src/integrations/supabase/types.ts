@@ -150,6 +150,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           full_name: string | null
+          google_refresh_token: string | null
           id: string
           updated_at: string
         }
@@ -157,6 +158,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
+          google_refresh_token?: string | null
           id: string
           updated_at?: string
         }
@@ -164,6 +166,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
+          google_refresh_token?: string | null
           id?: string
           updated_at?: string
         }
