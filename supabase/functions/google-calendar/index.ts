@@ -60,13 +60,17 @@ serve(async (req) => {
           'https://www.googleapis.com/auth/calendar',
           'https://www.googleapis.com/auth/calendar.events',
           'https://www.googleapis.com/auth/calendar.readonly',
-          'https://www.googleapis.com/auth/calendar.settings.readonly'
+          'https://www.googleapis.com/auth/calendar.settings.readonly',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'openid'
         ];
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
           scope: scopes,
-          prompt: 'consent'  // Force consent screen to ensure we get refresh token
+          prompt: 'consent',  // Force consent screen to ensure we get refresh token
+          include_granted_scopes: true // Include any previously granted scopes
         });
         
         result = { url };
@@ -88,13 +92,17 @@ serve(async (req) => {
             'https://www.googleapis.com/auth/calendar',
             'https://www.googleapis.com/auth/calendar.events',
             'https://www.googleapis.com/auth/calendar.readonly',
-            'https://www.googleapis.com/auth/calendar.settings.readonly'
+            'https://www.googleapis.com/auth/calendar.settings.readonly',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'openid'
           ];
           
           const url = oauth2Client.generateAuthUrl({
             access_type: 'offline',
             scope: scopes,
-            prompt: 'consent'  // Force consent screen to ensure we get refresh token
+            prompt: 'consent',  // Force consent screen to ensure we get refresh token
+            include_granted_scopes: true // Include any previously granted scopes
           });
           
           result = { url };
