@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
+const SITE_URL = "https://friendly-connection-dashboard.lovable.app";
+
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
@@ -184,7 +186,7 @@ const Auth = () => {
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
           providers={["google"]}
-          redirectTo={window.location.origin}
+          redirectTo={SITE_URL}
           theme="light"
         />
       </div>
