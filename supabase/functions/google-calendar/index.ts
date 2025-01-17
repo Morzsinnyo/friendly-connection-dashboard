@@ -6,23 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Initialize the OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
   Deno.env.get('GOOGLE_CLIENT_ID'),
   Deno.env.get('GOOGLE_CLIENT_SECRET'),
-  'http://localhost:5173/calendar/callback' // Update this with your production URL later
+  'https://friendly-connection-dashboard.lovable.app/calendar/callback'
 );
 
-// Set credentials directly (this is temporary, in production you should handle token refresh)
 oauth2Client.setCredentials({
-  access_token: 'placeholder', // This will be replaced with actual token
+  access_token: 'placeholder',
   refresh_token: Deno.env.get('GOOGLE_REFRESH_TOKEN'),
 });
 
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -32,7 +29,6 @@ serve(async (req) => {
     const { action, eventData } = await req.json()
     let result;
 
-    // Verify we have the necessary credentials
     if (!Deno.env.get('GOOGLE_CLIENT_ID') || !Deno.env.get('GOOGLE_CLIENT_SECRET')) {
       throw new Error('Missing required Google Calendar credentials');
     }
@@ -40,6 +36,20 @@ serve(async (req) => {
     console.log(`Processing action: ${action}`);
 
     switch (action) {
+      case 'connect':
+        const scopes = [
+          'https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/calendar.events'
+        ];
+        
+        const url = oauth2Client.generateAuthUrl({
+          access_type: 'offline',
+          scope: scopes,
+        });
+        
+        result = { url };
+        break;
+
       case 'listEvents':
         result = await calendar.events.list({
           calendarId: 'primary',
@@ -81,7 +91,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify(result.data),
+      JSON.stringify(result.data || result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 

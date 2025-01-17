@@ -1,18 +1,19 @@
-import { UserCircle2, Settings, List, LogOut, Calendar } from "lucide-react";
+import { UserCircle2, Settings, List, LogOut, Calendar, Link } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GoogleCalendar } from "@/components/calendar/GoogleCalendar";
+import { Button } from "@/components/ui/button";
 
 const items = [
   {
@@ -52,6 +53,28 @@ export function AppSidebar() {
     }
   };
 
+  const connectGoogleCalendar = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please sign in first");
+        return;
+      }
+
+      const { error } = await supabase.functions.invoke('google-calendar', {
+        body: { action: 'connect' }
+      });
+
+      if (error) throw error;
+      
+      toast.success("Successfully connected to Google Calendar");
+    } catch (error) {
+      console.error("Error connecting to Google Calendar:", error);
+      toast.error("Failed to connect to Google Calendar");
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -67,14 +90,24 @@ export function AppSidebar() {
                       asChild
                       className={isActive ? "text-primary font-bold" : ""}
                     >
-                      <Link to={item.url}>
+                      <RouterLink to={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
-                      </Link>
+                      </RouterLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}
+              <SidebarMenuItem>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={connectGoogleCalendar}
+                >
+                  <Link className="mr-2 h-4 w-4" />
+                  <span>Connect Google Calendar</span>
+                </Button>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={handleLogout}
