@@ -56,23 +56,20 @@ serve(async (req) => {
       console.log('No refresh token found for user');
       // If no refresh token, proceed with OAuth flow
       if (action === 'connect') {
+        // Only request the scopes we actually need
         const scopes = [
-          'https://www.googleapis.com/auth/calendar',
-          'https://www.googleapis.com/auth/calendar.events',
-          'https://www.googleapis.com/auth/calendar.readonly',
-          'https://www.googleapis.com/auth/calendar.settings.readonly',
-          'https://www.googleapis.com/auth/userinfo.email',
-          'https://www.googleapis.com/auth/userinfo.profile',
-          'openid'
+          'https://www.googleapis.com/auth/calendar',       // Full access to calendars
+          'https://www.googleapis.com/auth/calendar.events' // Full access to events
         ];
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
-          scope: scopes,
+          scope: scopes.join(' '), // Join scopes with space for proper OAuth format
           prompt: 'consent',  // Force consent screen to ensure we get refresh token
-          include_granted_scopes: true // Include any previously granted scopes
+          state: user.id, // Pass user ID to maintain context
         });
         
+        console.log('Generated OAuth URL with scopes:', scopes);
         result = { url };
       } else {
         throw new Error('User not connected to Google Calendar');
@@ -90,21 +87,17 @@ serve(async (req) => {
         case 'connect':
           const scopes = [
             'https://www.googleapis.com/auth/calendar',
-            'https://www.googleapis.com/auth/calendar.events',
-            'https://www.googleapis.com/auth/calendar.readonly',
-            'https://www.googleapis.com/auth/calendar.settings.readonly',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'openid'
+            'https://www.googleapis.com/auth/calendar.events'
           ];
           
           const url = oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: scopes,
-            prompt: 'consent',  // Force consent screen to ensure we get refresh token
-            include_granted_scopes: true // Include any previously granted scopes
+            scope: scopes.join(' '), // Join scopes with space for proper OAuth format
+            prompt: 'consent',  // Force consent screen
+            state: user.id,
           });
           
+          console.log('Generated OAuth URL with scopes:', scopes);
           result = { url };
           break;
 
