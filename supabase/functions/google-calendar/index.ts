@@ -18,7 +18,6 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,14 +32,12 @@ serve(async (req) => {
       throw new Error('Missing required Google Calendar credentials');
     }
 
-    // Get the user's ID from the authorization header
     const authHeader = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!authHeader) {
       console.error('No authorization header provided');
       throw new Error('No authorization header');
     }
 
-    // Get the user's session
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader);
     if (userError || !user) {
       console.error('Invalid user session:', userError);
@@ -49,7 +46,6 @@ serve(async (req) => {
 
     console.log(`Processing action: ${action} for user: ${user.id}`);
 
-    // Get the user's Google refresh token from profiles
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('google_refresh_token')
@@ -66,15 +62,15 @@ serve(async (req) => {
       
       if (action === 'connect') {
         const scopes = [
-          'https://www.googleapis.com/auth/calendar',       // Full access to calendars
-          'https://www.googleapis.com/auth/calendar.events' // Full access to events
+          'https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/calendar.events'
         ];
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
-          scope: scopes.join(' '), // Join scopes with space
-          prompt: 'consent',  // Force consent screen
-          state: user.id, // Pass user ID
+          scope: scopes.join(' '),
+          prompt: 'consent',
+          state: user.id,
         });
         
         console.log('Generated OAuth URL with scopes:', scopes);
@@ -83,12 +79,10 @@ serve(async (req) => {
         throw new Error('User not connected to Google Calendar');
       }
     } else {
-      // Set the refresh token and get a new access token
       oauth2Client.setCredentials({
         refresh_token: profile.google_refresh_token
       });
 
-      // Create calendar client
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
       switch (action) {
@@ -100,8 +94,8 @@ serve(async (req) => {
           
           const url = oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: scopes.join(' '), // Join scopes with space
-            prompt: 'consent',  // Force consent screen
+            scope: scopes.join(' '),
+            prompt: 'consent',
             state: user.id,
           });
           
@@ -116,13 +110,13 @@ serve(async (req) => {
 
           console.log('Processing OAuth callback');
           const { tokens } = await oauth2Client.getToken(eventData.code);
-          console.log('Received tokens from Google');
+          console.log('Received tokens from Google:', tokens);
 
           if (!tokens.refresh_token) {
+            console.error('No refresh token received from Google');
             throw new Error('No refresh token received from Google');
           }
 
-          // Store the refresh token in the user's profile
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ google_refresh_token: tokens.refresh_token })
@@ -183,8 +177,9 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify(result.data || result),
-      { headers: { ...corsHeaders, 'Content-Type': 
+      JSON.stringify(result),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('Error in Google Calendar function:', error);
