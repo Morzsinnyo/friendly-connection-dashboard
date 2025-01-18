@@ -18,45 +18,53 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('Received request to Google Calendar function');
-    const { action, eventData } = await req.json()
+    const { action, eventData } = await req.json();
     let result;
 
     if (!Deno.env.get('GOOGLE_CLIENT_ID') || !Deno.env.get('GOOGLE_CLIENT_SECRET')) {
+      console.error('Missing Google Calendar credentials');
       throw new Error('Missing required Google Calendar credentials');
     }
 
     // Get the user's ID from the authorization header
     const authHeader = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!authHeader) {
+      console.error('No authorization header provided');
       throw new Error('No authorization header');
     }
 
     // Get the user's session
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader);
     if (userError || !user) {
+      console.error('Invalid user session:', userError);
       throw new Error('Invalid user session');
     }
 
     console.log(`Processing action: ${action} for user: ${user.id}`);
 
-    // Get the user's Google refresh token from your database/storage
+    // Get the user's Google refresh token from profiles
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('google_refresh_token')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile?.google_refresh_token) {
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      throw new Error('Failed to fetch user profile');
+    }
+
+    if (!profile?.google_refresh_token) {
       console.log('No refresh token found for user');
-      // If no refresh token, proceed with OAuth flow
+      
       if (action === 'connect') {
-        // Only request the scopes we actually need
         const scopes = [
           'https://www.googleapis.com/auth/calendar',       // Full access to calendars
           'https://www.googleapis.com/auth/calendar.events' // Full access to events
@@ -64,9 +72,9 @@ serve(async (req) => {
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
-          scope: scopes.join(' '), // Join scopes with space for proper OAuth format
-          prompt: 'consent',  // Force consent screen to ensure we get refresh token
-          state: user.id, // Pass user ID to maintain context
+          scope: scopes.join(' '), // Join scopes with space
+          prompt: 'consent',  // Force consent screen
+          state: user.id, // Pass user ID
         });
         
         console.log('Generated OAuth URL with scopes:', scopes);
@@ -80,7 +88,7 @@ serve(async (req) => {
         refresh_token: profile.google_refresh_token
       });
 
-      // Create calendar client with the authenticated oauth2Client
+      // Create calendar client
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
       switch (action) {
@@ -92,7 +100,7 @@ serve(async (req) => {
           
           const url = oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: scopes.join(' '), // Join scopes with space for proper OAuth format
+            scope: scopes.join(' '), // Join scopes with space
             prompt: 'consent',  // Force consent screen
             state: user.id,
           });
@@ -101,7 +109,36 @@ serve(async (req) => {
           result = { url };
           break;
 
+        case 'callback':
+          if (!eventData.code) {
+            throw new Error('No authorization code provided');
+          }
+
+          console.log('Processing OAuth callback');
+          const { tokens } = await oauth2Client.getToken(eventData.code);
+          console.log('Received tokens from Google');
+
+          if (!tokens.refresh_token) {
+            throw new Error('No refresh token received from Google');
+          }
+
+          // Store the refresh token in the user's profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ google_refresh_token: tokens.refresh_token })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.error('Error storing refresh token:', updateError);
+            throw new Error('Failed to store refresh token');
+          }
+
+          console.log('Successfully stored refresh token');
+          result = { success: true };
+          break;
+
         case 'listEvents':
+          console.log('Fetching calendar events');
           result = await calendar.events.list({
             calendarId: 'primary',
             timeMin: new Date().toISOString(),
@@ -113,6 +150,7 @@ serve(async (req) => {
           break;
 
         case 'createEvent':
+          console.log('Creating calendar event');
           result = await calendar.events.insert({
             calendarId: 'primary',
             requestBody: eventData,
@@ -121,6 +159,7 @@ serve(async (req) => {
           break;
 
         case 'updateEvent':
+          console.log('Updating calendar event');
           result = await calendar.events.update({
             calendarId: 'primary',
             eventId: eventData.id,
@@ -130,6 +169,7 @@ serve(async (req) => {
           break;
 
         case 'deleteEvent':
+          console.log('Deleting calendar event');
           result = await calendar.events.delete({
             calendarId: 'primary',
             eventId: eventData.id,
@@ -144,14 +184,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(result.data || result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+      { headers: { ...corsHeaders, 'Content-Type': 
 
   } catch (error) {
     console.error('Error in Google Calendar function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+    );
   }
-})
+});
