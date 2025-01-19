@@ -20,10 +20,15 @@ const REQUIRED_SCOPES = [
   'https://www.googleapis.com/auth/calendar.events.readonly'
 ];
 
+// Update the redirect URI to match what's configured in Google Cloud Console
+const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-calendar/callback`;
+
+console.log('Using redirect URI:', redirectUri);
+
 const oauth2Client = new google.auth.OAuth2(
   Deno.env.get('GOOGLE_CLIENT_ID'),
   Deno.env.get('GOOGLE_CLIENT_SECRET'),
-  `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-calendar/callback`
+  redirectUri
 );
 
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
