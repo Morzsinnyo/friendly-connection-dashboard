@@ -38,6 +38,7 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    console.log('Fetching user session...');
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader);
     if (userError || !user) {
       console.error('Invalid user session:', userError);
@@ -45,6 +46,7 @@ serve(async (req) => {
     }
 
     console.log(`Processing action: ${action} for user: ${user.id}`);
+    console.log('Fetching user profile and tokens...');
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -61,6 +63,7 @@ serve(async (req) => {
       console.log('No refresh token found for user');
       
       if (action === 'connect') {
+        console.log('Generating OAuth URL for initial connection');
         const scopes = [
           'https://www.googleapis.com/auth/calendar',
           'https://www.googleapis.com/auth/calendar.events'
@@ -79,14 +82,25 @@ serve(async (req) => {
         throw new Error('User not connected to Google Calendar');
       }
     } else {
+      console.log('Setting credentials with refresh token');
       oauth2Client.setCredentials({
         refresh_token: profile.google_refresh_token
       });
+
+      try {
+        console.log('Refreshing access token...');
+        await oauth2Client.refreshAccessToken();
+        console.log('Successfully refreshed access token');
+      } catch (refreshError) {
+        console.error('Error refreshing access token:', refreshError);
+        throw new Error('Failed to refresh access token');
+      }
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
       switch (action) {
         case 'connect':
+          console.log('Generating OAuth URL for reconnection');
           const scopes = [
             'https://www.googleapis.com/auth/calendar',
             'https://www.googleapis.com/auth/calendar.events'
@@ -110,7 +124,11 @@ serve(async (req) => {
 
           console.log('Processing OAuth callback');
           const { tokens } = await oauth2Client.getToken(eventData.code);
-          console.log('Received tokens from Google:', tokens);
+          console.log('Received tokens from Google:', {
+            access_token: tokens.access_token ? 'present' : 'missing',
+            refresh_token: tokens.refresh_token ? 'present' : 'missing',
+            expiry_date: tokens.expiry_date
+          });
 
           if (!tokens.refresh_token) {
             console.error('No refresh token received from Google');
@@ -133,42 +151,47 @@ serve(async (req) => {
 
         case 'listEvents':
           console.log('Fetching calendar events');
-          result = await calendar.events.list({
-            calendarId: 'primary',
-            timeMin: new Date().toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime',
-          });
-          console.log('Successfully fetched events');
+          try {
+            result = await calendar.events.list({
+              calendarId: 'primary',
+              timeMin: new Date().toISOString(),
+              maxResults: 10,
+              singleEvents: true,
+              orderBy: 'startTime',
+            });
+            console.log('Successfully fetched events');
+          } catch (apiError) {
+            console.error('Google Calendar API Error:', apiError);
+            throw new Error('Failed to fetch calendar events');
+          }
           break;
 
         case 'createEvent':
           console.log('Creating calendar event');
-          result = await calendar.events.insert({
-            calendarId: 'primary',
-            requestBody: eventData,
-          });
-          console.log('Successfully created event');
-          break;
-
-        case 'updateEvent':
-          console.log('Updating calendar event');
-          result = await calendar.events.update({
-            calendarId: 'primary',
-            eventId: eventData.id,
-            requestBody: eventData,
-          });
-          console.log('Successfully updated event');
+          try {
+            result = await calendar.events.insert({
+              calendarId: 'primary',
+              requestBody: eventData,
+            });
+            console.log('Successfully created event');
+          } catch (apiError) {
+            console.error('Google Calendar API Error:', apiError);
+            throw new Error('Failed to create calendar event');
+          }
           break;
 
         case 'deleteEvent':
           console.log('Deleting calendar event');
-          result = await calendar.events.delete({
-            calendarId: 'primary',
-            eventId: eventData.id,
-          });
-          console.log('Successfully deleted event');
+          try {
+            result = await calendar.events.delete({
+              calendarId: 'primary',
+              eventId: eventData.id,
+            });
+            console.log('Successfully deleted event');
+          } catch (apiError) {
+            console.error('Google Calendar API Error:', apiError);
+            throw new Error('Failed to delete calendar event');
+          }
           break;
 
         default:
