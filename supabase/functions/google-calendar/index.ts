@@ -11,6 +11,15 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Define all required scopes including sensitive ones
+const REQUIRED_SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/calendar.settings.readonly',
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/calendar.events.readonly'
+];
+
 const oauth2Client = new google.auth.OAuth2(
   Deno.env.get('GOOGLE_CLIENT_ID'),
   Deno.env.get('GOOGLE_CLIENT_SECRET'),
@@ -64,19 +73,17 @@ serve(async (req) => {
       
       if (action === 'connect') {
         console.log('Generating OAuth URL for initial connection');
-        const scopes = [
-          'https://www.googleapis.com/auth/calendar',
-          'https://www.googleapis.com/auth/calendar.events'
-        ];
+        console.log('Required scopes:', REQUIRED_SCOPES);
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
-          scope: scopes.join(' '),
-          prompt: 'consent',
+          scope: REQUIRED_SCOPES.join(' '),
+          prompt: 'consent', // Force consent screen
+          include_granted_scopes: true, // Include any previously granted scopes
           state: user.id,
         });
         
-        console.log('Generated OAuth URL with scopes:', scopes);
+        console.log('Generated OAuth URL with scopes:', REQUIRED_SCOPES);
         result = { url };
       } else {
         throw new Error('User not connected to Google Calendar');
@@ -93,6 +100,22 @@ serve(async (req) => {
         console.log('Successfully refreshed access token');
       } catch (refreshError) {
         console.error('Error refreshing access token:', refreshError);
+        // If refresh fails, we need to re-authenticate
+        if (action === 'connect') {
+          console.log('Generating OAuth URL for re-authentication');
+          const url = oauth2Client.generateAuthUrl({
+            access_type: 'offline',
+            scope: REQUIRED_SCOPES.join(' '),
+            prompt: 'consent',
+            include_granted_scopes: true,
+            state: user.id,
+          });
+          result = { url };
+          return new Response(
+            JSON.stringify(result),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         throw new Error('Failed to refresh access token');
       }
 
@@ -101,19 +124,15 @@ serve(async (req) => {
       switch (action) {
         case 'connect':
           console.log('Generating OAuth URL for reconnection');
-          const scopes = [
-            'https://www.googleapis.com/auth/calendar',
-            'https://www.googleapis.com/auth/calendar.events'
-          ];
-          
           const url = oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: scopes.join(' '),
+            scope: REQUIRED_SCOPES.join(' '),
             prompt: 'consent',
+            include_granted_scopes: true,
             state: user.id,
           });
           
-          console.log('Generated OAuth URL with scopes:', scopes);
+          console.log('Generated OAuth URL with scopes:', REQUIRED_SCOPES);
           result = { url };
           break;
 
@@ -127,12 +146,13 @@ serve(async (req) => {
           console.log('Received tokens from Google:', {
             access_token: tokens.access_token ? 'present' : 'missing',
             refresh_token: tokens.refresh_token ? 'present' : 'missing',
+            scope: tokens.scope,
             expiry_date: tokens.expiry_date
           });
 
           if (!tokens.refresh_token) {
             console.error('No refresh token received from Google');
-            throw new Error('No refresh token received from Google');
+            throw new Error('No refresh token received from Google. Please revoke access and try again.');
           }
 
           const { error: updateError } = await supabase
@@ -207,7 +227,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in Google Calendar function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        type: 'auth_error',
+        needsReconnect: error.message.includes('Failed to refresh access token') || 
+                       error.message.includes('No refresh token')
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
