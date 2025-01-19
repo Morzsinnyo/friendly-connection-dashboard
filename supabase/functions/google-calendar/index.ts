@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { google } from "https://deno.land/x/googleapis@v118.0.0/googleapis.ts";
+import { OAuth2Client } from "https://deno.land/x/oauth2_client@v1.0.2/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -15,18 +15,19 @@ const scopes = [
   'https://www.googleapis.com/auth/calendar.settings.readonly'
 ];
 
-// Update the redirect URI to match what's configured in Google Cloud Console
 const redirectUri = 'https://friendly-connection-dashboard.lovable.app/auth/google/callback';
-
 console.log('Using redirect URI:', redirectUri);
 
-const oauth2Client = new google.auth.OAuth2(
-  Deno.env.get('GOOGLE_CLIENT_ID'),
-  Deno.env.get('GOOGLE_CLIENT_SECRET'),
-  redirectUri
-);
-
-const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+const oauth2Client = new OAuth2Client({
+  clientId: Deno.env.get('GOOGLE_CLIENT_ID') || '',
+  clientSecret: Deno.env.get('GOOGLE_CLIENT_SECRET') || '',
+  authorizationEndpointUri: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenUri: "https://oauth2.googleapis.com/token",
+  redirectUri: redirectUri,
+  defaults: {
+    scope: scopes,
+  },
+});
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -63,71 +64,91 @@ serve(async (req) => {
     if (profileError || !profile?.google_refresh_token) {
       if (action === 'connect') {
         // Generate auth URL for initial connection
-        const authUrl = oauth2Client.generateAuthUrl({
+        const authUrl = await oauth2Client.code.getAuthorizationUri({
+          state: user.id,
           access_type: 'offline',
-          scope: scopes,
-          state: user.id, // Pass user ID to verify in callback
-          prompt: 'consent' // Force consent screen to get refresh token
+          prompt: 'consent'
         });
 
         return new Response(
-          JSON.stringify({ url: authUrl }),
+          JSON.stringify({ url: authUrl.toString() }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       throw new Error('User not connected to Google Calendar');
     }
 
-    // Set credentials if we have a refresh token
-    oauth2Client.setCredentials({
-      refresh_token: profile.google_refresh_token
-    });
+    // Set up authenticated fetch for Google Calendar API
+    const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+      const tokens = await oauth2Client.refreshToken(profile.google_refresh_token);
+      const headers = {
+        'Authorization': `Bearer ${tokens.accessToken}`,
+        'Content-Type': 'application/json',
+      };
+      
+      const response = await fetch(url, {
+        ...options,
+        headers: { ...headers, ...options.headers },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Google Calendar API error: ${response.statusText}`);
+      }
+      
+      return response.json();
+    };
 
     let result;
     switch (action) {
-      case 'callback':
+      case 'callback': {
         const { code, state } = eventData;
         if (state !== user.id) {
           throw new Error('Invalid state parameter');
         }
 
-        const { tokens } = await oauth2Client.getToken(code);
+        const tokens = await oauth2Client.code.getToken(code);
         
         // Store refresh token
         await supabase
           .from('profiles')
-          .update({ google_refresh_token: tokens.refresh_token })
+          .update({ google_refresh_token: tokens.refreshToken })
           .eq('id', user.id);
 
         result = { success: true };
         break;
+      }
 
-      case 'listEvents':
-        const events = await calendar.events.list({
-          calendarId: 'primary',
-          timeMin: new Date().toISOString(),
-          maxResults: 10,
-          singleEvents: true,
-          orderBy: 'startTime',
-        });
-        result = events.data;
+      case 'listEvents': {
+        result = await makeAuthenticatedRequest(
+          'https://www.googleapis.com/calendar/v3/calendars/primary/events?' + new URLSearchParams({
+            timeMin: new Date().toISOString(),
+            maxResults: '10',
+            singleEvents: 'true',
+            orderBy: 'startTime',
+          })
+        );
         break;
+      }
 
-      case 'createEvent':
-        const event = await calendar.events.insert({
-          calendarId: 'primary',
-          requestBody: eventData,
-        });
-        result = event.data;
+      case 'createEvent': {
+        result = await makeAuthenticatedRequest(
+          'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+          {
+            method: 'POST',
+            body: JSON.stringify(eventData),
+          }
+        );
         break;
+      }
 
-      case 'deleteEvent':
-        await calendar.events.delete({
-          calendarId: 'primary',
-          eventId: eventData.id,
-        });
+      case 'deleteEvent': {
+        await makeAuthenticatedRequest(
+          `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventData.id}`,
+          { method: 'DELETE' }
+        );
         result = { success: true };
         break;
+      }
 
       default:
         throw new Error('Invalid action');
