@@ -24,7 +24,35 @@ export const GoogleCalendar = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
-  const [calendarLoaded, setCalendarLoaded] = useState(false);
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const handleCallback = async () => {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+
+      if (code && state) {
+        try {
+          const { error } = await supabase.functions.invoke('google-calendar', {
+            body: { action: 'callback', eventData: { code, state } }
+          });
+
+          if (error) throw error;
+          
+          toast.success('Successfully connected to Google Calendar');
+          // Remove query parameters
+          window.history.replaceState({}, '', window.location.pathname);
+          fetchEvents();
+        } catch (error) {
+          console.error('Error handling callback:', error);
+          toast.error('Failed to connect to Google Calendar');
+        }
+      }
+    };
+
+    handleCallback();
+  }, []);
 
   const fetchEvents = async () => {
     try {
@@ -33,7 +61,6 @@ export const GoogleCalendar = () => {
       });
 
       if (error) {
-        console.error('Error fetching events:', error);
         if (error.message?.includes('not connected')) {
           setIsConnected(false);
         }
@@ -107,16 +134,6 @@ export const GoogleCalendar = () => {
 
   useEffect(() => {
     fetchEvents();
-
-    // Initialize Google Calendar API
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-      window.gapi.load('client:auth2', () => {
-        setCalendarLoaded(true);
-      });
-    };
-    document.body.appendChild(script);
   }, []);
 
   if (isLoading) {
@@ -175,22 +192,6 @@ export const GoogleCalendar = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Embedded Google Calendar */}
-      <div className="w-full h-[600px] bg-white rounded-lg shadow-md overflow-hidden">
-        {calendarLoaded ? (
-          <iframe
-            src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent('primary')}&mode=WEEK`}
-            style={{ border: 0 }}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            scrolling="no"
-          />
-        ) : (
-          <Skeleton className="w-full h-full" />
-        )}
       </div>
 
       <div className="space-y-4">
