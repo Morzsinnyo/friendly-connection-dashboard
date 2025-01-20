@@ -62,6 +62,7 @@ serve(async (req) => {
       if (action === 'connect') {
         console.log('Generating OAuth URL for initial connection');
         console.log('Required scopes:', REQUIRED_SCOPES);
+        console.log('Using redirect URI:', redirectUri);
         
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
@@ -71,7 +72,7 @@ serve(async (req) => {
           state: user.id,
         });
         
-        console.log('Generated OAuth URL with scopes:', REQUIRED_SCOPES);
+        console.log('Generated OAuth URL:', url);
         result = { url };
       } else {
         throw new Error('User not connected to Google Calendar');
@@ -102,7 +103,7 @@ serve(async (req) => {
             state: user.id,
           });
           
-          console.log('Generated OAuth URL with scopes:', REQUIRED_SCOPES);
+          console.log('Generated OAuth URL:', url);
           result = { url };
           break;
 
