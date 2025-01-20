@@ -22,7 +22,7 @@ const REQUIRED_SCOPES = [
 // Set the exact redirect URI
 const redirectUri = 'https://bxvdvwjmybeixtarqwig.supabase.co/functions/v1/google-calendar/callback';
 
-console.log('Using redirect URI:', redirectUri);
+console.log('Initializing Google Calendar function with redirect URI:', redirectUri);
 
 const oauth2Client = new google.auth.OAuth2(
   Deno.env.get('GOOGLE_CLIENT_ID'),
@@ -70,6 +70,7 @@ serve(async (req) => {
           prompt: 'consent', // Force consent screen
           include_granted_scopes: true,
           state: user.id,
+          redirect_uri: redirectUri // Explicitly set redirect URI
         });
         
         console.log('Generated OAuth URL:', url);
@@ -101,6 +102,7 @@ serve(async (req) => {
             prompt: 'consent',
             include_granted_scopes: true,
             state: user.id,
+            redirect_uri: redirectUri // Explicitly set redirect URI
           });
           
           console.log('Generated OAuth URL:', url);
@@ -110,8 +112,12 @@ serve(async (req) => {
         case 'callback':
           const { code } = eventData;
           console.log('Handling OAuth callback with code');
+          console.log('Using redirect URI for token exchange:', redirectUri);
 
-          const { tokens } = await oauth2Client.getToken(code);
+          const { tokens } = await oauth2Client.getToken({
+            code,
+            redirect_uri: redirectUri // Explicitly set redirect URI for token exchange
+          });
           oauth2Client.setCredentials(tokens);
 
           console.log('Received tokens from Google:', {
