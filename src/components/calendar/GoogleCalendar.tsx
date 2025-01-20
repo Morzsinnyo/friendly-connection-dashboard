@@ -34,15 +34,11 @@ export const GoogleCalendar = () => {
 
       if (code && state) {
         try {
-          console.log('Processing OAuth callback with code');
           const { error } = await supabase.functions.invoke('google-calendar', {
             body: { action: 'callback', eventData: { code, state } }
           });
 
-          if (error) {
-            console.error('Callback error:', error);
-            throw error;
-          }
+          if (error) throw error;
           
           toast.success('Successfully connected to Google Calendar');
           // Remove query parameters
@@ -60,20 +56,17 @@ export const GoogleCalendar = () => {
 
   const fetchEvents = async () => {
     try {
-      console.log('Fetching calendar events');
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'listEvents' }
       });
 
       if (error) {
-        console.error('Error fetching events:', error);
         if (error.message?.includes('not connected')) {
           setIsConnected(false);
         }
         throw error;
       }
       
-      console.log('Events fetched successfully:', data?.items?.length);
       setEvents(data.items || []);
       setIsConnected(true);
     } catch (error) {
@@ -86,7 +79,6 @@ export const GoogleCalendar = () => {
 
   const createEvent = async () => {
     try {
-      console.log('Creating new event:', newEvent);
       const eventData = {
         summary: newEvent.summary,
         start: { dateTime: new Date(newEvent.start).toISOString() },
@@ -97,12 +89,8 @@ export const GoogleCalendar = () => {
         body: { action: 'createEvent', eventData }
       });
 
-      if (error) {
-        console.error('Error creating event:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Event created successfully');
       toast.success('Event created successfully');
       fetchEvents();
     } catch (error) {
@@ -113,17 +101,12 @@ export const GoogleCalendar = () => {
 
   const deleteEvent = async (eventId: string) => {
     try {
-      console.log('Deleting event:', eventId);
       const { error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'deleteEvent', eventData: { id: eventId } }
       });
 
-      if (error) {
-        console.error('Error deleting event:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Event deleted successfully');
       toast.success('Event deleted successfully');
       fetchEvents();
     } catch (error) {
@@ -134,18 +117,13 @@ export const GoogleCalendar = () => {
 
   const connectCalendar = async () => {
     try {
-      console.log('Initiating Google Calendar connection');
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'connect' }
       });
 
-      if (error) {
-        console.error('Connection error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       if (data?.url) {
-        console.log('Redirecting to OAuth URL');
         window.location.href = data.url;
       }
     } catch (error) {
