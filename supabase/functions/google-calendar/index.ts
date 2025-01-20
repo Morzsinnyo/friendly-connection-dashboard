@@ -35,6 +35,7 @@ const supabase = createClient(
 );
 
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -44,6 +45,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     
     if (!authHeader) {
+      console.error('No authorization header provided');
       throw new Error('No authorization header');
     }
 
@@ -51,8 +53,11 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
 
     if (userError || !user) {
+      console.error('Invalid user token:', userError);
       throw new Error('Invalid user token');
     }
+
+    console.log('Processing action:', action, 'for user:', user.id);
 
     // Get user's Google refresh token
     const { data: profile, error: profileError } = await supabase
@@ -61,9 +66,13 @@ serve(async (req) => {
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile?.google_refresh_token) {
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+    }
+
+    if (!profile?.google_refresh_token) {
       if (action === 'connect') {
-        // Generate auth URL for initial connection
+        console.log('Generating auth URL for initial connection');
         const authUrl = await oauth2Client.code.getAuthorizationUri({
           state: user.id,
           access_type: 'offline',
@@ -75,12 +84,16 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+      console.error('User not connected to Google Calendar');
       throw new Error('User not connected to Google Calendar');
     }
 
     // Set up authenticated fetch for Google Calendar API
     const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
+      console.log('Refreshing token for request to:', url);
       const tokens = await oauth2Client.refreshToken(profile.google_refresh_token);
+      console.log('Token refreshed successfully');
+      
       const headers = {
         'Authorization': `Bearer ${tokens.accessToken}`,
         'Content-Type': 'application/json',
@@ -92,6 +105,7 @@ serve(async (req) => {
       });
       
       if (!response.ok) {
+        console.error('Google Calendar API error:', response.statusText);
         throw new Error(`Google Calendar API error: ${response.statusText}`);
       }
       
@@ -101,24 +115,33 @@ serve(async (req) => {
     let result;
     switch (action) {
       case 'callback': {
+        console.log('Processing OAuth callback');
         const { code, state } = eventData;
         if (state !== user.id) {
+          console.error('Invalid state parameter');
           throw new Error('Invalid state parameter');
         }
 
         const tokens = await oauth2Client.code.getToken(code);
+        console.log('Obtained tokens successfully');
         
         // Store refresh token
-        await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ google_refresh_token: tokens.refreshToken })
           .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error storing refresh token:', updateError);
+          throw updateError;
+        }
 
         result = { success: true };
         break;
       }
 
       case 'listEvents': {
+        console.log('Fetching calendar events');
         result = await makeAuthenticatedRequest(
           'https://www.googleapis.com/calendar/v3/calendars/primary/events?' + new URLSearchParams({
             timeMin: new Date().toISOString(),
@@ -131,6 +154,7 @@ serve(async (req) => {
       }
 
       case 'createEvent': {
+        console.log('Creating calendar event');
         result = await makeAuthenticatedRequest(
           'https://www.googleapis.com/calendar/v3/calendars/primary/events',
           {
@@ -142,6 +166,7 @@ serve(async (req) => {
       }
 
       case 'deleteEvent': {
+        console.log('Deleting calendar event');
         await makeAuthenticatedRequest(
           `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventData.id}`,
           { method: 'DELETE' }
@@ -151,6 +176,7 @@ serve(async (req) => {
       }
 
       default:
+        console.error('Invalid action:', action);
         throw new Error('Invalid action');
     }
 
@@ -160,7 +186,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in edge function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
