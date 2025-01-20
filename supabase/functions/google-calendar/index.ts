@@ -19,8 +19,8 @@ const REQUIRED_SCOPES = [
   'https://www.googleapis.com/auth/calendar'
 ];
 
-// Update the redirect URI to match what's configured in Google Cloud Console
-const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-calendar/callback`;
+// Set the exact redirect URI
+const redirectUri = 'https://bxvdvwjmybeixtarqwig.supabase.co/functions/v1/google-calendar/callback';
 
 console.log('Using redirect URI:', redirectUri);
 
