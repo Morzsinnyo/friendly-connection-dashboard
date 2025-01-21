@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ExternalLink } from "lucide-react";
 
 interface CalendarEvent {
   id: string;
   summary: string;
   start: { dateTime: string };
   end: { dateTime: string };
+  htmlLink?: string;
 }
 
 export const GoogleCalendar = () => {
@@ -159,9 +161,21 @@ export const GoogleCalendar = () => {
                 {new Date(event.start.dateTime).toLocaleString()}
               </p>
             </div>
-            <Button variant="destructive" onClick={() => deleteEvent(event.id)}>
-              Delete
-            </Button>
+            <div className="flex gap-2">
+              {event.htmlLink && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open(event.htmlLink, '_blank')}
+                  title="Open in Google Calendar"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              )}
+              <Button variant="destructive" onClick={() => deleteEvent(event.id)}>
+                Delete
+              </Button>
+            </div>
           </div>
         ))}
       </div>
