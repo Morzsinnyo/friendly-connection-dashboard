@@ -6,6 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const CALENDAR_ID = 'morzsi812@gmail.com';
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -30,9 +32,9 @@ serve(async (req) => {
     let result;
     switch (action) {
       case 'listEvents':
-        console.log('Fetching calendar events');
+        console.log('Fetching calendar events from:', CALENDAR_ID);
         const response = await calendar.events.list({
-          calendarId: 'primary',
+          calendarId: CALENDAR_ID,
           timeMin: new Date().toISOString(),
           maxResults: 10,
           singleEvents: true,
@@ -42,18 +44,18 @@ serve(async (req) => {
         break;
 
       case 'createEvent':
-        console.log('Creating calendar event:', eventData);
+        console.log('Creating calendar event in calendar:', CALENDAR_ID, 'Event data:', eventData);
         const createResponse = await calendar.events.insert({
-          calendarId: 'primary',
+          calendarId: CALENDAR_ID,
           requestBody: eventData,
         });
         result = createResponse.data;
         break;
 
       case 'deleteEvent':
-        console.log('Deleting calendar event:', eventData.id);
+        console.log('Deleting calendar event:', eventData.id, 'from calendar:', CALENDAR_ID);
         await calendar.events.delete({
-          calendarId: 'primary',
+          calendarId: CALENDAR_ID,
           eventId: eventData.id,
         });
         result = { success: true };
