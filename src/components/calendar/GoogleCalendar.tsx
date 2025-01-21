@@ -24,14 +24,18 @@ export const GoogleCalendar = () => {
 
   const fetchEvents = async () => {
     try {
+      console.log('Fetching calendar events...');
       const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'listEvents' }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error response from listEvents:', error);
+        throw error;
+      }
       
-      setEvents(data.items || []);
       console.log('Successfully fetched events:', data.items);
+      setEvents(data.items || []);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to fetch calendar events');
@@ -42,20 +46,30 @@ export const GoogleCalendar = () => {
 
   const createEvent = async () => {
     try {
+      console.log('Creating new event with data:', newEvent);
       const eventData = {
         summary: newEvent.summary,
         start: { dateTime: new Date(newEvent.start).toISOString() },
         end: { dateTime: new Date(newEvent.end).toISOString() },
       };
 
-      const { error } = await supabase.functions.invoke('google-calendar', {
+      const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'createEvent', eventData }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error response from createEvent:', error);
+        throw error;
+      }
+
+      if (!data || !data.id) {
+        console.error('Invalid response from createEvent:', data);
+        throw new Error('Failed to create event: Invalid response');
+      }
       
+      console.log('Successfully created event:', data);
       toast.success('Event created successfully');
-      fetchEvents();
+      fetchEvents(); // Refresh the events list
     } catch (error) {
       console.error('Error creating event:', error);
       toast.error('Failed to create event');
@@ -64,14 +78,19 @@ export const GoogleCalendar = () => {
 
   const deleteEvent = async (eventId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('google-calendar', {
+      console.log('Deleting event with ID:', eventId);
+      const { data, error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'deleteEvent', eventData: { id: eventId } }
       });
 
-      if (error) throw error;
-      
+      if (error) {
+        console.error('Error response from deleteEvent:', error);
+        throw error;
+      }
+
+      console.log('Successfully deleted event:', eventId);
       toast.success('Event deleted successfully');
-      fetchEvents();
+      fetchEvents(); // Refresh the events list
     } catch (error) {
       console.error('Error deleting event:', error);
       toast.error('Failed to delete event');
