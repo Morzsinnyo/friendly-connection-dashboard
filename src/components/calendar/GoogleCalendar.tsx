@@ -23,8 +23,6 @@ export const GoogleCalendar = () => {
     end: '',
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [calendarLoaded, setCalendarLoaded] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -32,16 +30,10 @@ export const GoogleCalendar = () => {
         body: { action: 'listEvents' }
       });
 
-      if (error) {
-        console.error('Error fetching events:', error);
-        if (error.message?.includes('not connected')) {
-          setIsConnected(false);
-        }
-        throw error;
-      }
+      if (error) throw error;
       
       setEvents(data.items || []);
-      setIsConnected(true);
+      console.log('Successfully fetched events:', data.items);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to fetch calendar events');
@@ -88,48 +80,12 @@ export const GoogleCalendar = () => {
     }
   };
 
-  const connectCalendar = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('google-calendar', {
-        body: { action: 'connect' }
-      });
-
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error connecting to Google Calendar:', error);
-      toast.error('Failed to connect to Google Calendar');
-    }
-  };
-
   useEffect(() => {
     fetchEvents();
-
-    // Initialize Google Calendar API
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-      window.gapi.load('client:auth2', () => {
-        setCalendarLoaded(true);
-      });
-    };
-    document.body.appendChild(script);
   }, []);
 
   if (isLoading) {
-    return <div>Loading calendar...</div>;
-  }
-
-  if (!isConnected) {
-    return (
-      <div className="p-4 text-center">
-        <h3 className="text-lg font-semibold mb-4">Connect Your Google Calendar</h3>
-        <Button onClick={connectCalendar}>Connect Google Calendar</Button>
-      </div>
-    );
+    return <div className="p-4">Loading calendar...</div>;
   }
 
   return (
@@ -175,22 +131,6 @@ export const GoogleCalendar = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Embedded Google Calendar */}
-      <div className="w-full h-[600px] bg-white rounded-lg shadow-md overflow-hidden">
-        {calendarLoaded ? (
-          <iframe
-            src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent('primary')}&mode=WEEK`}
-            style={{ border: 0 }}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            scrolling="no"
-          />
-        ) : (
-          <Skeleton className="w-full h-full" />
-        )}
       </div>
 
       <div className="space-y-4">
