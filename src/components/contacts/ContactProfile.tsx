@@ -50,7 +50,8 @@ export function ContactProfile() {
     }
     updateReminderMutation.mutate({ 
       reminderFrequency: frequency,
-      calendarId: userProfile.calendar_id
+      calendarId: userProfile.calendar_id,
+      contactName: contact.full_name
     });
   };
 
@@ -201,6 +202,7 @@ export function ContactProfile() {
         <ReminderSection
           selectedReminder={selectedReminder}
           onReminderSelect={handleReminderSelect}
+          contactName={contact.full_name}
         />
       </div>
     </div>

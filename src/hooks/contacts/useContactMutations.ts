@@ -1,19 +1,35 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { addWeeks, addMonths } from "date-fns";
+import { addWeeks, addMonths, setHours, setMinutes } from "date-fns";
 
 const calculateNextReminder = (frequency: string): Date => {
   const today = new Date();
+  // Set to 12:00 PM
+  const lunchTime = setMinutes(setHours(today, 12), 0);
+  
   switch (frequency) {
     case 'Every week':
-      return addWeeks(today, 1);
+      return addWeeks(lunchTime, 1);
     case 'Every 2 weeks':
-      return addWeeks(today, 2);
+      return addWeeks(lunchTime, 2);
     case 'Monthly':
-      return addMonths(today, 1);
+      return addMonths(lunchTime, 1);
     default:
-      return today;
+      return lunchTime;
+  }
+};
+
+const getRecurrenceRule = (frequency: string): string => {
+  switch (frequency) {
+    case 'Every week':
+      return 'FREQ=WEEKLY';
+    case 'Every 2 weeks':
+      return 'FREQ=WEEKLY;INTERVAL=2';
+    case 'Monthly':
+      return 'FREQ=MONTHLY';
+    default:
+      return '';
   }
 };
 
@@ -40,14 +56,21 @@ export const useContactMutations = (contactId: string) => {
   });
 
   const updateReminderMutation = useMutation({
-    mutationFn: async ({ reminderFrequency, calendarId }: { reminderFrequency: string; calendarId: string }) => {
+    mutationFn: async ({ reminderFrequency, calendarId, contactName }: { 
+      reminderFrequency: string; 
+      calendarId: string;
+      contactName: string;
+    }) => {
       console.log('Setting reminder frequency:', reminderFrequency);
+      console.log('Contact name:', contactName);
       
       if (!calendarId) {
         throw new Error('Please set up your calendar ID in the calendar settings first');
       }
 
       const nextReminder = calculateNextReminder(reminderFrequency);
+      const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000); // Add 1 hour
+
       const { error } = await supabase
         .from('contacts')
         .update({ 
@@ -58,28 +81,27 @@ export const useContactMutations = (contactId: string) => {
       
       if (error) throw error;
 
+      console.log('Creating calendar event with data:', {
+        summary: `Time to contact ${contactName}`,
+        start: nextReminder,
+        end: endTime,
+        recurrence: getRecurrenceRule(reminderFrequency)
+      });
+
       const response = await supabase.functions.invoke('google-calendar', {
         body: {
           action: 'createEvent',
           eventData: {
-            'summary': `Time to contact ${contactId}`,
-            'start': {
-              'dateTime': nextReminder.toISOString(),
+            summary: `Time to contact ${contactName}`,
+            start: {
+              dateTime: nextReminder.toISOString(),
             },
-            'end': {
-              'dateTime': new Date(nextReminder.getTime() + 30 * 60000).toISOString(),
+            end: {
+              dateTime: endTime.toISOString(),
             },
-            'recurrence': [
-              `RRULE:FREQ=${reminderFrequency === 'Every week' ? 'WEEKLY' : 
-                reminderFrequency === 'Every 2 weeks' ? 'WEEKLY;INTERVAL=2' : 'MONTHLY'}`
-            ],
-            'reminders': {
-              'useDefault': false,
-              'overrides': [
-                {'method': 'popup', 'minutes': 1440},
-                {'method': 'email', 'minutes': 1440}
-              ]
-            }
+            recurrence: [
+              `RRULE:${getRecurrenceRule(reminderFrequency)}`
+            ]
           },
           calendarId
         }

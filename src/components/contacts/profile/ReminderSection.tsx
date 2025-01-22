@@ -10,9 +10,10 @@ import {
 interface ReminderSectionProps {
   selectedReminder: string | null;
   onReminderSelect: (frequency: string) => void;
+  contactName: string;
 }
 
-export function ReminderSection({ selectedReminder, onReminderSelect }: ReminderSectionProps) {
+export function ReminderSection({ selectedReminder, onReminderSelect, contactName }: ReminderSectionProps) {
   return (
     <div className="flex space-x-2">
       <DropdownMenu>
