@@ -6,14 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const getRecurrenceRule = (frequency: string): string => {
+  switch (frequency) {
+    case 'Every week':
+      return 'RRULE:FREQ=WEEKLY';
+    case 'Every 2 weeks':
+      return 'RRULE:FREQ=WEEKLY;INTERVAL=2';
+    case 'Monthly':
+      return 'RRULE:FREQ=MONTHLY';
+    default:
+      return '';
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { action, eventData, calendarId } = await req.json();
+    console.log('Received request:', { action, calendarId, eventData });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -31,6 +45,24 @@ serve(async (req) => {
     const calendar = google.calendar({ version: 'v3', auth: jwtClient });
     console.log('Initialized Google Calendar API with service account');
 
+    // Verify service account permissions
+    try {
+      await calendar.calendarList.list();
+      console.log('Service account permissions verified');
+    } catch (error) {
+      console.error('Service account permission error:', error);
+      throw new Error('Failed to verify service account permissions');
+    }
+
+    // Validate calendar ID
+    try {
+      await calendar.calendars.get({ calendarId });
+      console.log('Calendar ID validated:', calendarId);
+    } catch (error) {
+      console.error('Invalid calendar ID:', error);
+      throw new Error('Invalid calendar ID');
+    }
+
     let result;
     switch (action) {
       case 'listEvents':
@@ -47,31 +79,36 @@ serve(async (req) => {
 
       case 'createEvent':
         console.log('Creating calendar event in calendar:', calendarId, 'Event data:', eventData);
-        // Validate that end time is after start time
-        const startTime = new Date(eventData.start.dateTime);
-        const endTime = new Date(eventData.end.dateTime);
         
-        if (endTime <= startTime) {
-          throw new Error('End time must be after start time');
+        // Validate event data
+        if (!eventData.summary || !eventData.start || !eventData.end) {
+          throw new Error('Missing required event fields');
         }
 
-        // Add default reminders if not specified
-        if (!eventData.reminders) {
-          eventData.reminders = {
-            useDefault: false,
-            overrides: [
-              { method: 'popup', minutes: 1440 }, // 24 hours before
-              { method: 'email', minutes: 1440 }  // 24 hours before
-            ]
-          };
+        // Add recurrence if frequency is provided
+        if (eventData.frequency) {
+          const recurrenceRule = getRecurrenceRule(eventData.frequency);
+          if (recurrenceRule) {
+            eventData.recurrence = [recurrenceRule];
+          }
+          delete eventData.frequency; // Remove frequency from eventData as it's not needed by Google Calendar
+        }
+
+        // Ensure proper timezone
+        if (!eventData.start.timeZone) {
+          eventData.start.timeZone = 'UTC';
+        }
+        if (!eventData.end.timeZone) {
+          eventData.end.timeZone = 'UTC';
         }
 
         const createResponse = await calendar.events.insert({
           calendarId,
           requestBody: eventData,
         });
+        
+        console.log('Successfully created event:', createResponse.data);
         result = createResponse.data;
-        console.log('Successfully created recurring event:', result);
         break;
 
       case 'deleteEvent':

@@ -20,19 +20,6 @@ const calculateNextReminder = (frequency: string): Date => {
   }
 };
 
-const getRecurrenceRule = (frequency: string): string => {
-  switch (frequency) {
-    case 'Every week':
-      return 'FREQ=WEEKLY';
-    case 'Every 2 weeks':
-      return 'FREQ=WEEKLY;INTERVAL=2';
-    case 'Monthly':
-      return 'FREQ=MONTHLY';
-    default:
-      return '';
-  }
-};
-
 export const useContactMutations = (contactId: string) => {
   const queryClient = useQueryClient();
 
@@ -81,28 +68,33 @@ export const useContactMutations = (contactId: string) => {
       
       if (error) throw error;
 
-      console.log('Creating calendar event with data:', {
+      const eventData = {
         summary: `Time to contact ${contactName}`,
-        start: nextReminder,
-        end: endTime,
-        recurrence: getRecurrenceRule(reminderFrequency)
-      });
+        description: `Recurring reminder to keep in touch with ${contactName}`,
+        start: {
+          dateTime: nextReminder.toISOString(),
+          timeZone: 'UTC'
+        },
+        end: {
+          dateTime: endTime.toISOString(),
+          timeZone: 'UTC'
+        },
+        frequency: reminderFrequency,
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'popup', minutes: 1440 }, // 24 hours before
+            { method: 'email', minutes: 1440 }  // 24 hours before
+          ]
+        }
+      };
+
+      console.log('Creating calendar event with data:', eventData);
 
       const response = await supabase.functions.invoke('google-calendar', {
         body: {
           action: 'createEvent',
-          eventData: {
-            summary: `Time to contact ${contactName}`,
-            start: {
-              dateTime: nextReminder.toISOString(),
-            },
-            end: {
-              dateTime: endTime.toISOString(),
-            },
-            recurrence: [
-              `RRULE:${getRecurrenceRule(reminderFrequency)}`
-            ]
-          },
+          eventData,
           calendarId
         }
       });
