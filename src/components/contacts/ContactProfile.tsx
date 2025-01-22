@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format, differenceInYears } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, Phone, Mail, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -87,9 +87,24 @@ export function ContactProfile() {
   };
 
   const mockTimeline = [
-    { type: "call", date: "2024-03-15", description: "Phone Call" },
-    { type: "email", date: "2024-03-10", description: "Email Follow-up" },
-    { type: "meeting", date: "2024-03-01", description: "Coffee Meeting" },
+    { 
+      type: "call", 
+      date: "2024-03-15", 
+      description: "Phone Call",
+      icon: <Phone className="w-4 h-4" />
+    },
+    { 
+      type: "email", 
+      date: "2024-03-10", 
+      description: "Email Follow-up",
+      icon: <Mail className="w-4 h-4" />
+    },
+    { 
+      type: "meeting", 
+      date: "2024-03-01", 
+      description: "Coffee Meeting",
+      icon: <Coffee className="w-4 h-4" />
+    },
   ];
 
   const mockRelatedContacts = [
