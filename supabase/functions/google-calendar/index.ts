@@ -55,11 +55,23 @@ serve(async (req) => {
           throw new Error('End time must be after start time');
         }
 
+        // Add default reminders if not specified
+        if (!eventData.reminders) {
+          eventData.reminders = {
+            useDefault: false,
+            overrides: [
+              { method: 'popup', minutes: 1440 }, // 24 hours before
+              { method: 'email', minutes: 1440 }  // 24 hours before
+            ]
+          };
+        }
+
         const createResponse = await calendar.events.insert({
           calendarId,
           requestBody: eventData,
         });
         result = createResponse.data;
+        console.log('Successfully created recurring event:', result);
         break;
 
       case 'deleteEvent':

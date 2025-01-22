@@ -109,38 +109,56 @@ export function ContactProfile() {
 
   const updateReminderMutation = useMutation({
     mutationFn: async (reminderFrequency: string) => {
+      console.log('Setting reminder frequency:', reminderFrequency);
       const nextReminder = calculateNextReminder(reminderFrequency);
       const { error } = await supabase
         .from('contacts')
         .update({ 
           reminder_frequency: reminderFrequency,
-          next_reminder: nextReminder.toISOString() // Convert Date to ISO string
+          next_reminder: nextReminder.toISOString()
         })
         .eq('id', id);
       
       if (error) throw error;
 
-      // Add event to Google Calendar
-      const calendarId = 'morzsi812@gmail.com';
-      const event = {
-        'summary': `Time to contact ${contact?.full_name}`,
-        'start': {
-          'dateTime': nextReminder.toISOString(),
-        },
-        'end': {
-          'dateTime': new Date(nextReminder.getTime() + 30 * 60000).toISOString(), // 30 minutes duration
-        },
-        'recurrence': [
-          `RRULE:FREQ=${reminderFrequency === 'Every week' ? 'WEEKLY' : 
-            reminderFrequency === 'Every 2 weeks' ? 'WEEKLY;INTERVAL=2' : 'MONTHLY'}`
-        ]
-      };
+      // Create Google Calendar event
+      const response = await supabase.functions.invoke('google-calendar', {
+        body: {
+          action: 'createEvent',
+          eventData: {
+            'summary': `Time to contact ${contact?.full_name}`,
+            'start': {
+              'dateTime': nextReminder.toISOString(),
+            },
+            'end': {
+              'dateTime': new Date(nextReminder.getTime() + 30 * 60000).toISOString(), // 30 minutes duration
+            },
+            'recurrence': [
+              `RRULE:FREQ=${reminderFrequency === 'Every week' ? 'WEEKLY' : 
+                reminderFrequency === 'Every 2 weeks' ? 'WEEKLY;INTERVAL=2' : 'MONTHLY'}`
+            ],
+            'reminders': {
+              'useDefault': false,
+              'overrides': [
+                {'method': 'popup', 'minutes': 1440}, // 24 hours before
+                {'method': 'email', 'minutes': 1440}  // 24 hours before
+              ]
+            }
+          },
+          calendarId: 'primary' // Using primary calendar for now
+        }
+      });
 
-      console.log('Would create calendar event:', event);
+      if (response.error) {
+        console.error('Error creating calendar event:', response.error);
+        throw new Error('Failed to create calendar event');
+      }
+
+      console.log('Calendar event created successfully:', response.data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', id] });
-      toast.success('Reminder frequency updated');
+      toast.success('Reminder frequency updated and calendar event created');
     },
     onError: (error) => {
       toast.error('Failed to update reminder frequency');
@@ -169,6 +187,7 @@ export function ContactProfile() {
   };
 
   const handleReminderSelect = (frequency: string) => {
+    console.log('Selected reminder frequency:', frequency);
     setSelectedReminder(frequency);
     updateReminderMutation.mutate(frequency);
   };
