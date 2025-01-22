@@ -48,6 +48,23 @@ export function ContactProfile() {
   
   console.log('ContactProfile mounted with ID:', id);
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('calendar_id')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: contact, isLoading, error } = useQuery({
     queryKey: ['contact', id],
     queryFn: async () => {
@@ -110,6 +127,11 @@ export function ContactProfile() {
   const updateReminderMutation = useMutation({
     mutationFn: async (reminderFrequency: string) => {
       console.log('Setting reminder frequency:', reminderFrequency);
+      
+      if (!userProfile?.calendar_id) {
+        throw new Error('Please set up your calendar ID in the calendar settings first');
+      }
+
       const nextReminder = calculateNextReminder(reminderFrequency);
       const { error } = await supabase
         .from('contacts')
@@ -121,7 +143,7 @@ export function ContactProfile() {
       
       if (error) throw error;
 
-      // Create Google Calendar event
+      // Create Google Calendar event with user's calendar ID
       const response = await supabase.functions.invoke('google-calendar', {
         body: {
           action: 'createEvent',
@@ -145,7 +167,7 @@ export function ContactProfile() {
               ]
             }
           },
-          calendarId: 'primary' // Using primary calendar for now
+          calendarId: userProfile.calendar_id
         }
       });
 
@@ -161,7 +183,7 @@ export function ContactProfile() {
       toast.success('Reminder frequency updated and calendar event created');
     },
     onError: (error) => {
-      toast.error('Failed to update reminder frequency');
+      toast.error(error instanceof Error ? error.message : 'Failed to update reminder frequency');
       console.error('Error updating reminder frequency:', error);
     },
   });
