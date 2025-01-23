@@ -15,13 +15,15 @@ import { useContactProfile } from "@/hooks/contacts/useContactProfile";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
+
 export function ContactProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isNotesOpen, setIsNotesOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedReminder, setSelectedReminder] = useState<string | null>(null);
+  const [selectedReminder, setSelectedReminder] = useState<ReminderFrequency>(null);
   const [editedContact, setEditedContact] = useState({
     name: '',
     title: '',
@@ -38,7 +40,7 @@ export function ContactProfile() {
   // Update selectedReminder when contact data is loaded
   useEffect(() => {
     if (contact?.reminder_frequency) {
-      setSelectedReminder(contact.reminder_frequency);
+      setSelectedReminder(contact.reminder_frequency as ReminderFrequency);
     }
   }, [contact?.reminder_frequency]);
 
@@ -48,7 +50,7 @@ export function ContactProfile() {
     navigate(`/activities/create?participant=${encodeURIComponent(contact.full_name)}&date=${encodeURIComponent(date.toISOString())}`);
   };
 
-  const handleReminderSelect = (frequency: string | null) => {
+  const handleReminderSelect = (frequency: ReminderFrequency) => {
     console.log('Selected reminder frequency:', frequency);
     setSelectedReminder(frequency);
     if (!userProfile?.calendar_id) {
@@ -60,6 +62,17 @@ export function ContactProfile() {
       calendarId: userProfile.calendar_id,
       contactName: contact.full_name
     });
+  };
+
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleAddGiftIdea = (newIdea: string) => {
+    if (!contact?.gift_ideas) return;
+    console.log('Adding new gift idea:', newIdea);
+    const updatedGiftIdeas = [...contact.gift_ideas, newIdea];
+    updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
   if (isLoading) {
