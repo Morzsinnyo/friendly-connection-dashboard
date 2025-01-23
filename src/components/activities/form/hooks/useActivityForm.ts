@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { format } from "date-fns";
+import { validateForm } from "@/utils/form/validation";
+import { required, dateRange, url } from "@/utils/form/rules";
 
 export interface ActivityFormState {
   title: string;
@@ -17,10 +18,18 @@ export interface ActivityFormState {
   activityType: string;
 }
 
+export interface ActivityFormErrors {
+  title?: string[];
+  description?: string[];
+  meetingLink?: string[];
+  dateRange?: string[];
+}
+
 export const useActivityForm = (id?: string, initialParticipant?: string | null, initialDate?: string | null) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  const [errors, setErrors] = useState<ActivityFormErrors>({});
   
   const [formState, setFormState] = useState<ActivityFormState>({
     title: "",
@@ -48,13 +57,48 @@ export const useActivityForm = (id?: string, initialParticipant?: string | null,
     getCurrentUser();
   }, [navigate]);
 
+  const validateFormData = (): boolean => {
+    const validationRules = {
+      title: [required()],
+      meetingLink: [url()],
+      dateRange: [dateRange()]
+    };
+
+    const dateRangeValue = {
+      start: formState.startDate,
+      end: formState.endDate
+    };
+
+    const validationResults = validateForm(
+      {
+        title: formState.title,
+        meetingLink: formState.meetingLink,
+        dateRange: dateRangeValue
+      },
+      validationRules
+    );
+
+    const newErrors: ActivityFormErrors = {};
+    let isValid = true;
+
+    Object.entries(validationResults).forEach(([field, result]) => {
+      if (!result.isValid) {
+        newErrors[field as keyof ActivityFormErrors] = result.errors;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formState.startDate || !formState.endDate) {
+    if (!validateFormData()) {
       toast({
-        title: "Error",
-        description: "Please select both start and end dates",
+        title: "Validation Error",
+        description: "Please check the form for errors",
         variant: "destructive",
       });
       return;
@@ -70,11 +114,11 @@ export const useActivityForm = (id?: string, initialParticipant?: string | null,
     }
 
     try {
-      const startDateTime = new Date(formState.startDate);
+      const startDateTime = new Date(formState.startDate!);
       const [startHours, startMinutes] = formState.startTime.split(':');
       startDateTime.setHours(parseInt(startHours), parseInt(startMinutes));
 
-      const endDateTime = new Date(formState.endDate);
+      const endDateTime = new Date(formState.endDate!);
       const [endHours, endMinutes] = formState.endTime.split(':');
       endDateTime.setHours(parseInt(endHours), parseInt(endMinutes));
 
@@ -128,6 +172,7 @@ export const useActivityForm = (id?: string, initialParticipant?: string | null,
 
   const updateFormState = (updates: Partial<ActivityFormState>) => {
     setFormState(prev => ({ ...prev, ...updates }));
+    setErrors({}); // Clear errors when form is updated
   };
 
   return {
@@ -135,5 +180,6 @@ export const useActivityForm = (id?: string, initialParticipant?: string | null,
     updateFormState,
     handleSubmit,
     userId,
+    errors,
   };
 };
