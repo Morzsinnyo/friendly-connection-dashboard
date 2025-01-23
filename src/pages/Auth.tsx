@@ -79,10 +79,6 @@ const Auth = () => {
             }}
             providers={["google"]}
             redirectTo={SITE_URL}
-            onError={(error) => {
-              console.error("Supabase Auth error:", error);
-              handleAuthError(error);
-            }}
             theme="light"
           />
         </div>
