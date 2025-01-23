@@ -56,15 +56,90 @@ export const contactMutations = {
 
   updateReminder: async (
     id: string, 
-    frequency: string, 
-    nextReminder: Date
+    frequency: string | null, 
+    nextReminder: Date | null,
+    calendarId?: string,
+    contactName?: string
   ): Promise<ApiResponse<Contact>> => {
-    console.log('Updating reminder for contact:', id, frequency, nextReminder);
+    console.log('Updating reminder for contact:', { id, frequency, nextReminder, calendarId, contactName });
     
-    return contactMutations.update(id, {
+    // If frequency is null, we're removing the reminder
+    if (!frequency || !nextReminder) {
+      console.log('Removing reminder for contact:', id);
+      
+      // If we have a calendar ID, try to remove existing calendar events
+      if (calendarId && contactName) {
+        console.log('Attempting to remove calendar events');
+        try {
+          const response = await supabase.functions.invoke('google-calendar', {
+            body: {
+              action: 'deleteExistingReminders',
+              calendarId,
+              contactName
+            }
+          });
+          console.log('Calendar events removal response:', response);
+        } catch (error) {
+          console.error('Failed to remove calendar events:', error);
+          // Continue with database update even if calendar removal fails
+        }
+      }
+
+      return contactMutations.update(id, {
+        reminder_frequency: null,
+        next_reminder: null
+      });
+    }
+
+    // We're setting or updating a reminder
+    console.log('Setting new reminder:', { frequency, nextReminder });
+    
+    // First update the database
+    const updateResult = await contactMutations.update(id, {
       reminder_frequency: frequency,
       next_reminder: nextReminder.toISOString()
     });
+
+    // If database update successful and we have calendar info, create calendar event
+    if (!updateResult.error && calendarId && contactName) {
+      console.log('Creating calendar event for reminder');
+      try {
+        const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000); // Add 1 hour
+        
+        const response = await supabase.functions.invoke('google-calendar', {
+          body: {
+            action: 'createEvent',
+            calendarId,
+            eventData: {
+              summary: `Time to contact ${contactName}`,
+              description: `Recurring reminder to keep in touch with ${contactName}`,
+              start: {
+                dateTime: nextReminder.toISOString(),
+                timeZone: 'UTC'
+              },
+              end: {
+                dateTime: endTime.toISOString(),
+                timeZone: 'UTC'
+              },
+              frequency,
+              reminders: {
+                useDefault: false,
+                overrides: [
+                  { method: 'popup', minutes: 1440 }, // 24 hours before
+                  { method: 'email', minutes: 1440 }  // 24 hours before
+                ]
+              }
+            }
+          }
+        });
+        console.log('Calendar event creation response:', response);
+      } catch (error) {
+        console.error('Failed to create calendar event:', error);
+        // Return the database update result even if calendar creation fails
+      }
+    }
+
+    return updateResult;
   },
 
   updateGiftIdeas: async (id: string, giftIdeas: string[]): Promise<ApiResponse<Contact>> => {

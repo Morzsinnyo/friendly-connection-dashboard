@@ -26,8 +26,8 @@ serve(async (req) => {
   }
 
   try {
-    const { action, eventData, calendarId } = await req.json();
-    console.log('Received request:', { action, calendarId, eventData });
+    const { action, eventData, calendarId, contactName } = await req.json();
+    console.log('Received request:', { action, calendarId, eventData, contactName });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -118,6 +118,38 @@ serve(async (req) => {
           eventId: eventData.id,
         });
         result = { success: true };
+        break;
+
+      case 'deleteExistingReminders':
+        console.log('Searching for existing reminders for contact:', contactName);
+        if (!contactName) {
+          throw new Error('Contact name is required for deleting reminders');
+        }
+
+        // Search for events related to this contact
+        const searchResponse = await calendar.events.list({
+          calendarId,
+          q: `Time to contact ${contactName}`, // Search for our specific event title format
+          timeMin: new Date().toISOString(),
+          singleEvents: false, // Include recurring events
+        });
+
+        console.log('Found events:', searchResponse.data.items?.length || 0);
+
+        // Delete all found events
+        const deletionPromises = (searchResponse.data.items || []).map(event => 
+          calendar.events.delete({
+            calendarId,
+            eventId: event.id as string,
+          })
+        );
+
+        await Promise.all(deletionPromises);
+        
+        result = { 
+          success: true, 
+          deletedCount: deletionPromises.length 
+        };
         break;
 
       default:
