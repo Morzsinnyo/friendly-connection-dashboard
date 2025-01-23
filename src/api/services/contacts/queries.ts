@@ -24,18 +24,19 @@ export const contactQueries = {
       query = query.ilike('full_name', `%${filters.searchQuery}%`);
     }
 
-    return formatApiResponse(query.then(result => result));
+    return formatApiResponse(Promise.resolve(query));
   },
 
   getById: async (id: string): Promise<ApiResponse<Contact>> => {
     console.log('Fetching contact by ID:', id);
     
-    const query = supabase
-      .from('contacts')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-      .then(result => result);
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+    );
 
     return formatApiResponse(query);
   },
@@ -43,11 +44,12 @@ export const contactQueries = {
   getByIds: async (ids: string[]): Promise<ApiResponse<Contact[]>> => {
     console.log('Fetching contacts by IDs:', ids);
     
-    const query = supabase
-      .from('contacts')
-      .select('*')
-      .in('id', ids)
-      .then(result => result);
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select('*')
+        .in('id', ids)
+    );
 
     return formatApiResponse(query);
   },
