@@ -8,12 +8,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LoadingOverlay } from "./LoadingOverlay";
 
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
+
 interface ReminderSectionProps {
-  selectedReminder: string | null;
-  onReminderSelect: (frequency: string | null) => void;
+  selectedReminder: ReminderFrequency;
+  onReminderSelect: (frequency: ReminderFrequency) => void;
   contactName: string;
   isLoading?: boolean;
 }
+
+const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly'];
 
 export function ReminderSection({ 
   selectedReminder, 
@@ -32,19 +36,19 @@ export function ReminderSection({
               {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onReminderSelect('Every week')} className="flex justify-between">
-              <span>Every week</span>
-              {selectedReminder === 'Every week' && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReminderSelect('Every 2 weeks')} className="flex justify-between">
-              <span>Every 2 weeks</span>
-              {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReminderSelect('Monthly')} className="flex justify-between">
-              <span>Monthly</span>
-              {selectedReminder === 'Monthly' && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
+          <DropdownMenuContent align="start" className="w-[200px]">
+            {REMINDER_OPTIONS.map((frequency) => (
+              <DropdownMenuItem
+                key={frequency}
+                onClick={() => onReminderSelect(frequency)}
+                className="flex justify-between items-center"
+              >
+                <span>{frequency}</span>
+                {selectedReminder === frequency && (
+                  <Check className="h-4 w-4 ml-2" />
+                )}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
         

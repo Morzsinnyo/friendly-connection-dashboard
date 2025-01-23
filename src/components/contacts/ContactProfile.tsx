@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format, differenceInYears } from "date-fns";
 import { Calendar, Phone, Mail, Coffee } from "lucide-react";
@@ -35,13 +35,20 @@ export function ContactProfile() {
   const { data: contact, isLoading, error } = useContactProfile(id);
   const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation } = useContactMutations(id || '');
 
+  // Update selectedReminder when contact data is loaded
+  useEffect(() => {
+    if (contact?.reminder_frequency) {
+      setSelectedReminder(contact.reminder_frequency);
+    }
+  }, [contact?.reminder_frequency]);
+
   const handleScheduleFollowup = (date: Date) => {
     updateFollowupMutation.mutate(date);
     setSelectedDate(undefined);
     navigate(`/activities/create?participant=${encodeURIComponent(contact.full_name)}&date=${encodeURIComponent(date.toISOString())}`);
   };
 
-  const handleReminderSelect = (frequency: string) => {
+  const handleReminderSelect = (frequency: string | null) => {
     console.log('Selected reminder frequency:', frequency);
     setSelectedReminder(frequency);
     if (!userProfile?.calendar_id) {
@@ -53,17 +60,6 @@ export function ContactProfile() {
       calendarId: userProfile.calendar_id,
       contactName: contact.full_name
     });
-  };
-
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleAddGiftIdea = (newIdea: string) => {
-    if (!contact?.gift_ideas) return;
-    console.log('Adding new gift idea:', newIdea);
-    const updatedGiftIdeas = [...contact.gift_ideas, newIdea];
-    updateGiftIdeasMutation.mutate(updatedGiftIdeas);
   };
 
   if (isLoading) {
