@@ -1,40 +1,68 @@
 import { Button } from "@/components/ui/button";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 interface ReminderSectionProps {
   selectedReminder: string | null;
-  onReminderSelect: (frequency: string) => void;
+  onReminderSelect: (frequency: string | null) => void;
   contactName: string;
+  isLoading?: boolean;
 }
 
-export function ReminderSection({ selectedReminder, onReminderSelect, contactName }: ReminderSectionProps) {
+export function ReminderSection({ 
+  selectedReminder, 
+  onReminderSelect, 
+  contactName,
+  isLoading = false 
+}: ReminderSectionProps) {
   return (
-    <div className="flex space-x-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Bell className="h-4 w-4 mr-2" />
-            Reminder
+    <div className="relative">
+      {isLoading && <LoadingOverlay message="Updating reminder..." />}
+      <div className="flex items-center space-x-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => onReminderSelect('Every week')}>
+              Every week {selectedReminder === 'Every week' && <Check className="h-4 w-4 ml-2" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onReminderSelect('Every 2 weeks')}>
+              Every 2 weeks {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4 ml-2" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onReminderSelect('Monthly')}>
+              Monthly {selectedReminder === 'Monthly' && <Check className="h-4 w-4 ml-2" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        {selectedReminder && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => onReminderSelect(null)}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Remove Reminder
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => onReminderSelect('Every week')}>
-            Every week {selectedReminder === 'Every week' && <Check className="h-4 w-4 ml-2" />}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onReminderSelect('Every 2 weeks')}>
-            Every 2 weeks {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4 ml-2" />}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onReminderSelect('Monthly')}>
-            Monthly {selectedReminder === 'Monthly' && <Check className="h-4 w-4 ml-2" />}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        )}
+      </div>
+      
+      {selectedReminder && (
+        <p className="text-sm text-muted-foreground mt-2">
+          Reminder set to check in with {contactName} {selectedReminder.toLowerCase()}
+        </p>
+      )}
     </div>
   );
 }

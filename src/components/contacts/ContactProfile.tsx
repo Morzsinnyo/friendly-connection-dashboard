@@ -203,6 +203,7 @@ export function ContactProfile() {
           selectedReminder={selectedReminder}
           onReminderSelect={handleReminderSelect}
           contactName={contact.full_name}
+          isLoading={updateReminderMutation.isPending}
         />
       </div>
     </div>
