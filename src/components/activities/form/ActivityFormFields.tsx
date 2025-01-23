@@ -1,12 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { format, differenceInYears } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock, Users } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BasicInfoFields } from "./fields/BasicInfoFields";
+import { LocationFields } from "./fields/LocationFields";
+import { ActivityTypeFields } from "./fields/ActivityTypeFields";
+import { ParticipantFields } from "./fields/ParticipantFields";
+import { ActivityDateTimeSection } from "./sections/ActivityDateTimeSection";
 
 interface ActivityFormFieldsProps {
   title: string;
@@ -31,12 +27,6 @@ interface ActivityFormFieldsProps {
   setActivityType: (value: string) => void;
 }
 
-const activityTypes = [
-  { value: "in-person", label: "In Person" },
-  { value: "phone", label: "Phone Call" },
-  { value: "zoom", label: "Video Call" },
-];
-
 export function ActivityFormFields({
   title,
   setTitle,
@@ -59,167 +49,42 @@ export function ActivityFormFields({
   activityType,
   setActivityType,
 }: ActivityFormFieldsProps) {
-  const calculateAge = (date: Date) => {
-    const today = new Date();
-    return differenceInYears(today, date);
-  };
-
   return (
     <>
-      <div className="space-y-2">
-        <label htmlFor="title" className="block text-sm font-medium">
-          Title
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
+      <BasicInfoFields
+        title={title}
+        description={description}
+        onTitleChange={setTitle}
+        onDescriptionChange={setDescription}
+      />
 
-      <div className="space-y-2">
-        <label htmlFor="description" className="block text-sm font-medium">
-          Description
-        </label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
+      <ActivityTypeFields
+        activityType={activityType}
+        onActivityTypeChange={setActivityType}
+      />
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">Activity Type</label>
-        <Select value={activityType} onValueChange={setActivityType}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            {activityTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <ActivityDateTimeSection
+        startDate={startDate}
+        endDate={endDate}
+        startTime={startTime}
+        endTime={endTime}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onStartTimeChange={setStartTime}
+        onEndTimeChange={setEndTime}
+      />
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Start Date & Time</label>
-          <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <div className="relative">
-              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-          {startDate && (
-            <p className="text-sm text-muted-foreground">
-              Turns {calculateAge(startDate)} years old
-            </p>
-          )}
-        </div>
+      <ParticipantFields
+        participants={participants}
+        onParticipantsChange={setParticipants}
+      />
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">End Date & Time</label>
-          <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <div className="relative">
-              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-medium flex items-center gap-2">
-          <Users className="h-4 w-4" />
-          With Whom?
-        </label>
-        <Input
-          placeholder="Enter names separated by commas"
-          value={participants}
-          onChange={(e) => setParticipants(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="location" className="block text-sm font-medium">
-          Location (optional)
-        </label>
-        <Input
-          id="location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="meetingLink" className="block text-sm font-medium">
-          Meeting Link (optional)
-        </label>
-        <Input
-          id="meetingLink"
-          type="url"
-          value={meetingLink}
-          onChange={(e) => setMeetingLink(e.target.value)}
-        />
-      </div>
+      <LocationFields
+        location={location}
+        meetingLink={meetingLink}
+        onLocationChange={setLocation}
+        onMeetingLinkChange={setMeetingLink}
+      />
     </>
   );
 }
