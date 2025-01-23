@@ -33,14 +33,17 @@ export function ReminderSection({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onReminderSelect('Every week')}>
-              Every week {selectedReminder === 'Every week' && <Check className="h-4 w-4 ml-2" />}
+            <DropdownMenuItem onClick={() => onReminderSelect('Every week')} className="flex justify-between">
+              <span>Every week</span>
+              {selectedReminder === 'Every week' && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReminderSelect('Every 2 weeks')}>
-              Every 2 weeks {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4 ml-2" />}
+            <DropdownMenuItem onClick={() => onReminderSelect('Every 2 weeks')} className="flex justify-between">
+              <span>Every 2 weeks</span>
+              {selectedReminder === 'Every 2 weeks' && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReminderSelect('Monthly')}>
-              Monthly {selectedReminder === 'Monthly' && <Check className="h-4 w-4 ml-2" />}
+            <DropdownMenuItem onClick={() => onReminderSelect('Monthly')} className="flex justify-between">
+              <span>Monthly</span>
+              {selectedReminder === 'Monthly' && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
