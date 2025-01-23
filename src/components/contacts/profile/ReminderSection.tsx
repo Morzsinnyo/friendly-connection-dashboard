@@ -48,17 +48,16 @@ export function ReminderSection({
           </DropdownMenuContent>
         </DropdownMenu>
         
-        {selectedReminder && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onReminderSelect(null)}
-          >
-            <X className="h-4 w-4 mr-2" />
-            Remove Reminder
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`text-destructive hover:text-destructive hover:bg-destructive/10 ${!selectedReminder ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={() => onReminderSelect(null)}
+          disabled={!selectedReminder}
+        >
+          <X className="h-4 w-4 mr-2" />
+          Remove Reminder
+        </Button>
       </div>
       
       {selectedReminder && (
