@@ -11,7 +11,8 @@ export const contactMutations = {
       .from('contacts')
       .insert(contact)
       .select()
-      .single();
+      .single()
+      .then(result => result);
 
     return formatApiResponse(query);
   },
@@ -24,7 +25,8 @@ export const contactMutations = {
       .update(updates)
       .eq('id', id)
       .select()
-      .single();
+      .single()
+      .then(result => result);
 
     return formatApiResponse(query);
   },
@@ -36,7 +38,7 @@ export const contactMutations = {
       .from('contacts')
       .delete()
       .eq('id', id)
-      .then(() => null);
+      .then(result => result);
 
     return formatApiResponse(query);
   },

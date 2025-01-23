@@ -24,7 +24,7 @@ export const contactQueries = {
       query = query.ilike('full_name', `%${filters.searchQuery}%`);
     }
 
-    return formatApiResponse(query);
+    return formatApiResponse(query.then(result => result));
   },
 
   getById: async (id: string): Promise<ApiResponse<Contact>> => {
@@ -34,7 +34,8 @@ export const contactQueries = {
       .from('contacts')
       .select('*')
       .eq('id', id)
-      .maybeSingle();
+      .maybeSingle()
+      .then(result => result);
 
     return formatApiResponse(query);
   },
@@ -45,7 +46,8 @@ export const contactQueries = {
     const query = supabase
       .from('contacts')
       .select('*')
-      .in('id', ids);
+      .in('id', ids)
+      .then(result => result);
 
     return formatApiResponse(query);
   },

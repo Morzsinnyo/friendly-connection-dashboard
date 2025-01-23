@@ -1,12 +1,14 @@
 import { ApiResponse } from '../types/common';
 import { handleApiError } from './error-handling';
+import { PostgrestError } from '@supabase/supabase-js';
 
 export async function formatApiResponse<T>(
-  promise: Promise<T>
+  promise: Promise<{ data: T | null; error: PostgrestError | null }>
 ): Promise<ApiResponse<T>> {
   try {
-    const data = await promise;
-    return { data, error: null };
+    const { data, error } = await promise;
+    if (error) throw error;
+    return { data: data as T, error: null };
   } catch (error) {
     return { data: null, error: handleApiError(error) };
   }
