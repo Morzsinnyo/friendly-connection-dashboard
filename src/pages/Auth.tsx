@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuthState } from "@/hooks/auth/useAuthState";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
+import { AuthLoadingState } from "@/components/auth/AuthLoadingState";
 
 const SITE_URL = "https://friendly-connection-dashboard.lovable.app";
 
@@ -18,16 +19,14 @@ const Auth = () => {
     checkSession();
   }, [handleRedirectState, checkSession]);
 
+  // Show loading state while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-      </div>
-    );
+    return <AuthLoadingState message="Checking authentication status..." />;
   }
 
+  // Show loading state while authenticated (will be redirected)
   if (isAuthenticated) {
-    return null; // Will be redirected by useAuthSession
+    return <AuthLoadingState message="Redirecting to dashboard..." />;
   }
 
   return (

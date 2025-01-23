@@ -33,6 +33,12 @@ export const useAuthState = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
+      
+      // Set loading state during specific auth events
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        setState(prev => ({ ...prev, isLoading: true }));
+      }
+      
       setState({
         session,
         isLoading: false,
