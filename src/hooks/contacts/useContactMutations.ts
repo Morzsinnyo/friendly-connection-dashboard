@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { addWeeks, addMonths, setHours, setMinutes } from "date-fns";
 import { handleCalendarError, handleReminderError, handleTransitionError } from "@/utils/errorHandlers";
-import { CalendarError, ReminderError, TransitionError } from "@/api/types/errors";
+import { 
+  CalendarError, 
+  ReminderError, 
+  TransitionError,
+  isCalendarError,
+  isReminderError,
+  isTransitionError 
+} from "@/api/types/errors";
 
 const calculateNextReminder = (frequency: string): Date => {
   const today = new Date();
