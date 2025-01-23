@@ -13,31 +13,74 @@ import { CreateActivity } from "./components/activities/CreateActivity";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { LoadingState } from "@/components/common/LoadingState";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [state, setState] = useState({
+    isLoading: true,
+    isAuthenticated: false,
+  });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
+    console.log("[ProtectedRoute] Initializing session check...");
+    
+    let mounted = true;
 
+    const checkSession = async () => {
+      try {
+        console.log("[ProtectedRoute] Fetching session...");
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          console.log("[ProtectedRoute] Session state:", session ? "Authenticated" : "Not authenticated");
+          setState({
+            isLoading: false,
+            isAuthenticated: !!session,
+          });
+        }
+      } catch (error) {
+        console.error("[ProtectedRoute] Session check error:", error);
+        if (mounted) {
+          setState({
+            isLoading: false,
+            isAuthenticated: false,
+          });
+        }
+      }
+    };
+
+    // Initial session check
+    checkSession();
+
+    // Subscribe to auth changes
+    console.log("[ProtectedRoute] Setting up auth state listener...");
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthenticated(!!session);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[ProtectedRoute] Auth state changed:", event);
+      if (mounted) {
+        setState({
+          isLoading: false,
+          isAuthenticated: !!session,
+        });
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Cleanup
+    return () => {
+      console.log("[ProtectedRoute] Cleaning up auth state listener...");
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  if (isAuthenticated === null) {
-    return null;
+  if (state.isLoading) {
+    return <LoadingState message="Checking authentication..." />;
   }
 
-  return isAuthenticated ? children : <Navigate to="/auth" />;
+  return state.isAuthenticated ? children : <Navigate to="/auth" />;
 };
 
 const App = () => (
