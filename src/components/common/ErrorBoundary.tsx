@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Props {
   children: ReactNode;
+  fallback?: (error: Error) => ReactNode;
 }
 
 interface State {
@@ -27,6 +28,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback(this.state.error!);
+      }
+
       return (
         <Alert variant="destructive" className="max-w-lg mx-auto mt-4">
           <AlertCircle className="h-4 w-4" />
