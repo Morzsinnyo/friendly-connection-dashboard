@@ -1,9 +1,11 @@
 import { Mail, Phone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SocialMediaIcons } from "./SocialMediaIcons";
+import { Contact } from "@/api/types/contacts";
 
 interface ContactInfoProps {
-  contact: any;
+  contact: Contact;
   isEditing: boolean;
   editedContact: any;
   setEditedContact: (contact: any) => void;
@@ -40,7 +42,7 @@ export function ContactInfo({
               onChange={(e) => setEditedContact({ ...editedContact, businessPhone: e.target.value })}
             />
           ) : (
-            <span>{contact.businessPhone} (Business)</span>
+            <span>{contact.business_phone} (Business)</span>
           )}
         </div>
         <div className="flex items-center space-x-2">
@@ -51,8 +53,11 @@ export function ContactInfo({
               onChange={(e) => setEditedContact({ ...editedContact, mobilePhone: e.target.value })}
             />
           ) : (
-            <span>{contact.mobilePhone} (Mobile)</span>
+            <span>{contact.mobile_phone} (Mobile)</span>
           )}
+        </div>
+        <div className="pt-2 border-t">
+          <SocialMediaIcons contact={contact} />
         </div>
       </CardContent>
     </Card>

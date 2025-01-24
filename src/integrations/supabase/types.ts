@@ -17,12 +17,15 @@ export type Database = {
           company: string | null
           created_at: string
           email: string | null
+          facebook_url: string | null
           friendship_score: number | null
           full_name: string
           gift_ideas: string[] | null
           id: string
+          instagram_url: string | null
           job_title: string | null
           last_contact: string | null
+          linkedin_url: string | null
           mobile_phone: string | null
           next_reminder: string | null
           notes: string | null
@@ -31,6 +34,7 @@ export type Database = {
           scheduled_followup: string | null
           status: string | null
           tags: string[] | null
+          twitter_url: string | null
           updated_at: string
           user_id: string
         }
@@ -41,12 +45,15 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
           friendship_score?: number | null
           full_name: string
           gift_ideas?: string[] | null
           id?: string
+          instagram_url?: string | null
           job_title?: string | null
           last_contact?: string | null
+          linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
           notes?: string | null
@@ -55,6 +62,7 @@ export type Database = {
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
+          twitter_url?: string | null
           updated_at?: string
           user_id: string
         }
@@ -65,12 +73,15 @@ export type Database = {
           company?: string | null
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
           friendship_score?: number | null
           full_name?: string
           gift_ideas?: string[] | null
           id?: string
+          instagram_url?: string | null
           job_title?: string | null
           last_contact?: string | null
+          linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
           notes?: string | null
@@ -79,6 +90,7 @@ export type Database = {
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
+          twitter_url?: string | null
           updated_at?: string
           user_id?: string
         }
