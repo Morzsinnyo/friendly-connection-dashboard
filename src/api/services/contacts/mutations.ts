@@ -159,7 +159,8 @@ export const contactMutations = {
 
       return contactMutations.update(id, {
         reminder_frequency: null,
-        next_reminder: null
+        next_reminder: null,
+        reminder_status: 'pending'
       });
     }
 
@@ -169,7 +170,8 @@ export const contactMutations = {
     // First update the database
     const updateResult = await contactMutations.update(id, {
       reminder_frequency: frequency,
-      next_reminder: nextReminder.toISOString()
+      next_reminder: nextReminder.toISOString(),
+      reminder_status: 'pending'
     });
 
     // If database update successful and we have calendar info, create calendar event
@@ -238,7 +240,7 @@ export const contactMutations = {
     });
   },
 
-  // New functions for managing reminder statuses
+  // Updated functions for managing reminder statuses
   updateReminderStatus: async (
     id: string,
     status: 'pending' | 'completed' | 'skipped'
