@@ -19,31 +19,38 @@ const getRecurrenceRule = (frequency: string): string => {
   }
 };
 
+const createClient = async () => {
+  const serviceAccount = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT') || '{}');
+  const jwtClient = new google.auth.JWT(
+    serviceAccount.client_email,
+    undefined,
+    serviceAccount.private_key,
+    ['https://www.googleapis.com/auth/calendar']
+  );
+  return google.calendar({ version: 'v3', auth: jwtClient });
+};
+
+const createSupabaseClient = () => {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+  return createClient(supabaseUrl, supabaseKey);
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, eventData, calendarId, contactName } = await req.json();
-    console.log('Received request:', { action, calendarId, eventData, contactName });
+    const { action, eventData, calendarId, contactName, contactId } = await req.json();
+    console.log('Received request:', { action, calendarId, eventData, contactName, contactId });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
     }
 
-    // Initialize Google Calendar API with service account
-    const serviceAccount = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT') || '{}');
-    const jwtClient = new google.auth.JWT(
-      serviceAccount.client_email,
-      undefined,
-      serviceAccount.private_key,
-      ['https://www.googleapis.com/auth/calendar']
-    );
-
-    const calendar = google.calendar({ version: 'v3', auth: jwtClient });
-    console.log('Initialized Google Calendar API with service account');
+    const calendar = await createClient();
+    console.log('Initialized Google Calendar API');
 
     // Verify service account permissions
     try {
@@ -78,12 +85,19 @@ serve(async (req) => {
         break;
 
       case 'createEvent':
-        console.log('Creating calendar event in calendar:', calendarId, 'Event data:', eventData);
+        console.log('Creating calendar event:', { calendarId, eventData, contactId });
         
-        // Validate event data
         if (!eventData.summary || !eventData.start || !eventData.end) {
           throw new Error('Missing required event fields');
         }
+
+        // Add contact metadata to event description
+        const extendedProperties = {
+          private: {
+            contactId: contactId || '',
+            reminderStatus: 'pending'
+          }
+        };
 
         // Add recurrence if frequency is provided
         if (eventData.frequency) {
@@ -91,28 +105,75 @@ serve(async (req) => {
           if (recurrenceRule) {
             eventData.recurrence = [recurrenceRule];
           }
-          delete eventData.frequency; // Remove frequency from eventData as it's not needed by Google Calendar
+          delete eventData.frequency;
         }
 
         // Ensure proper timezone
-        if (!eventData.start.timeZone) {
-          eventData.start.timeZone = 'UTC';
-        }
-        if (!eventData.end.timeZone) {
-          eventData.end.timeZone = 'UTC';
-        }
+        if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
+        if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
 
         const createResponse = await calendar.events.insert({
           calendarId,
-          requestBody: eventData,
+          requestBody: {
+            ...eventData,
+            extendedProperties,
+          },
         });
+        
+        // Update contact with calendar event ID
+        if (contactId) {
+          const supabase = createSupabaseClient();
+          await supabase
+            .from('contacts')
+            .update({ 
+              calendar_event_id: createResponse.data.id,
+              reminder_status: 'pending'
+            })
+            .eq('id', contactId);
+        }
         
         console.log('Successfully created event:', createResponse.data);
         result = createResponse.data;
         break;
 
+      case 'updateEventStatus':
+        console.log('Updating event status:', { calendarId, eventId: eventData.id, status: eventData.status });
+        
+        const event = await calendar.events.get({
+          calendarId,
+          eventId: eventData.id
+        });
+
+        const contactId = event.data.extendedProperties?.private?.contactId;
+        if (contactId) {
+          const supabase = createSupabaseClient();
+          await supabase
+            .from('contacts')
+            .update({ 
+              reminder_status: eventData.status,
+              last_contact: eventData.status === 'completed' ? new Date().toISOString() : null
+            })
+            .eq('id', contactId);
+        }
+
+        const updatedEvent = await calendar.events.patch({
+          calendarId,
+          eventId: eventData.id,
+          requestBody: {
+            extendedProperties: {
+              private: {
+                ...event.data.extendedProperties?.private,
+                reminderStatus: eventData.status
+              }
+            }
+          }
+        });
+        
+        result = updatedEvent.data;
+        break;
+
       case 'deleteEvent':
-        console.log('Deleting calendar event:', eventData.id, 'from calendar:', calendarId);
+        console.log('Deleting calendar event:', eventData.id);
         await calendar.events.delete({
           calendarId,
           eventId: eventData.id,
@@ -121,22 +182,19 @@ serve(async (req) => {
         break;
 
       case 'deleteExistingReminders':
-        console.log('Searching for existing reminders for contact:', contactName);
         if (!contactName) {
           throw new Error('Contact name is required for deleting reminders');
         }
 
-        // Search for events related to this contact
         const searchResponse = await calendar.events.list({
           calendarId,
-          q: `Time to contact ${contactName}`, // Search for our specific event title format
+          q: `Time to contact ${contactName}`,
           timeMin: new Date().toISOString(),
-          singleEvents: false, // Include recurring events
+          singleEvents: false,
         });
 
         console.log('Found events:', searchResponse.data.items?.length || 0);
 
-        // Delete all found events
         const deletionPromises = (searchResponse.data.items || []).map(event => 
           calendar.events.delete({
             calendarId,
