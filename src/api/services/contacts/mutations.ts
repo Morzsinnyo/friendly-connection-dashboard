@@ -84,17 +84,25 @@ export const contactMutations = {
       ? [...new Set([...contactBRelated, contactAId])]
       : contactBRelated.filter(id => id !== contactAId);
 
-    // Update both contacts
-    const { error: updateError } = await supabase
+    // Update both contacts separately
+    const { error: updateErrorA } = await supabase
       .from('contacts')
-      .upsert([
-        { id: contactAId, related_contacts: newContactARelated },
-        { id: contactBId, related_contacts: newContactBRelated }
-      ]);
+      .update({ related_contacts: newContactARelated })
+      .eq('id', contactAId);
 
-    if (updateError) {
-      console.error('Error updating related contacts:', updateError);
-      throw updateError;
+    if (updateErrorA) {
+      console.error('Error updating contact A:', updateErrorA);
+      throw updateErrorA;
+    }
+
+    const { error: updateErrorB } = await supabase
+      .from('contacts')
+      .update({ related_contacts: newContactBRelated })
+      .eq('id', contactBId);
+
+    if (updateErrorB) {
+      console.error('Error updating contact B:', updateErrorB);
+      throw updateErrorB;
     }
 
     // Return updated contact A
