@@ -12,17 +12,6 @@ import {
 import { useLocation, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-</lov-replace>
-
-<lov-search>
-        <SidebarGroup>
-          <SidebarGroupLabel>Calendar</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <GoogleCalendar />
-          </SidebarGroupContent>
-        </SidebarGroup>
-</lov-search>
-<lov-replace>
 
 const items = [
   {
@@ -95,12 +84,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Calendar</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <GoogleCalendar />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
