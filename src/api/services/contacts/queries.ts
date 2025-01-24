@@ -57,16 +57,33 @@ export const contactQueries = {
   getRelatedContacts: async (contactId: string): Promise<ApiResponse<Contact[]>> => {
     console.log('Fetching related contacts for ID:', contactId);
     
-    const { data: contact } = await supabase
+    const { data: contact, error: contactError } = await supabase
       .from('contacts')
       .select('related_contacts')
       .eq('id', contactId)
-      .maybeSingle();
+      .single();
+
+    if (contactError) {
+      console.error('Error fetching contact:', contactError);
+      throw contactError;
+    }
 
     if (!contact?.related_contacts?.length) {
+      console.log('No related contacts found');
       return { data: [], error: null };
     }
 
-    return contactQueries.getByIds(contact.related_contacts);
+    const { data: relatedContacts, error: relatedError } = await supabase
+      .from('contacts')
+      .select('*')
+      .in('id', contact.related_contacts);
+
+    if (relatedError) {
+      console.error('Error fetching related contacts:', relatedError);
+      throw relatedError;
+    }
+
+    console.log('Found related contacts:', relatedContacts);
+    return { data: relatedContacts, error: null };
   }
 };

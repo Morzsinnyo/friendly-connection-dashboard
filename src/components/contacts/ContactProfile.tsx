@@ -105,19 +105,6 @@ export function ContactProfile() {
     return differenceInYears(today, birthDate);
   };
 
-  const mockRelatedContacts = [
-    {
-      name: "James Wilson",
-      email: "james.w@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=40&h=40&fit=crop",
-    },
-    {
-      name: "Emma Thompson",
-      email: "emma.t@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=40&h=40&fit=crop",
-    },
-  ];
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
@@ -178,7 +165,6 @@ export function ContactProfile() {
           <RelationshipCard
             friendshipScore={contact.friendship_score || 0}
             contactId={contact.id}
-            relatedContacts={mockRelatedContacts}
           />
         </div>
 

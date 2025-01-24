@@ -46,6 +46,69 @@ export const contactMutations = {
     return formatApiResponse(query);
   },
 
+  updateRelatedContacts: async (
+    contactAId: string,
+    contactBId: string,
+    isAdding: boolean
+  ): Promise<ApiResponse<Contact>> => {
+    console.log('Updating related contacts:', { contactAId, contactBId, isAdding });
+    
+    // Get both contacts' current related_contacts arrays
+    const { data: contacts, error: fetchError } = await supabase
+      .from('contacts')
+      .select('id, related_contacts')
+      .in('id', [contactAId, contactBId]);
+    
+    if (fetchError) {
+      console.error('Error fetching contacts:', fetchError);
+      throw fetchError;
+    }
+
+    const contactA = contacts?.find(c => c.id === contactAId);
+    const contactB = contacts?.find(c => c.id === contactBId);
+
+    if (!contactA || !contactB) {
+      console.error('One or both contacts not found');
+      throw new Error('Contacts not found');
+    }
+
+    // Update arrays based on whether we're adding or removing
+    const contactARelated = contactA.related_contacts || [];
+    const contactBRelated = contactB.related_contacts || [];
+
+    const newContactARelated = isAdding
+      ? [...new Set([...contactARelated, contactBId])]
+      : contactARelated.filter(id => id !== contactBId);
+
+    const newContactBRelated = isAdding
+      ? [...new Set([...contactBRelated, contactAId])]
+      : contactBRelated.filter(id => id !== contactAId);
+
+    // Update both contacts
+    const { error: updateError } = await supabase
+      .from('contacts')
+      .upsert([
+        { id: contactAId, related_contacts: newContactARelated },
+        { id: contactBId, related_contacts: newContactBRelated }
+      ]);
+
+    if (updateError) {
+      console.error('Error updating related contacts:', updateError);
+      throw updateError;
+    }
+
+    // Return updated contact A
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select()
+        .eq('id', contactAId)
+        .single()
+    );
+
+    return formatApiResponse(query);
+  },
+
   updateFollowup: async (id: string, date: Date): Promise<ApiResponse<Contact>> => {
     console.log('Updating followup for contact:', id, date);
     

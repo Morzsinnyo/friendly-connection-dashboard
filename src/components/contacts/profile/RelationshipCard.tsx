@@ -2,28 +2,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { contactQueries } from "@/api/services/contacts/queries";
+import { contactMutations } from "@/api/services/contacts/mutations";
 
 interface RelationshipCardProps {
   friendshipScore: number;
   contactId: string;
-  relatedContacts: Array<{
-    name: string;
-    email: string;
-    avatar: string;
-  }>;
 }
 
-export function RelationshipCard({ friendshipScore, contactId, relatedContacts }: RelationshipCardProps) {
+export function RelationshipCard({ friendshipScore, contactId }: RelationshipCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: contacts } = useQuery({
+  // Fetch related contacts
+  const { data: relatedContacts, isLoading: isLoadingRelated } = useQuery({
+    queryKey: ['related-contacts', contactId],
+    queryFn: () => contactQueries.getRelatedContacts(contactId),
+  });
+
+  // Fetch all available contacts
+  const { data: availableContacts } = useQuery({
     queryKey: ['available-contacts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,18 +42,13 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
   });
 
   const updateRelatedContactsMutation = useMutation({
-    mutationFn: async (selectedIds: string[]) => {
-      const { error } = await supabase
-        .from('contacts')
-        .update({ related_contacts: selectedIds })
-        .eq('id', contactId);
-      
-      if (error) throw error;
+    mutationFn: async ({ selectedId, isAdding }: { selectedId: string; isAdding: boolean }) => {
+      await contactMutations.updateRelatedContacts(contactId, selectedId, isAdding);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+      queryClient.invalidateQueries({ queryKey: ['related-contacts'] });
+      queryClient.invalidateQueries({ queryKey: ['contact'] });
       toast.success('Related contacts updated');
-      setIsOpen(false);
     },
     onError: (error) => {
       toast.error('Failed to update related contacts');
@@ -56,17 +56,12 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
     },
   });
 
-  const handleContactSelect = (contactId: string) => {
-    setSelectedContacts(prev => {
-      if (prev.includes(contactId)) {
-        return prev.filter(id => id !== contactId);
-      }
-      return [...prev, contactId];
-    });
+  const handleContactSelect = (selectedId: string, isChecked: boolean) => {
+    updateRelatedContactsMutation.mutate({ selectedId, isAdding: isChecked });
   };
 
-  const handleSave = () => {
-    updateRelatedContactsMutation.mutate(selectedContacts);
+  const navigateToContact = (id: string) => {
+    navigate(`/contact/${id}`);
   };
 
   return (
@@ -80,23 +75,31 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="mt-4">
+            {isLoadingRelated ? (
+              <div className="text-sm text-gray-500">Loading related contacts...</div>
+            ) : relatedContacts?.data?.length ? (
               <div className="space-y-2">
-                {relatedContacts.map((contact, index) => (
-                  <div key={index} className="flex items-center space-x-2">
+                {relatedContacts.data.map((contact) => (
+                  <div
+                    key={contact.id}
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+                    onClick={() => navigateToContact(contact.id)}
+                  >
                     <img
-                      src={contact.avatar}
-                      alt={contact.name}
+                      src={contact.avatar_url || '/placeholder.svg'}
+                      alt={contact.full_name}
                       className="w-8 h-8 rounded-full"
                     />
                     <div>
-                      <p className="text-sm font-medium">{contact.name}</p>
+                      <p className="text-sm font-medium">{contact.full_name}</p>
                       <p className="text-xs text-gray-600">{contact.email}</p>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-sm text-gray-500">No related contacts yet</div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -104,15 +107,16 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Contacts</DialogTitle>
+            <DialogTitle>Select Related Contacts</DialogTitle>
           </DialogHeader>
           <div className="max-h-[300px] overflow-y-auto">
-            {contacts?.map((contact) => (
+            {availableContacts?.map((contact) => (
               <div key={contact.id} className="flex items-center space-x-2 p-2">
                 <Checkbox
                   id={contact.id}
-                  checked={selectedContacts.includes(contact.id)}
-                  onCheckedChange={() => handleContactSelect(contact.id)}
+                  checked={relatedContacts?.data?.some(rc => rc.id === contact.id)}
+                  onCheckedChange={(checked) => handleContactSelect(contact.id, checked as boolean)}
+                  disabled={updateRelatedContactsMutation.isPending}
                 />
                 <label
                   htmlFor={contact.id}
@@ -130,14 +134,6 @@ export function RelationshipCard({ friendshipScore, contactId, relatedContacts }
                 </label>
               </div>
             ))}
-          </div>
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              Save
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
