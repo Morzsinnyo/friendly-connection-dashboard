@@ -25,7 +25,7 @@ export function ContactProfile() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedReminder, setSelectedReminder] = useState<ReminderFrequency>(null);
   const [editedContact, setEditedContact] = useState({
-    name: '',
+    full_name: '',
     title: '',
     email: '',
     businessPhone: '',
@@ -37,7 +37,6 @@ export function ContactProfile() {
   const { data: contact, isLoading, error } = useContactProfile(id);
   const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation, updateNotesMutation } = useContactMutations(id || '');
 
-  // Update selectedReminder when contact data is loaded
   useEffect(() => {
     if (contact?.reminder_frequency) {
       setSelectedReminder(contact.reminder_frequency as ReminderFrequency);
@@ -115,13 +114,9 @@ export function ContactProfile() {
         <ContactHeader
           contact={{
             ...contact,
-            name: contact.full_name,
             title: contact.status || '',
-            avatar: contact.avatar_url,
             relationship: "Contact",
             age: contact.birthday ? calculateAge(contact.birthday) : undefined,
-            tags: contact.tags || [],
-            friendship_score: contact.friendship_score || 0,
           }}
           isEditing={isEditing}
           editedContact={editedContact}
@@ -135,7 +130,6 @@ export function ContactProfile() {
           <ContactInfo
             contact={{
               ...contact,
-              name: contact.full_name,
               businessPhone: contact.business_phone,
               mobilePhone: contact.mobile_phone,
             }}
