@@ -196,9 +196,28 @@ export const useContactMutations = (contactId: string) => {
     },
   });
 
+  const updateNotesMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      console.log('Updating notes for contact:', contactId, notes);
+      const { error } = await supabase
+        .from('contacts')
+        .update({ notes })
+        .eq('id', contactId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+    },
+    onError: (error) => {
+      console.error('Error updating notes:', error);
+    },
+  });
+
   return {
     updateFollowupMutation,
     updateReminderMutation,
-    updateGiftIdeasMutation
+    updateGiftIdeasMutation,
+    updateNotesMutation,
   };
 };

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format, differenceInYears } from "date-fns";
-import { Calendar, Phone, Mail, Coffee } from "lucide-react";
+import { Calendar, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
-import { ContactTimeline } from "./profile/ContactTimeline";
+import { NotesSection } from "./profile/NotesSection";
 import { RelationshipCard } from "./profile/RelationshipCard";
 import { ReminderSection } from "./profile/ReminderSection";
 import { useContactProfile } from "@/hooks/contacts/useContactProfile";
@@ -35,7 +35,7 @@ export function ContactProfile() {
 
   const { data: userProfile } = useUserProfile();
   const { data: contact, isLoading, error } = useContactProfile(id);
-  const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation } = useContactMutations(id || '');
+  const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation, updateNotesMutation } = useContactMutations(id || '');
 
   // Update selectedReminder when contact data is loaded
   useEffect(() => {
@@ -95,27 +95,6 @@ export function ContactProfile() {
     const today = new Date();
     return differenceInYears(today, birthDate);
   };
-
-  const mockTimeline = [
-    { 
-      type: "call", 
-      date: "2024-03-15", 
-      description: "Phone Call",
-      icon: <Phone className="w-4 h-4" />
-    },
-    { 
-      type: "email", 
-      date: "2024-03-10", 
-      description: "Email Follow-up",
-      icon: <Mail className="w-4 h-4" />
-    },
-    { 
-      type: "meeting", 
-      date: "2024-03-01", 
-      description: "Coffee Meeting",
-      icon: <Coffee className="w-4 h-4" />
-    },
-  ];
 
   const mockRelatedContacts = [
     {
@@ -200,7 +179,7 @@ export function ContactProfile() {
             </div>
           </div>
 
-          <ContactTimeline timeline={mockTimeline} />
+          <NotesSection contactId={contact.id} initialNotes={contact.notes} />
           <RelationshipCard
             friendshipScore={contact.friendship_score || 0}
             contactId={contact.id}
