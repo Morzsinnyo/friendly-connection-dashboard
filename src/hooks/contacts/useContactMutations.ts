@@ -112,7 +112,7 @@ export const useContactMutations = (contactId: string) => {
 
         // Create new calendar event
         const eventData = {
-          summary: `Time to contact ${contactName}`,
+          summary: `${contactName} - It's time to contact`,
           description: `Recurring reminder to keep in touch with ${contactName}`,
           start: {
             dateTime: nextReminder.toISOString(),

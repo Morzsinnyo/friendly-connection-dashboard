@@ -188,7 +188,7 @@ serve(async (req) => {
 
         const searchResponse = await calendar.events.list({
           calendarId,
-          q: `Time to contact ${contactName}`,
+          q: `${contactName} - It's time to contact`,
           timeMin: new Date().toISOString(),
           singleEvents: false,
         });
