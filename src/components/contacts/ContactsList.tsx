@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Grid, List, ChevronRight, Plus } from "lucide-react";
+import { Search, Filter, Grid, List, ChevronRight, Plus, Check, X, Bell } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useContactStatus } from "@/hooks/contacts/useContactStatus";
+import { toast } from "sonner";
 
 interface Contact {
   id: string;
@@ -35,6 +37,8 @@ interface Contact {
   company: string;
   job_title: string;
   tags: string[];
+  reminder_status: 'pending' | 'completed' | 'skipped';
+  last_reminder_completed?: string;
 }
 
 export function ContactsList() {
@@ -56,6 +60,7 @@ export function ContactsList() {
 
       if (error) {
         console.error("Error fetching contacts:", error);
+        toast.error("Failed to fetch contacts");
         return;
       }
 
@@ -71,6 +76,28 @@ export function ContactsList() {
 
     fetchContacts();
   }, []);
+
+  const getReminderStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Check className="h-4 w-4 text-green-500" />;
+      case 'skipped':
+        return <X className="h-4 w-4 text-red-500" />;
+      default:
+        return <Bell className="h-4 w-4 text-yellow-500" />;
+    }
+  };
+
+  const getReminderStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'skipped':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
+    }
+  };
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = 
@@ -216,6 +243,7 @@ export function ContactsList() {
                   <th className="text-left p-4 text-muted-foreground font-medium">Profile</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Contact Information</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Reminder Status</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Last Contact</th>
                   <th className="text-left p-4 text-muted-foreground font-medium">Action</th>
                 </tr>
@@ -257,6 +285,17 @@ export function ContactsList() {
                       <Badge variant="secondary" className="bg-primary/10 text-primary">
                         {contact.status}
                       </Badge>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center space-x-2">
+                        {getReminderStatusIcon(contact.reminder_status)}
+                        <Badge 
+                          variant="secondary" 
+                          className={getReminderStatusColor(contact.reminder_status)}
+                        >
+                          {contact.reminder_status.charAt(0).toUpperCase() + contact.reminder_status.slice(1)}
+                        </Badge>
+                      </div>
                     </td>
                     <td className="p-4">
                       <span className="text-sm text-muted-foreground">
