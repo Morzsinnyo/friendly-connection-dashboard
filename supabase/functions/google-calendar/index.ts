@@ -20,14 +20,19 @@ const getRecurrenceRule = (frequency: string): string => {
 };
 
 const createClient = async () => {
-  const serviceAccount = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT') || '{}');
-  const jwtClient = new google.auth.JWT(
-    serviceAccount.client_email,
-    undefined,
-    serviceAccount.private_key,
-    ['https://www.googleapis.com/auth/calendar']
-  );
-  return google.calendar({ version: 'v3', auth: jwtClient });
+  try {
+    const serviceAccount = JSON.parse(Deno.env.get('GOOGLE_SERVICE_ACCOUNT') || '{}');
+    const jwtClient = new google.auth.JWT(
+      serviceAccount.client_email,
+      undefined,
+      serviceAccount.private_key,
+      ['https://www.googleapis.com/auth/calendar']
+    );
+    return google.calendar({ version: 'v3', auth: jwtClient });
+  } catch (error) {
+    console.error('Error creating Google Calendar client:', error);
+    throw new Error('Failed to initialize Google Calendar client');
+  }
 };
 
 const createSupabaseClient = () => {
@@ -37,43 +42,26 @@ const createSupabaseClient = () => {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { action, eventData, calendarId, contactName, contactId } = await req.json();
-    console.log('Received request:', { action, calendarId, eventData, contactName, contactId });
+    console.log('Received request:', { action, calendarId, contactName, contactId });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
     }
 
     const calendar = await createClient();
-    console.log('Initialized Google Calendar API');
-
-    // Verify service account permissions
-    try {
-      await calendar.calendarList.list();
-      console.log('Service account permissions verified');
-    } catch (error) {
-      console.error('Service account permission error:', error);
-      throw new Error('Failed to verify service account permissions');
-    }
-
-    // Validate calendar ID
-    try {
-      await calendar.calendars.get({ calendarId });
-      console.log('Calendar ID validated:', calendarId);
-    } catch (error) {
-      console.error('Invalid calendar ID:', error);
-      throw new Error('Invalid calendar ID');
-    }
+    console.log('Google Calendar client initialized');
 
     let result;
     switch (action) {
-      case 'listEvents':
-        console.log('Fetching calendar events from:', calendarId);
+      case 'listEvents': {
+        console.log('Fetching calendar events');
         const response = await calendar.events.list({
           calendarId,
           timeMin: new Date().toISOString(),
@@ -83,15 +71,14 @@ serve(async (req) => {
         });
         result = response.data;
         break;
+      }
 
-      case 'createEvent':
-        console.log('Creating calendar event:', { calendarId, eventData, contactId });
-        
+      case 'createEvent': {
+        console.log('Creating calendar event');
         if (!eventData.summary || !eventData.start || !eventData.end) {
           throw new Error('Missing required event fields');
         }
 
-        // Add contact metadata to event description
         const extendedProperties = {
           private: {
             contactId: contactId || '',
@@ -99,7 +86,6 @@ serve(async (req) => {
           }
         };
 
-        // Add recurrence if frequency is provided
         if (eventData.frequency) {
           const recurrenceRule = getRecurrenceRule(eventData.frequency);
           if (recurrenceRule) {
@@ -108,7 +94,6 @@ serve(async (req) => {
           delete eventData.frequency;
         }
 
-        // Ensure proper timezone
         if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
         if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
 
@@ -120,7 +105,6 @@ serve(async (req) => {
           },
         });
         
-        // Update contact with calendar event ID
         if (contactId) {
           const supabase = createSupabaseClient();
           await supabase
@@ -132,13 +116,12 @@ serve(async (req) => {
             .eq('id', contactId);
         }
         
-        console.log('Successfully created event:', createResponse.data);
         result = createResponse.data;
         break;
+      }
 
-      case 'updateEventStatus':
-        console.log('Updating event status:', { calendarId, eventId: eventData.id, status: eventData.status });
-        
+      case 'updateEventStatus': {
+        console.log('Updating event status');
         const event = await calendar.events.get({
           calendarId,
           eventId: eventData.id
@@ -171,17 +154,20 @@ serve(async (req) => {
         
         result = updatedEvent.data;
         break;
+      }
 
-      case 'deleteEvent':
-        console.log('Deleting calendar event:', eventData.id);
+      case 'deleteEvent': {
+        console.log('Deleting event');
         await calendar.events.delete({
           calendarId,
           eventId: eventData.id,
         });
         result = { success: true };
         break;
+      }
 
-      case 'deleteExistingReminders':
+      case 'deleteExistingReminders': {
+        console.log('Deleting existing reminders');
         if (!contactName) {
           throw new Error('Contact name is required for deleting reminders');
         }
@@ -193,7 +179,7 @@ serve(async (req) => {
           singleEvents: false,
         });
 
-        console.log('Found events:', searchResponse.data.items?.length || 0);
+        console.log('Found events to delete:', searchResponse.data.items?.length || 0);
 
         const deletionPromises = (searchResponse.data.items || []).map(event => 
           calendar.events.delete({
@@ -203,12 +189,9 @@ serve(async (req) => {
         );
 
         await Promise.all(deletionPromises);
-        
-        result = { 
-          success: true, 
-          deletedCount: deletionPromises.length 
-        };
+        result = { success: true, deletedCount: deletionPromises.length };
         break;
+      }
 
       default:
         throw new Error(`Unknown action: ${action}`);
