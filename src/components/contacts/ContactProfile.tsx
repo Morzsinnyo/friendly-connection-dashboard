@@ -14,8 +14,18 @@ import { ReminderSection } from "./profile/ReminderSection";
 import { useContactProfile } from "@/hooks/contacts/useContactProfile";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
+import { Contact } from "@/api/types/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
+
+interface EditedContact {
+  full_name: string;
+  title: string;
+  email: string;
+  business_phone: string;
+  mobile_phone: string;
+  birthday: string;
+}
 
 export function ContactProfile() {
   const { id } = useParams();
@@ -24,12 +34,12 @@ export function ContactProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedReminder, setSelectedReminder] = useState<ReminderFrequency>(null);
-  const [editedContact, setEditedContact] = useState({
+  const [editedContact, setEditedContact] = useState<EditedContact>({
     full_name: '',
     title: '',
     email: '',
-    businessPhone: '',
-    mobilePhone: '',
+    business_phone: '',
+    mobile_phone: '',
     birthday: '',
   });
 
@@ -112,12 +122,7 @@ export function ContactProfile() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
         <ContactHeader
-          contact={{
-            ...contact,
-            title: contact.status || '',
-            relationship: "Contact",
-            age: contact.birthday ? calculateAge(contact.birthday) : undefined,
-          }}
+          contact={contact}
           isEditing={isEditing}
           editedContact={editedContact}
           setEditedContact={setEditedContact}
@@ -128,11 +133,7 @@ export function ContactProfile() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ContactInfo
-            contact={{
-              ...contact,
-              businessPhone: contact.business_phone,
-              mobilePhone: contact.mobile_phone,
-            }}
+            contact={contact}
             isEditing={isEditing}
             editedContact={editedContact}
             setEditedContact={setEditedContact}
