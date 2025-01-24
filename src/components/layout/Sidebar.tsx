@@ -1,4 +1,4 @@
-import { UserCircle2, Settings, List, LogOut, Calendar } from "lucide-react";
+import { UserCircle2, Settings, Calendar, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,11 +18,6 @@ const items = [
     title: "Contacts",
     url: "/",
     icon: UserCircle2,
-  },
-  {
-    title: "Planned Activities",
-    url: "/activities",
-    icon: List,
   },
   {
     title: "Calendar",

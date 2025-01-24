@@ -9,8 +9,6 @@ import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
-import PlannedActivities from "./pages/PlannedActivities";
-import { CreateActivity } from "./components/activities/CreateActivity";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
@@ -102,9 +100,6 @@ const App = () => (
               <Route index element={<Index />} />
               <Route path="contact/create" element={<CreateContact />} />
               <Route path="contact/:id" element={<ContactProfile />} />
-              <Route path="activities" element={<PlannedActivities />} />
-              <Route path="activities/create" element={<CreateActivity />} />
-              <Route path="activities/edit/:id" element={<CreateActivity />} />
               <Route path="calendar" element={<GoogleCalendar />} />
               <Route path="settings" element={<Settings />} />
             </Route>
