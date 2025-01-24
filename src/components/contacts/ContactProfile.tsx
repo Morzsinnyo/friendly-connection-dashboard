@@ -173,6 +173,9 @@ export function ContactProfile() {
           onReminderSelect={handleReminderSelect}
           contactName={contact.full_name}
           isLoading={updateReminderMutation.isPending}
+          contactId={contact.id}
+          nextReminder={contact.next_reminder ? new Date(contact.next_reminder) : null}
+          reminderStatus={contact.reminder_status || 'pending'}
         />
       </div>
     </div>
