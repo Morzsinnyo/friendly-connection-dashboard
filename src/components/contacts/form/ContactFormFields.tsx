@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, User, Instagram, Linkedin, X, Briefcase } from "lucide-react";
+import { Phone, Mail, User, Briefcase } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -94,29 +94,16 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           <Mail className="w-4 h-4 inline mr-2" />
           Email
         </Label>
-        <div className="flex gap-2 items-center">
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className={cn(
-              "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
-              errors.email && "border-red-500"
-            )}
-          />
-          <div className="flex gap-2">
-            <a href="#" className="text-green-600 hover:text-green-700">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-green-600 hover:text-green-700">
-              <Linkedin className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-green-600 hover:text-green-700">
-              <X className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          className={cn(
+            "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
+            errors.email && "border-red-500"
+          )}
+        />
         {errors.email && (
           <p className="text-red-500 text-sm mt-1">{errors.email}</p>
         )}
