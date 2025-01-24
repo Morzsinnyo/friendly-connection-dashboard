@@ -12,7 +12,17 @@ import {
 import { useLocation, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GoogleCalendar } from "@/components/calendar/GoogleCalendar";
+</lov-replace>
+
+<lov-search>
+        <SidebarGroup>
+          <SidebarGroupLabel>Calendar</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <GoogleCalendar />
+          </SidebarGroupContent>
+        </SidebarGroup>
+</lov-search>
+<lov-replace>
 
 const items = [
   {
