@@ -14,6 +14,7 @@ export type Database = {
           avatar_url: string | null
           birthday: string | null
           business_phone: string | null
+          calendar_event_id: string | null
           company: string | null
           created_at: string
           email: string | null
@@ -25,12 +26,14 @@ export type Database = {
           instagram_url: string | null
           job_title: string | null
           last_contact: string | null
+          last_reminder_completed: string | null
           linkedin_url: string | null
           mobile_phone: string | null
           next_reminder: string | null
           notes: string | null
           related_contacts: string[] | null
           reminder_frequency: string | null
+          reminder_status: string | null
           scheduled_followup: string | null
           status: string | null
           tags: string[] | null
@@ -42,6 +45,7 @@ export type Database = {
           avatar_url?: string | null
           birthday?: string | null
           business_phone?: string | null
+          calendar_event_id?: string | null
           company?: string | null
           created_at?: string
           email?: string | null
@@ -53,12 +57,14 @@ export type Database = {
           instagram_url?: string | null
           job_title?: string | null
           last_contact?: string | null
+          last_reminder_completed?: string | null
           linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
           notes?: string | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
+          reminder_status?: string | null
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
@@ -70,6 +76,7 @@ export type Database = {
           avatar_url?: string | null
           birthday?: string | null
           business_phone?: string | null
+          calendar_event_id?: string | null
           company?: string | null
           created_at?: string
           email?: string | null
@@ -81,12 +88,14 @@ export type Database = {
           instagram_url?: string | null
           job_title?: string | null
           last_contact?: string | null
+          last_reminder_completed?: string | null
           linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
           notes?: string | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
+          reminder_status?: string | null
           scheduled_followup?: string | null
           status?: string | null
           tags?: string[] | null
