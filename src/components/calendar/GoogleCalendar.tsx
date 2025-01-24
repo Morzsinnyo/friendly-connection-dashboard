@@ -67,6 +67,33 @@ export const GoogleCalendar = () => {
     }
   };
 
+  const filterNextEventPerContact = (events: CalendarEvent[]) => {
+    const contactEventsMap = new Map<string, CalendarEvent>();
+    
+    events.forEach(event => {
+      // Check if this is a contact reminder event
+      const contactMatch = event.summary.toLowerCase().match(/(.+?)(?:\s*-\s*it's time to contact|time to contact\s*)/i);
+      
+      if (contactMatch) {
+        const contactName = contactMatch[1].trim();
+        const existingEvent = contactEventsMap.get(contactName);
+        
+        if (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime)) {
+          contactEventsMap.set(contactName, event);
+        }
+      }
+    });
+
+    // Get all non-contact events
+    const nonContactEvents = events.filter(event => 
+      !event.summary.toLowerCase().includes("time to contact") &&
+      !event.summary.toLowerCase().includes("it's time to contact")
+    );
+
+    // Combine filtered contact events with non-contact events
+    return [...contactEventsMap.values(), ...nonContactEvents];
+  };
+
   const fetchEvents = async () => {
     if (!calendarId) {
       setIsLoading(false);
@@ -85,7 +112,10 @@ export const GoogleCalendar = () => {
       }
       
       console.log('Successfully fetched events:', data.items);
-      setEvents(data.items || []);
+      // Filter events to show only the next upcoming reminder per contact
+      const filteredEvents = filterNextEventPerContact(data.items || []);
+      console.log('Filtered events:', filteredEvents);
+      setEvents(filteredEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to fetch calendar events');
@@ -280,4 +310,3 @@ export const GoogleCalendar = () => {
       )}
     </div>
   );
-};
