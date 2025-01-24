@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Contact, ContactInsert, ContactUpdate } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
+import { addWeeks, addMonths } from "date-fns";
 
 export const contactMutations = {
   create: async (contact: ContactInsert): Promise<ApiResponse<Contact>> => {
@@ -235,5 +236,87 @@ export const contactMutations = {
     return contactMutations.update(id, {
       tags: tags
     });
+  },
+
+  // New functions for managing reminder statuses
+  updateReminderStatus: async (
+    id: string,
+    status: 'pending' | 'completed' | 'skipped'
+  ): Promise<ApiResponse<Contact>> => {
+    console.log('Updating reminder status:', { id, status });
+    
+    const { data: contact, error: fetchError } = await supabase
+      .from('contacts')
+      .select('reminder_frequency, next_reminder')
+      .eq('id', id)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching contact:', fetchError);
+      throw fetchError;
+    }
+
+    const updates: ContactUpdate = {
+      reminder_status: status
+    };
+
+    // If completing the reminder, calculate and set next reminder date
+    if (status === 'completed' && contact.reminder_frequency) {
+      const nextReminder = calculateNextReminder(
+        contact.reminder_frequency,
+        contact.next_reminder ? new Date(contact.next_reminder) : new Date()
+      );
+      updates.next_reminder = nextReminder.toISOString();
+      updates.last_contact = new Date().toISOString();
+    }
+
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+    );
+
+    return formatApiResponse(query);
+  },
+
+  skipReminder: async (id: string): Promise<ApiResponse<Contact>> => {
+    console.log('Skipping reminder for contact:', id);
+    return contactMutations.updateReminderStatus(id, 'skipped');
+  },
+
+  completeReminder: async (id: string): Promise<ApiResponse<Contact>> => {
+    console.log('Completing reminder for contact:', id);
+    return contactMutations.updateReminderStatus(id, 'completed');
+  },
+
+  resetReminderStatus: async (id: string): Promise<ApiResponse<Contact>> => {
+    console.log('Resetting reminder status for contact:', id);
+    return contactMutations.updateReminderStatus(id, 'pending');
+  },
+
+  updateLastContact: async (id: string, date?: Date): Promise<ApiResponse<Contact>> => {
+    console.log('Updating last contact date:', { id, date });
+    
+    const lastContact = date ? date.toISOString() : new Date().toISOString();
+    
+    return contactMutations.update(id, {
+      last_contact: lastContact
+    });
+  }
+};
+
+const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
+  switch (frequency) {
+    case 'Every week':
+      return addWeeks(currentDate, 1);
+    case 'Every 2 weeks':
+      return addWeeks(currentDate, 2);
+    case 'Monthly':
+      return addMonths(currentDate, 1);
+    default:
+      return currentDate;
   }
 };
