@@ -38,8 +38,8 @@ export function ContactInfo({
           <Phone className="h-4 w-4 text-gray-400" />
           {isEditing ? (
             <Input
-              value={editedContact.businessPhone}
-              onChange={(e) => setEditedContact({ ...editedContact, businessPhone: e.target.value })}
+              value={editedContact.business_phone}
+              onChange={(e) => setEditedContact({ ...editedContact, business_phone: e.target.value })}
             />
           ) : (
             <span>{contact.business_phone} (Business)</span>
@@ -49,8 +49,8 @@ export function ContactInfo({
           <Phone className="h-4 w-4 text-gray-400" />
           {isEditing ? (
             <Input
-              value={editedContact.mobilePhone}
-              onChange={(e) => setEditedContact({ ...editedContact, mobilePhone: e.target.value })}
+              value={editedContact.mobile_phone}
+              onChange={(e) => setEditedContact({ ...editedContact, mobile_phone: e.target.value })}
             />
           ) : (
             <span>{contact.mobile_phone} (Mobile)</span>

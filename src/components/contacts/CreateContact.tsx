@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactFormFields } from "./form/ContactFormFields";
 import { AvatarUpload } from "./form/AvatarUpload";
 import { useQuery } from "@tanstack/react-query";
+import { SocialMediaFields } from "./form/SocialMediaFields";
 
 const statusOptions = [
   "Family Member",
@@ -32,6 +33,10 @@ export function CreateContact() {
     notes: "",
     jobTitle: "",
     company: "",
+    instagramUrl: "",
+    linkedinUrl: "",
+    twitterUrl: "",
+    facebookUrl: "",
   });
   const [errors, setErrors] = useState({
     fullName: "",
@@ -70,6 +75,10 @@ export function CreateContact() {
         notes: contactData.notes || '',
         jobTitle: contactData.job_title || '',
         company: contactData.company || '',
+        instagramUrl: contactData.instagram_url || '',
+        linkedinUrl: contactData.linkedin_url || '',
+        twitterUrl: contactData.twitter_url || '',
+        facebookUrl: contactData.facebook_url || '',
       });
     }
   }, [contactData]);
@@ -150,6 +159,10 @@ export function CreateContact() {
         notes: formData.notes,
         job_title: formData.jobTitle,
         company: formData.company,
+        instagram_url: formData.instagramUrl,
+        linkedin_url: formData.linkedinUrl,
+        twitter_url: formData.twitterUrl,
+        facebook_url: formData.facebookUrl,
         ...(avatarUrl && { avatar_url: avatarUrl }),
       };
 
@@ -210,6 +223,11 @@ export function CreateContact() {
               errors={errors}
               setFormData={setFormData}
               statusOptions={statusOptions}
+            />
+
+            <SocialMediaFields
+              formData={formData}
+              setFormData={setFormData}
             />
 
             <div className="flex gap-4 pt-4">
