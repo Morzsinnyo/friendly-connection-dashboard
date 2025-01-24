@@ -98,12 +98,12 @@ export function ContactHeader({
       <div className="flex justify-between items-start">
         <div className="flex items-start space-x-4">
           <img
-            src={contact.avatar || "/placeholder.svg"}
-            alt={contact.name}
+            src={contact.avatar_url || "/placeholder.svg"}
+            alt={contact.full_name}
             className="w-20 h-20 rounded-full object-cover"
           />
           <div>
-            <h1 className="text-2xl font-bold">{contact.name}</h1>
+            <h1 className="text-2xl font-bold">{contact.full_name}</h1>
             
             {(contact.job_title || contact.company) && (
               <div className="flex items-center gap-2 text-gray-600 mb-2">
