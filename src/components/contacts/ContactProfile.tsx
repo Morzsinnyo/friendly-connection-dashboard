@@ -14,7 +14,7 @@ import { ReminderSection } from "./profile/ReminderSection";
 import { useContactProfile } from "@/hooks/contacts/useContactProfile";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
-import { Contact } from "@/api/types/contacts";
+import { Contact, ReminderStatus } from "@/api/types/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
 
@@ -175,7 +175,7 @@ export function ContactProfile() {
           isLoading={updateReminderMutation.isPending}
           contactId={contact.id}
           nextReminder={contact.next_reminder ? new Date(contact.next_reminder) : null}
-          reminderStatus={contact.reminder_status || 'pending'}
+          reminderStatus={(contact.reminder_status as ReminderStatus) || 'pending'}
         />
       </div>
     </div>
