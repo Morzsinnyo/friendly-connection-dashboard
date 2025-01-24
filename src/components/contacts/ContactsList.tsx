@@ -96,10 +96,10 @@ export function ContactsList() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center space-x-2 flex-1">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search contacts..."
-                className="pl-10"
+                className="pl-10 bg-background"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -109,13 +109,14 @@ export function ContactsList() {
             <Button 
               variant="default"
               onClick={() => navigate("/contact/create")}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create
             </Button>
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-border hover:bg-muted">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
@@ -187,6 +188,7 @@ export function ContactsList() {
               variant="outline"
               size="sm"
               onClick={() => setViewMode(viewMode === "list" ? "grid" : "list")}
+              className="border-border hover:bg-muted"
             >
               {viewMode === "list" ? (
                 <Grid className="h-4 w-4" />
@@ -206,23 +208,23 @@ export function ContactsList() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-card rounded-lg shadow-md border border-border">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4">Profile</th>
-                  <th className="text-left p-4">Contact Information</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Last Contact</th>
-                  <th className="text-left p-4">Action</th>
+                <tr className="border-b border-border">
+                  <th className="text-left p-4 text-muted-foreground font-medium">Profile</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Contact Information</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Last Contact</th>
+                  <th className="text-left p-4 text-muted-foreground font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredContacts.map((contact) => (
                   <tr 
                     key={contact.id} 
-                    className="border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
+                    className="border-b border-border last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleContactClick(contact.id)}
                   >
                     <td className="p-4">
@@ -234,30 +236,30 @@ export function ContactsList() {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
                             {contact.full_name.charAt(0)}
                           </div>
                         )}
-                        <span className="font-medium">{contact.full_name}</span>
+                        <span className="font-medium text-foreground">{contact.full_name}</span>
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {contact.email}
                         </span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {contact.business_phone || contact.mobile_phone}
                         </span>
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary">
                         {contact.status}
                       </Badge>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {contact.last_contact}
                       </span>
                     </td>
@@ -269,6 +271,7 @@ export function ContactsList() {
                           e.stopPropagation();
                           handleContactClick(contact.id);
                         }}
+                        className="hover:bg-muted"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
