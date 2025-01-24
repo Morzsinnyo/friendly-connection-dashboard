@@ -24,22 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useContactStatus } from "@/hooks/contacts/useContactStatus";
 import { toast } from "sonner";
-
-interface Contact {
-  id: string;
-  full_name: string;
-  email: string;
-  business_phone: string;
-  mobile_phone: string;
-  status: string;
-  last_contact: string;
-  avatar_url: string;
-  company: string;
-  job_title: string;
-  tags: string[];
-  reminder_status: 'pending' | 'completed' | 'skipped';
-  last_reminder_completed?: string;
-}
+import { Contact } from "@/api/types/contacts";
 
 export function ContactsList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -64,7 +49,7 @@ export function ContactsList() {
         return;
       }
 
-      setContacts(data || []);
+      setContacts(data as Contact[]);
 
       // Extract unique statuses and companies
       const statuses = [...new Set(data?.map(contact => contact.status).filter(Boolean))];
@@ -324,4 +309,3 @@ export function ContactsList() {
       </div>
     </div>
   );
-}
