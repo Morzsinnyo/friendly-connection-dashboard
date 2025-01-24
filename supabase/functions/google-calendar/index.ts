@@ -20,7 +20,6 @@ const getRecurrenceRule = (frequency: string): string => {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -126,29 +125,64 @@ serve(async (req) => {
           throw new Error('Contact name is required for deleting reminders');
         }
 
-        // Search for events related to this contact
-        const searchResponse = await calendar.events.list({
-          calendarId,
-          q: `Time to contact ${contactName}`, // Search for our specific event title format
-          timeMin: new Date().toISOString(),
-          singleEvents: false, // Include recurring events
+        // Get today's date range in UTC
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const endOfDay = new Date(startOfDay);
+        endOfDay.setDate(endOfDay.getDate() + 1);
+        endOfDay.setMilliseconds(endOfDay.getMilliseconds() - 1);
+
+        console.log('Searching for events between:', {
+          startOfDay: startOfDay.toISOString(),
+          endOfDay: endOfDay.toISOString()
         });
 
-        console.log('Found events:', searchResponse.data.items?.length || 0);
+        // Search for events related to this contact for today
+        const searchResponse = await calendar.events.list({
+          calendarId,
+          q: `Time to contact ${contactName}`,
+          timeMin: startOfDay.toISOString(),
+          timeMax: endOfDay.toISOString(),
+          singleEvents: true,
+          maxResults: 100
+        });
+
+        const events = searchResponse.data.items || [];
+        console.log(`Found ${events.length} events for contact ${contactName} today`);
 
         // Delete all found events
-        const deletionPromises = (searchResponse.data.items || []).map(event => 
-          calendar.events.delete({
-            calendarId,
-            eventId: event.id as string,
+        const deletionResults = await Promise.allSettled(
+          events.map(async (event) => {
+            try {
+              console.log(`Attempting to delete event: ${event.id} - ${event.summary}`);
+              await calendar.events.delete({
+                calendarId,
+                eventId: event.id as string,
+              });
+              console.log(`Successfully deleted event: ${event.id}`);
+              return { success: true, eventId: event.id };
+            } catch (error) {
+              console.error(`Failed to delete event ${event.id}:`, error);
+              return { success: false, eventId: event.id, error };
+            }
           })
         );
 
-        await Promise.all(deletionPromises);
-        
+        const successfulDeletions = deletionResults.filter(
+          result => result.status === 'fulfilled' && (result.value as any).success
+        ).length;
+
+        const failedDeletions = deletionResults.filter(
+          result => result.status === 'rejected' || !(result.value as any).success
+        ).length;
+
         result = { 
           success: true, 
-          deletedCount: deletionPromises.length 
+          stats: {
+            total: events.length,
+            deleted: successfulDeletions,
+            failed: failedDeletions
+          }
         };
         break;
 
