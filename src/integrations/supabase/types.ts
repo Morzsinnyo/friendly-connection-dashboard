@@ -17,6 +17,11 @@ export type Database = {
           calendar_event_id: string | null
           company: string | null
           created_at: string
+          custom_recurrence_end_date: string | null
+          custom_recurrence_ends: string | null
+          custom_recurrence_interval: number | null
+          custom_recurrence_occurrences: number | null
+          custom_recurrence_unit: string | null
           email: string | null
           facebook_url: string | null
           friendship_score: number | null
@@ -48,6 +53,11 @@ export type Database = {
           calendar_event_id?: string | null
           company?: string | null
           created_at?: string
+          custom_recurrence_end_date?: string | null
+          custom_recurrence_ends?: string | null
+          custom_recurrence_interval?: number | null
+          custom_recurrence_occurrences?: number | null
+          custom_recurrence_unit?: string | null
           email?: string | null
           facebook_url?: string | null
           friendship_score?: number | null
@@ -79,6 +89,11 @@ export type Database = {
           calendar_event_id?: string | null
           company?: string | null
           created_at?: string
+          custom_recurrence_end_date?: string | null
+          custom_recurrence_ends?: string | null
+          custom_recurrence_interval?: number | null
+          custom_recurrence_occurrences?: number | null
+          custom_recurrence_unit?: string | null
           email?: string | null
           facebook_url?: string | null
           friendship_score?: number | null

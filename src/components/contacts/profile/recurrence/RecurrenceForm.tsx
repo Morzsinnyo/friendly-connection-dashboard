@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CustomRecurrence } from '@/api/types/contacts';
+import { CustomRecurrence, RecurrenceUnit, RecurrenceEnds } from "@/api/types/contacts";
 import { RecurrencePreview } from './RecurrencePreview';
 
 interface RecurrenceFormProps {
@@ -37,6 +37,20 @@ export const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
     onSubmit(recurrence);
   };
 
+  const handleUnitChange = (value: RecurrenceUnit) => {
+    setRecurrence({ ...recurrence, unit: value });
+  };
+
+  const handleEndsChange = (value: RecurrenceEnds) => {
+    setRecurrence({ 
+      ...recurrence, 
+      ends: value,
+      // Reset the other end options when changing type
+      endDate: value === 'on' ? recurrence.endDate : null,
+      occurrences: value === 'after' ? recurrence.occurrences : null
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -51,7 +65,7 @@ export const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
           />
           <Select
             value={recurrence.unit}
-            onValueChange={(value) => setRecurrence({ ...recurrence, unit: value })}
+            onValueChange={handleUnitChange}
           >
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -70,7 +84,7 @@ export const RecurrenceForm: React.FC<RecurrenceFormProps> = ({
         <Label>Ends</Label>
         <RadioGroup
           value={recurrence.ends}
-          onValueChange={(value) => setRecurrence({ ...recurrence, ends: value })}
+          onValueChange={handleEndsChange}
           className="space-y-2"
         >
           <div className="flex items-center space-x-2">
