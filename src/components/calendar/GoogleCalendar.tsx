@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ExternalLink } from "lucide-react";
+import { CalendarSettings } from './CalendarSettings';
+import { EventForm } from './EventForm';
+import { EventList } from './EventList';
 
 interface CalendarEvent {
   id: string;
@@ -17,11 +17,6 @@ interface CalendarEvent {
 
 export const GoogleCalendar = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [newEvent, setNewEvent] = useState({
-    summary: '',
-    start: '',
-    end: '',
-  });
   const [calendarId, setCalendarId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -45,33 +40,10 @@ export const GoogleCalendar = () => {
     }
   };
 
-  const updateCalendarId = async (newCalendarId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ calendar_id: newCalendarId })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      setCalendarId(newCalendarId);
-      toast.success('Calendar ID updated successfully');
-      setIsSettingsOpen(false);
-      fetchEvents(); // Refresh events with new calendar ID
-    } catch (error) {
-      console.error('Error updating calendar ID:', error);
-      toast.error('Failed to update calendar ID');
-    }
-  };
-
   const filterNextEventPerContact = (events: CalendarEvent[]) => {
     const contactEventsMap = new Map<string, CalendarEvent>();
     
     events.forEach(event => {
-      // Check if this is a contact reminder event
       const contactMatch = event.summary.toLowerCase().match(/(.+?)(?:\s*-\s*it's time to contact|time to contact\s*)/i);
       
       if (contactMatch) {
@@ -84,13 +56,11 @@ export const GoogleCalendar = () => {
       }
     });
 
-    // Get all non-contact events
     const nonContactEvents = events.filter(event => 
       !event.summary.toLowerCase().includes("time to contact") &&
       !event.summary.toLowerCase().includes("it's time to contact")
     );
 
-    // Combine filtered contact events with non-contact events
     return [...contactEventsMap.values(), ...nonContactEvents];
   };
 
@@ -106,13 +76,9 @@ export const GoogleCalendar = () => {
         body: { action: 'listEvents', calendarId }
       });
 
-      if (error) {
-        console.error('Error response from listEvents:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       console.log('Successfully fetched events:', data.items);
-      // Filter events to show only the next upcoming reminder per contact
       const filteredEvents = filterNextEventPerContact(data.items || []);
       console.log('Filtered events:', filteredEvents);
       setEvents(filteredEvents);
@@ -124,51 +90,16 @@ export const GoogleCalendar = () => {
     }
   };
 
-  const createEvent = async () => {
-    if (!calendarId) {
-      toast.error('Please set your calendar ID first');
-      return;
-    }
-
-    try {
-      console.log('Creating new event with data:', newEvent);
-      const eventData = {
-        summary: newEvent.summary,
-        start: { dateTime: new Date(newEvent.start).toISOString() },
-        end: { dateTime: new Date(newEvent.end).toISOString() },
-      };
-
-      const { data, error } = await supabase.functions.invoke('google-calendar', {
-        body: { action: 'createEvent', eventData, calendarId }
-      });
-
-      if (error) {
-        console.error('Error response from createEvent:', error);
-        throw error;
-      }
-
-      console.log('Successfully created event:', data);
-      toast.success('Event created successfully');
-      fetchEvents();
-    } catch (error) {
-      console.error('Error creating event:', error);
-      toast.error('Failed to create event');
-    }
-  };
-
   const deleteEvent = async (eventId: string) => {
     if (!calendarId) return;
 
     try {
       console.log('Deleting event with ID:', eventId);
-      const { data, error } = await supabase.functions.invoke('google-calendar', {
+      const { error } = await supabase.functions.invoke('google-calendar', {
         body: { action: 'deleteEvent', eventData: { id: eventId }, calendarId }
       });
 
-      if (error) {
-        console.error('Error response from deleteEvent:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log('Successfully deleted event:', eventId);
       toast.success('Event deleted successfully');
@@ -206,20 +137,12 @@ export const GoogleCalendar = () => {
               <DialogHeader>
                 <DialogTitle>Calendar Settings</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="calendarId">Calendar ID</Label>
-                  <Input
-                    id="calendarId"
-                    value={calendarId || ''}
-                    onChange={(e) => setCalendarId(e.target.value)}
-                    placeholder="example@gmail.com"
-                  />
-                </div>
-                <Button onClick={() => calendarId && updateCalendarId(calendarId)}>
-                  Save Calendar ID
-                </Button>
-              </div>
+              <CalendarSettings
+                calendarId={calendarId}
+                onCalendarIdUpdate={setCalendarId}
+                isSettingsOpen={isSettingsOpen}
+                onSettingsOpenChange={setIsSettingsOpen}
+              />
             </DialogContent>
           </Dialog>
 
@@ -232,35 +155,10 @@ export const GoogleCalendar = () => {
                 <DialogHeader>
                   <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="summary">Event Title</Label>
-                    <Input
-                      id="summary"
-                      value={newEvent.summary}
-                      onChange={(e) => setNewEvent({ ...newEvent, summary: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="start">Start Time</Label>
-                    <Input
-                      id="start"
-                      type="datetime-local"
-                      value={newEvent.start}
-                      onChange={(e) => setNewEvent({ ...newEvent, start: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end">End Time</Label>
-                    <Input
-                      id="end"
-                      type="datetime-local"
-                      value={newEvent.end}
-                      onChange={(e) => setNewEvent({ ...newEvent, end: e.target.value })}
-                    />
-                  </div>
-                  <Button onClick={createEvent}>Create Event</Button>
-                </div>
+                <EventForm
+                  calendarId={calendarId}
+                  onEventCreated={fetchEvents}
+                />
               </DialogContent>
             </Dialog>
           )}
@@ -280,33 +178,10 @@ export const GoogleCalendar = () => {
       )}
 
       {calendarId && (
-        <div className="space-y-4">
-          {events.map((event) => (
-            <div key={event.id} className="flex justify-between items-center p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">{event.summary}</h3>
-                <p className="text-sm text-gray-500">
-                  {new Date(event.start.dateTime).toLocaleString()}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {event.htmlLink && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => window.open(event.htmlLink, '_blank')}
-                    title="Open in Google Calendar"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                )}
-                <Button variant="destructive" onClick={() => deleteEvent(event.id)}>
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <EventList
+          events={events}
+          onDeleteEvent={deleteEvent}
+        />
       )}
     </div>
   );
