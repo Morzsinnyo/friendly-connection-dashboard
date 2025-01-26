@@ -9,7 +9,7 @@ import {
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CustomRecurrenceDialog } from "./recurrence/CustomRecurrenceDialog";
 import { CustomRecurrence } from "@/api/types/contacts";
 
@@ -23,6 +23,7 @@ interface ReminderSectionProps {
   nextReminder?: Date | null;
   reminderStatus?: 'pending' | 'completed' | 'skipped';
   contactId: string;
+  customRecurrence?: CustomRecurrence | null;
 }
 
 const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly', 'Custom'];
@@ -35,31 +36,59 @@ export function ReminderSection({
   nextReminder,
   reminderStatus = 'pending',
   contactId,
+  customRecurrence: initialCustomRecurrence,
 }: ReminderSectionProps) {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleReminderSelect = (frequency: ReminderFrequency) => {
-    if (frequency === 'Custom') {
-      setIsCustomDialogOpen(true);
-    } else {
-      onReminderSelect(frequency);
+  useEffect(() => {
+    // If we have custom recurrence data, ensure the selected reminder is set to 'Custom'
+    if (initialCustomRecurrence && selectedReminder !== 'Custom') {
+      onReminderSelect('Custom', initialCustomRecurrence);
+    }
+  }, [initialCustomRecurrence]);
+
+  const handleReminderSelect = async (frequency: ReminderFrequency) => {
+    if (isProcessing) return;
+
+    try {
+      setIsProcessing(true);
+      
+      if (frequency === 'Custom') {
+        setIsCustomDialogOpen(true);
+      } else {
+        await onReminderSelect(frequency);
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleCustomRecurrence = (recurrence: CustomRecurrence) => {
-    onReminderSelect('Custom', recurrence);
-    setIsCustomDialogOpen(false);
+  const handleCustomRecurrence = async (recurrence: CustomRecurrence) => {
+    try {
+      setIsProcessing(true);
+      await onReminderSelect('Custom', recurrence);
+      setIsCustomDialogOpen(false);
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  const isButtonDisabled = isLoading || isProcessing;
 
   return (
     <div className="relative space-y-4">
-      {isLoading && <LoadingOverlay message="Updating reminder..." />}
+      {(isLoading || isProcessing) && <LoadingOverlay message="Updating reminder..." />}
       
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={isButtonDisabled}
+              >
                 <Bell className="h-4 w-4 mr-2" />
                 {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
               </Button>
@@ -70,6 +99,7 @@ export function ReminderSection({
                   key={frequency}
                   onClick={() => handleReminderSelect(frequency)}
                   className="flex justify-between items-center"
+                  disabled={isButtonDisabled}
                 >
                   <span>{frequency}</span>
                   {selectedReminder === frequency && (
@@ -85,7 +115,8 @@ export function ReminderSection({
               variant="ghost"
               size="sm"
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => onReminderSelect(null)}
+              onClick={() => handleReminderSelect(null)}
+              disabled={isButtonDisabled}
             >
               <X className="h-4 w-4 mr-2" />
               Remove Reminder
@@ -97,7 +128,7 @@ export function ReminderSection({
           <ReminderStatusControl
             contactId={contactId}
             currentStatus={reminderStatus}
-            disabled={!nextReminder}
+            disabled={!nextReminder || isButtonDisabled}
           />
         )}
       </div>
@@ -105,7 +136,11 @@ export function ReminderSection({
       {selectedReminder && (
         <div className="text-sm text-muted-foreground space-y-1">
           <p>
-            Reminder set to check in with {contactName} {selectedReminder.toLowerCase()}
+            Reminder set to check in with {contactName} {
+              selectedReminder === 'Custom' && initialCustomRecurrence
+                ? `every ${initialCustomRecurrence.interval} ${initialCustomRecurrence.unit}(s)`
+                : selectedReminder.toLowerCase()
+            }
           </p>
           {nextReminder && (
             <p>
@@ -117,8 +152,12 @@ export function ReminderSection({
 
       <CustomRecurrenceDialog
         isOpen={isCustomDialogOpen}
-        onClose={() => setIsCustomDialogOpen(false)}
+        onClose={() => {
+          setIsCustomDialogOpen(false);
+          setIsProcessing(false);
+        }}
         onSave={handleCustomRecurrence}
+        initialValues={initialCustomRecurrence}
       />
     </div>
   );

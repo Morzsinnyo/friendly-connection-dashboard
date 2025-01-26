@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 const getRecurrenceRule = (frequency: string, customRecurrence?: any): string => {
+  console.log('Generating recurrence rule for:', { frequency, customRecurrence });
+
   if (!frequency) return '';
 
   if (frequency === 'Custom' && customRecurrence) {
@@ -20,20 +22,19 @@ const getRecurrenceRule = (frequency: string, customRecurrence?: any): string =>
       rrule += `;COUNT=${occurrences}`;
     }
     
+    console.log('Generated custom RRULE:', rrule);
     return rrule;
   }
 
-  // Handle standard frequencies
-  switch (frequency) {
-    case 'Every week':
-      return 'RRULE:FREQ=WEEKLY';
-    case 'Every 2 weeks':
-      return 'RRULE:FREQ=WEEKLY;INTERVAL=2';
-    case 'Monthly':
-      return 'RRULE:FREQ=MONTHLY';
-    default:
-      return '';
-  }
+  // Handle standard frequencies with explicit intervals
+  const rule = {
+    'Every week': 'RRULE:FREQ=WEEKLY;INTERVAL=1',
+    'Every 2 weeks': 'RRULE:FREQ=WEEKLY;INTERVAL=2',
+    'Monthly': 'RRULE:FREQ=MONTHLY;INTERVAL=1'
+  }[frequency];
+
+  console.log('Generated standard RRULE:', rule);
+  return rule || '';
 };
 
 const createClient = async () => {
@@ -53,7 +54,6 @@ const createClient = async () => {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -85,18 +85,17 @@ serve(async (req) => {
       }
 
       case 'createEvent': {
-        console.log('Creating calendar event');
+        console.log('Creating calendar event with data:', eventData);
         if (!eventData.summary || !eventData.start || !eventData.end) {
           throw new Error('Missing required event fields');
         }
 
         const recurrenceRule = getRecurrenceRule(eventData.frequency, eventData.customRecurrence);
-        console.log('Generated recurrence rule:', recurrenceRule);
+        console.log('Using recurrence rule:', recurrenceRule);
 
         if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
         if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
 
-        // Remove custom fields before creating event
         const { frequency, customRecurrence, ...cleanEventData } = eventData;
 
         const createResponse = await calendar.events.insert({
@@ -107,12 +106,13 @@ serve(async (req) => {
           },
         });
         
+        console.log('Event created successfully:', createResponse.data);
         result = createResponse.data;
         break;
       }
 
       case 'deleteEvent': {
-        console.log('Deleting event');
+        console.log('Deleting event:', eventData.id);
         await calendar.events.delete({
           calendarId,
           eventId: eventData.id,
@@ -122,7 +122,7 @@ serve(async (req) => {
       }
 
       case 'deleteExistingReminders': {
-        console.log('Deleting existing reminders');
+        console.log('Deleting existing reminders for:', contactName);
         if (!contactName) {
           throw new Error('Contact name is required for deleting reminders');
         }
