@@ -204,10 +204,10 @@ export function CreateContact() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2FCE2] p-6">
-      <Card className="max-w-2xl mx-auto bg-white border-green-100 shadow-sm">
-        <CardHeader className="border-b border-green-50">
-          <CardTitle className="text-2xl font-bold text-center text-green-800">
+    <div className="min-h-screen bg-background p-6">
+      <Card className="max-w-2xl mx-auto border-border">
+        <CardHeader className="border-b border-border">
+          <CardTitle className="text-2xl font-bold text-center text-foreground">
             {editId ? 'Edit Contact' : 'Create New Contact'}
           </CardTitle>
         </CardHeader>
@@ -235,14 +235,14 @@ export function CreateContact() {
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/")}
-                className="w-full bg-white border-green-200 text-green-700 hover:bg-green-50"
+                className="w-full"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading} 
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={isLoading}
+                className="w-full"
               >
                 {isLoading ? (
                   <>

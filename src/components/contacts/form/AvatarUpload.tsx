@@ -11,7 +11,7 @@ export function AvatarUpload({ avatar, handleImageChange }: AvatarUploadProps) {
   return (
     <div className="flex items-center justify-center mb-8">
       <div className="relative">
-        <div className="w-32 h-32 rounded-full bg-green-50 flex items-center justify-center mb-2 overflow-hidden">
+        <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center mb-2 overflow-hidden">
           {avatar ? (
             <img
               src={URL.createObjectURL(avatar)}
@@ -19,7 +19,7 @@ export function AvatarUpload({ avatar, handleImageChange }: AvatarUploadProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <User className="w-16 h-16 text-green-400" />
+            <User className="w-16 h-16 text-muted-foreground" />
           )}
         </div>
         <Input
@@ -32,7 +32,7 @@ export function AvatarUpload({ avatar, handleImageChange }: AvatarUploadProps) {
         <Button
           type="button"
           variant="outline"
-          className="mt-2 w-full text-sm flex items-center justify-center gap-2 border-green-200 hover:bg-green-50"
+          className="mt-2 w-full text-sm flex items-center justify-center gap-2"
           onClick={() => document.getElementById("avatar")?.click()}
         >
           <Upload className="w-4 h-4" />

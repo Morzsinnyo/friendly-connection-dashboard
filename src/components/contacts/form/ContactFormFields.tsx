@@ -44,7 +44,7 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="fullName" className="text-green-700">
+        <Label htmlFor="fullName" className="text-foreground">
           <User className="w-4 h-4 inline mr-2" />
           Full Name *
         </Label>
@@ -54,17 +54,17 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           value={formData.fullName}
           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
           className={cn(
-            "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
-            errors.fullName && "border-red-500"
+            "bg-background border-border text-foreground focus-visible:ring-ring",
+            errors.fullName && "border-destructive"
           )}
         />
         {errors.fullName && (
-          <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+          <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
         )}
       </div>
 
       <div>
-        <Label htmlFor="jobTitle" className="text-green-700">
+        <Label htmlFor="jobTitle" className="text-foreground">
           <Briefcase className="w-4 h-4 inline mr-2" />
           Job Title
         </Label>
@@ -72,12 +72,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           id="jobTitle"
           value={formData.jobTitle}
           onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
         />
       </div>
 
       <div>
-        <Label htmlFor="company" className="text-green-700">
+        <Label htmlFor="company" className="text-foreground">
           <Briefcase className="w-4 h-4 inline mr-2" />
           Company
         </Label>
@@ -85,12 +85,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           id="company"
           value={formData.company}
           onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
         />
       </div>
 
       <div>
-        <Label htmlFor="email" className="text-green-700">
+        <Label htmlFor="email" className="text-foreground">
           <Mail className="w-4 h-4 inline mr-2" />
           Email
         </Label>
@@ -100,17 +100,17 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           className={cn(
-            "bg-white border-green-200 text-green-900 focus-visible:ring-green-400",
-            errors.email && "border-red-500"
+            "bg-background border-border text-foreground focus-visible:ring-ring",
+            errors.email && "border-destructive"
           )}
         />
         {errors.email && (
-          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          <p className="text-destructive text-sm mt-1">{errors.email}</p>
         )}
       </div>
 
       <div>
-        <Label htmlFor="businessPhone" className="text-green-700">
+        <Label htmlFor="businessPhone" className="text-foreground">
           <Phone className="w-4 h-4 inline mr-2" />
           Business Phone
         </Label>
@@ -118,12 +118,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           id="businessPhone"
           value={formData.businessPhone}
           onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
         />
       </div>
 
       <div>
-        <Label htmlFor="mobilePhone" className="text-green-700">
+        <Label htmlFor="mobilePhone" className="text-foreground">
           <Phone className="w-4 h-4 inline mr-2" />
           Mobile Phone
         </Label>
@@ -131,22 +131,22 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           id="mobilePhone"
           value={formData.mobilePhone}
           onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })}
-          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400"
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
         />
       </div>
 
       <div>
-        <Label htmlFor="status" className="text-green-700">Status</Label>
+        <Label htmlFor="status" className="text-foreground">Status</Label>
         <Select
           value={formData.status}
           onValueChange={(value) => setFormData({ ...formData, status: value })}
         >
-          <SelectTrigger className="bg-white border-green-200 text-green-900">
+          <SelectTrigger className="bg-background border-border text-foreground">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
-          <SelectContent className="bg-white border-green-200">
+          <SelectContent className="bg-background border-border">
             {statusOptions.map((status) => (
-              <SelectItem key={status} value={status} className="text-green-900">
+              <SelectItem key={status} value={status} className="text-foreground">
                 {status}
               </SelectItem>
             ))}
@@ -155,7 +155,7 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
       </div>
 
       <div className="space-y-2">
-        <Label className="text-green-700">
+        <Label className="text-foreground">
           <CalendarIcon className="w-4 h-4 inline mr-2" />
           Birthday
         </Label>
@@ -165,7 +165,7 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal bg-white border-green-200",
+                  "w-full justify-start text-left font-normal",
                   !formData.birthday && "text-muted-foreground"
                 )}
               >
@@ -176,13 +176,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white">
+            <PopoverContent className="w-auto p-0">
               <Calendar
                 mode="single"
                 selected={formData.birthday || undefined}
                 onSelect={(date) => setFormData({ ...formData, birthday: date })}
                 initialFocus
-                className="bg-white"
               />
             </PopoverContent>
           </Popover>
@@ -191,12 +190,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
             value={formData.birthday ? formData.birthday.getFullYear().toString() : ""}
             onValueChange={handleYearSelect}
           >
-            <SelectTrigger className="bg-white border-green-200 text-green-900 w-32">
+            <SelectTrigger className="bg-background border-border text-foreground w-32">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-green-200 max-h-[200px]">
+            <SelectContent className="bg-background border-border max-h-[200px]">
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()} className="text-green-900">
+                <SelectItem key={year} value={year.toString()} className="text-foreground">
                   {year}
                 </SelectItem>
               ))}
@@ -206,12 +205,12 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
       </div>
 
       <div>
-        <Label htmlFor="notes" className="text-green-700">Notes</Label>
+        <Label htmlFor="notes" className="text-foreground">Notes</Label>
         <Textarea
           id="notes"
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="bg-white border-green-200 text-green-900 focus-visible:ring-green-400 min-h-[100px]"
+          className="bg-background border-border text-foreground focus-visible:ring-ring min-h-[100px]"
         />
       </div>
     </div>

@@ -35,7 +35,7 @@ export function SocialMediaFields({ formData, setFormData }: SocialMediaFieldsPr
 
   return (
     <div className="space-y-4">
-      <Label className="text-green-700">Social Media Links</Label>
+      <Label className="text-foreground">Social Media Links</Label>
       <div className="flex gap-2">
         <Popover>
           <PopoverTrigger asChild>
@@ -45,12 +45,13 @@ export function SocialMediaFields({ formData, setFormData }: SocialMediaFieldsPr
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="space-y-2">
-              <Label>Instagram URL</Label>
+              <Label className="text-foreground">Instagram URL</Label>
               <div className="flex gap-2">
                 <Input
                   value={tempUrls.instagramUrl}
                   onChange={(e) => setTempUrls({ ...tempUrls, instagramUrl: e.target.value })}
                   placeholder="https://instagram.com/username"
+                  className="bg-background border-border text-foreground"
                 />
                 <Button
                   variant="outline"
@@ -73,12 +74,13 @@ export function SocialMediaFields({ formData, setFormData }: SocialMediaFieldsPr
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="space-y-2">
-              <Label>LinkedIn URL</Label>
+              <Label className="text-foreground">LinkedIn URL</Label>
               <div className="flex gap-2">
                 <Input
                   value={tempUrls.linkedinUrl}
                   onChange={(e) => setTempUrls({ ...tempUrls, linkedinUrl: e.target.value })}
                   placeholder="https://linkedin.com/in/username"
+                  className="bg-background border-border text-foreground"
                 />
                 <Button
                   variant="outline"
@@ -101,12 +103,13 @@ export function SocialMediaFields({ formData, setFormData }: SocialMediaFieldsPr
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="space-y-2">
-              <Label>Twitter URL</Label>
+              <Label className="text-foreground">Twitter URL</Label>
               <div className="flex gap-2">
                 <Input
                   value={tempUrls.twitterUrl}
                   onChange={(e) => setTempUrls({ ...tempUrls, twitterUrl: e.target.value })}
                   placeholder="https://twitter.com/username"
+                  className="bg-background border-border text-foreground"
                 />
                 <Button
                   variant="outline"
@@ -129,12 +132,13 @@ export function SocialMediaFields({ formData, setFormData }: SocialMediaFieldsPr
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="space-y-2">
-              <Label>Facebook URL</Label>
+              <Label className="text-foreground">Facebook URL</Label>
               <div className="flex gap-2">
                 <Input
                   value={tempUrls.facebookUrl}
                   onChange={(e) => setTempUrls({ ...tempUrls, facebookUrl: e.target.value })}
                   placeholder="https://facebook.com/username"
+                  className="bg-background border-border text-foreground"
                 />
                 <Button
                   variant="outline"
