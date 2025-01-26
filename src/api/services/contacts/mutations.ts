@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Contact, ContactInsert, ContactUpdate } from "@/api/types/contacts";
+import { Contact, ContactInsert, ContactUpdate, CustomRecurrence } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
-import { addWeeks, addMonths } from "date-fns";
+import { addWeeks, addMonths, addDays, addYears } from "date-fns";
 
 export const contactMutations = {
   create: async (contact: ContactInsert): Promise<ApiResponse<Contact>> => {
@@ -131,9 +131,17 @@ export const contactMutations = {
     frequency: string | null, 
     nextReminder: Date | null,
     calendarId?: string,
-    contactName?: string
+    contactName?: string,
+    customRecurrence?: CustomRecurrence
   ): Promise<ApiResponse<Contact>> => {
-    console.log('Updating reminder for contact:', { id, frequency, nextReminder, calendarId, contactName });
+    console.log('Updating reminder for contact:', { 
+      id, 
+      frequency, 
+      nextReminder, 
+      calendarId, 
+      contactName,
+      customRecurrence 
+    });
     
     // If frequency is null, we're removing the reminder
     if (!frequency || !nextReminder) {
@@ -160,19 +168,36 @@ export const contactMutations = {
       return contactMutations.update(id, {
         reminder_frequency: null,
         next_reminder: null,
-        reminder_status: 'pending'
+        reminder_status: 'pending',
+        custom_recurrence_interval: null,
+        custom_recurrence_unit: null,
+        custom_recurrence_ends: null,
+        custom_recurrence_end_date: null,
+        custom_recurrence_occurrences: null
       });
     }
 
     // We're setting or updating a reminder
-    console.log('Setting new reminder:', { frequency, nextReminder });
+    console.log('Setting new reminder:', { frequency, nextReminder, customRecurrence });
     
-    // First update the database
-    const updateResult = await contactMutations.update(id, {
+    // Prepare the update object
+    const updates: ContactUpdate = {
       reminder_frequency: frequency,
       next_reminder: nextReminder.toISOString(),
       reminder_status: 'pending'
-    });
+    };
+
+    // Add custom recurrence fields if present
+    if (customRecurrence) {
+      updates.custom_recurrence_interval = customRecurrence.interval;
+      updates.custom_recurrence_unit = customRecurrence.unit;
+      updates.custom_recurrence_ends = customRecurrence.ends;
+      updates.custom_recurrence_end_date = customRecurrence.endDate;
+      updates.custom_recurrence_occurrences = customRecurrence.occurrences;
+    }
+
+    // First update the database
+    const updateResult = await contactMutations.update(id, updates);
 
     // If database update successful and we have calendar info, create calendar event
     if (!updateResult.error && calendarId && contactName) {
@@ -196,6 +221,7 @@ export const contactMutations = {
                 timeZone: 'UTC'
               },
               frequency,
+              customRecurrence,
               reminders: {
                 useDefault: false,
                 overrides: [
@@ -318,6 +344,9 @@ const calculateNextReminder = (frequency: string, currentDate: Date = new Date()
       return addWeeks(currentDate, 2);
     case 'Monthly':
       return addMonths(currentDate, 1);
+    case 'Custom':
+      // Custom recurrence is handled separately through the customRecurrence object
+      return currentDate;
     default:
       return currentDate;
   }
