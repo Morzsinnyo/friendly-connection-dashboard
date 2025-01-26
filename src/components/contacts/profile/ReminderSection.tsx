@@ -9,7 +9,7 @@ import {
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CustomRecurrenceDialog } from "./recurrence/CustomRecurrenceDialog";
 import { CustomRecurrence } from "@/api/types/contacts";
 
@@ -26,8 +26,6 @@ interface ReminderSectionProps {
   customRecurrence?: CustomRecurrence | null;
 }
 
-const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly', 'Custom'];
-
 export function ReminderSection({ 
   selectedReminder, 
   onReminderSelect, 
@@ -41,6 +39,12 @@ export function ReminderSection({
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Cleanup function to reset states
+  const resetStates = useCallback(() => {
+    setIsProcessing(false);
+    setIsCustomDialogOpen(false);
+  }, []);
+
   // Reset processing state when loading state changes
   useEffect(() => {
     if (!isLoading) {
@@ -53,13 +57,18 @@ export function ReminderSection({
     if (!isCustomDialogOpen) {
       setIsProcessing(false);
     }
-  }, [isCustomDialogOpen]);
+    
+    // Cleanup on unmount
+    return () => {
+      resetStates();
+    };
+  }, [isCustomDialogOpen, resetStates]);
 
   useEffect(() => {
     if (initialCustomRecurrence && selectedReminder !== 'Custom') {
       onReminderSelect('Custom', initialCustomRecurrence);
     }
-  }, [initialCustomRecurrence]);
+  }, [initialCustomRecurrence, onReminderSelect, selectedReminder]);
 
   const handleReminderSelect = async (frequency: ReminderFrequency) => {
     if (isProcessing) return;
@@ -71,13 +80,11 @@ export function ReminderSection({
         setIsCustomDialogOpen(true);
       } else {
         await onReminderSelect(frequency);
+        resetStates();
       }
     } catch (error) {
       console.error('Error selecting reminder:', error);
-    } finally {
-      if (frequency !== 'Custom') {
-        setIsProcessing(false);
-      }
+      resetStates();
     }
   };
 
@@ -88,9 +95,12 @@ export function ReminderSection({
     } catch (error) {
       console.error('Error setting custom recurrence:', error);
     } finally {
-      setIsCustomDialogOpen(false);
-      setIsProcessing(false);
+      resetStates();
     }
+  };
+
+  const handleDialogClose = () => {
+    resetStates();
   };
 
   const isButtonDisabled = isLoading || isProcessing;
@@ -113,10 +123,10 @@ export function ReminderSection({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              {REMINDER_OPTIONS.map((frequency) => (
+              {['Every week', 'Every 2 weeks', 'Monthly', 'Custom'].map((frequency) => (
                 <DropdownMenuItem
                   key={frequency}
-                  onClick={() => handleReminderSelect(frequency)}
+                  onClick={() => handleReminderSelect(frequency as ReminderFrequency)}
                   className="flex justify-between items-center"
                   disabled={isButtonDisabled}
                 >
@@ -171,10 +181,7 @@ export function ReminderSection({
 
       <CustomRecurrenceDialog
         isOpen={isCustomDialogOpen}
-        onClose={() => {
-          setIsCustomDialogOpen(false);
-          setIsProcessing(false);
-        }}
+        onClose={handleDialogClose}
         onSave={handleCustomRecurrence}
         initialValues={initialCustomRecurrence}
       />
