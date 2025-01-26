@@ -12,13 +12,10 @@ export interface ContactFilters {
   searchQuery?: string;
 }
 
-export type RecurrenceUnit = 'day' | 'week' | 'month' | 'year';
-export type RecurrenceEnds = 'never' | 'on' | 'after';
-
 export interface CustomRecurrence {
   interval: number;
-  unit: RecurrenceUnit;
-  ends: RecurrenceEnds;
+  unit: 'day' | 'week' | 'month' | 'year';
+  ends: 'never' | 'on' | 'after';
   endDate: string | null;
   occurrences: number | null;
 }

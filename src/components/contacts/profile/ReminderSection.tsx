@@ -9,7 +9,7 @@ import {
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
 import { format } from "date-fns";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { CustomRecurrenceDialog } from "./recurrence/CustomRecurrenceDialog";
 import { CustomRecurrence } from "@/api/types/contacts";
 
@@ -23,8 +23,9 @@ interface ReminderSectionProps {
   nextReminder?: Date | null;
   reminderStatus?: 'pending' | 'completed' | 'skipped';
   contactId: string;
-  customRecurrence?: CustomRecurrence | null;
 }
+
+const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly', 'Custom'];
 
 export function ReminderSection({ 
   selectedReminder, 
@@ -34,101 +35,41 @@ export function ReminderSection({
   nextReminder,
   reminderStatus = 'pending',
   contactId,
-  customRecurrence: initialCustomRecurrence,
 }: ReminderSectionProps) {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Cleanup function to reset states
-  const resetStates = useCallback(() => {
-    setIsProcessing(false);
+  const handleReminderSelect = (frequency: ReminderFrequency) => {
+    if (frequency === 'Custom') {
+      setIsCustomDialogOpen(true);
+    } else {
+      onReminderSelect(frequency);
+    }
+  };
+
+  const handleCustomRecurrence = (recurrence: CustomRecurrence) => {
+    onReminderSelect('Custom', recurrence);
     setIsCustomDialogOpen(false);
-  }, []);
-
-  // Reset processing state when loading state changes
-  useEffect(() => {
-    if (!isLoading) {
-      setIsProcessing(false);
-    }
-  }, [isLoading]);
-
-  // Reset processing state when dialog closes
-  useEffect(() => {
-    if (!isCustomDialogOpen) {
-      setIsProcessing(false);
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      resetStates();
-    };
-  }, [isCustomDialogOpen, resetStates]);
-
-  useEffect(() => {
-    if (initialCustomRecurrence && selectedReminder !== 'Custom') {
-      onReminderSelect('Custom', initialCustomRecurrence);
-    }
-  }, [initialCustomRecurrence, onReminderSelect, selectedReminder]);
-
-  const handleReminderSelect = async (frequency: ReminderFrequency) => {
-    if (isProcessing) return;
-
-    try {
-      setIsProcessing(true);
-      
-      if (frequency === 'Custom') {
-        setIsCustomDialogOpen(true);
-      } else {
-        await onReminderSelect(frequency);
-        resetStates();
-      }
-    } catch (error) {
-      console.error('Error selecting reminder:', error);
-      resetStates();
-    }
   };
-
-  const handleCustomRecurrence = async (recurrence: CustomRecurrence) => {
-    try {
-      setIsProcessing(true);
-      await onReminderSelect('Custom', recurrence);
-    } catch (error) {
-      console.error('Error setting custom recurrence:', error);
-    } finally {
-      resetStates();
-    }
-  };
-
-  const handleDialogClose = () => {
-    resetStates();
-  };
-
-  const isButtonDisabled = isLoading || isProcessing;
 
   return (
     <div className="relative space-y-4">
-      {(isLoading || isProcessing) && <LoadingOverlay message="Updating reminder..." />}
+      {isLoading && <LoadingOverlay message="Updating reminder..." />}
       
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                disabled={isButtonDisabled}
-              >
+              <Button variant="outline" size="sm">
                 <Bell className="h-4 w-4 mr-2" />
                 {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              {['Every week', 'Every 2 weeks', 'Monthly', 'Custom'].map((frequency) => (
+              {REMINDER_OPTIONS.map((frequency) => (
                 <DropdownMenuItem
                   key={frequency}
-                  onClick={() => handleReminderSelect(frequency as ReminderFrequency)}
+                  onClick={() => handleReminderSelect(frequency)}
                   className="flex justify-between items-center"
-                  disabled={isButtonDisabled}
                 >
                   <span>{frequency}</span>
                   {selectedReminder === frequency && (
@@ -144,8 +85,7 @@ export function ReminderSection({
               variant="ghost"
               size="sm"
               className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => handleReminderSelect(null)}
-              disabled={isButtonDisabled}
+              onClick={() => onReminderSelect(null)}
             >
               <X className="h-4 w-4 mr-2" />
               Remove Reminder
@@ -157,7 +97,7 @@ export function ReminderSection({
           <ReminderStatusControl
             contactId={contactId}
             currentStatus={reminderStatus}
-            disabled={!nextReminder || isButtonDisabled}
+            disabled={!nextReminder}
           />
         )}
       </div>
@@ -165,11 +105,7 @@ export function ReminderSection({
       {selectedReminder && (
         <div className="text-sm text-muted-foreground space-y-1">
           <p>
-            Reminder set to check in with {contactName} {
-              selectedReminder === 'Custom' && initialCustomRecurrence
-                ? `every ${initialCustomRecurrence.interval} ${initialCustomRecurrence.unit}(s)`
-                : selectedReminder.toLowerCase()
-            }
+            Reminder set to check in with {contactName} {selectedReminder.toLowerCase()}
           </p>
           {nextReminder && (
             <p>
@@ -181,9 +117,8 @@ export function ReminderSection({
 
       <CustomRecurrenceDialog
         isOpen={isCustomDialogOpen}
-        onClose={handleDialogClose}
+        onClose={() => setIsCustomDialogOpen(false)}
         onSave={handleCustomRecurrence}
-        initialValues={initialCustomRecurrence}
       />
     </div>
   );
