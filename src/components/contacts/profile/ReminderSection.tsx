@@ -41,8 +41,21 @@ export function ReminderSection({
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Reset processing state when loading state changes
   useEffect(() => {
-    // If we have custom recurrence data, ensure the selected reminder is set to 'Custom'
+    if (!isLoading) {
+      setIsProcessing(false);
+    }
+  }, [isLoading]);
+
+  // Reset processing state when dialog closes
+  useEffect(() => {
+    if (!isCustomDialogOpen) {
+      setIsProcessing(false);
+    }
+  }, [isCustomDialogOpen]);
+
+  useEffect(() => {
     if (initialCustomRecurrence && selectedReminder !== 'Custom') {
       onReminderSelect('Custom', initialCustomRecurrence);
     }
@@ -59,8 +72,12 @@ export function ReminderSection({
       } else {
         await onReminderSelect(frequency);
       }
+    } catch (error) {
+      console.error('Error selecting reminder:', error);
     } finally {
-      setIsProcessing(false);
+      if (frequency !== 'Custom') {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -68,8 +85,10 @@ export function ReminderSection({
     try {
       setIsProcessing(true);
       await onReminderSelect('Custom', recurrence);
-      setIsCustomDialogOpen(false);
+    } catch (error) {
+      console.error('Error setting custom recurrence:', error);
     } finally {
+      setIsCustomDialogOpen(false);
       setIsProcessing(false);
     }
   };

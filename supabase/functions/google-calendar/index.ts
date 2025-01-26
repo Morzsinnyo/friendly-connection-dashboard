@@ -6,14 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getRecurrenceRule = (frequency: string, customRecurrence?: any): string => {
+const getRecurrenceRule = (frequency: string, customRecurrence?: any): string[] => {
   console.log('Generating recurrence rule for:', { frequency, customRecurrence });
 
-  if (!frequency) return '';
+  if (!frequency) return [];
 
   if (frequency === 'Custom' && customRecurrence) {
     const { interval, unit, ends, endDate, occurrences } = customRecurrence;
-    let rrule = `RRULE:FREQ=${unit.toUpperCase()};INTERVAL=${interval}`;
+    let rrule = `FREQ=${unit.toUpperCase()};INTERVAL=${interval}`;
     
     if (ends === 'on' && endDate) {
       const until = new Date(endDate).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -23,19 +23,19 @@ const getRecurrenceRule = (frequency: string, customRecurrence?: any): string =>
     }
     
     console.log('Generated custom RRULE:', rrule);
-    return rrule;
+    return [`RRULE:${rrule}`];
   }
 
   // Standard frequencies with explicit intervals
-  const frequencies = {
-    'Every week': 'RRULE:FREQ=WEEKLY;INTERVAL=1',
-    'Every 2 weeks': 'RRULE:FREQ=WEEKLY;INTERVAL=2',
-    'Monthly': 'RRULE:FREQ=MONTHLY;INTERVAL=1'
+  const frequencies: Record<string, string> = {
+    'Every week': 'FREQ=WEEKLY;INTERVAL=1',
+    'Every 2 weeks': 'FREQ=WEEKLY;INTERVAL=2',
+    'Monthly': 'FREQ=MONTHLY;INTERVAL=1'
   };
 
   const rule = frequencies[frequency];
   console.log('Generated standard RRULE:', rule);
-  return rule || '';
+  return rule ? [`RRULE:${rule}`] : [];
 };
 
 const createClient = async () => {
@@ -91,32 +91,26 @@ serve(async (req) => {
           throw new Error('Missing required event fields');
         }
 
-        const recurrenceRule = getRecurrenceRule(eventData.frequency, eventData.customRecurrence);
-        console.log('Using recurrence rule:', recurrenceRule);
+        const recurrenceRules = getRecurrenceRule(eventData.frequency, eventData.customRecurrence);
+        console.log('Using recurrence rules:', recurrenceRules);
 
-        // Ensure timezone is set
-        const eventWithTimezone = {
-          ...eventData,
-          start: { ...eventData.start, timeZone: eventData.start.timeZone || 'UTC' },
-          end: { ...eventData.end, timeZone: eventData.end.timeZone || 'UTC' }
-        };
-
-        // Create the event request body
+        // Create the event request body with proper recurrence
         const requestBody = {
-          summary: eventWithTimezone.summary,
-          description: eventWithTimezone.description,
-          start: eventWithTimezone.start,
-          end: eventWithTimezone.end,
-          reminders: eventWithTimezone.reminders,
+          summary: eventData.summary,
+          description: eventData.description,
+          start: {
+            dateTime: eventData.start.dateTime,
+            timeZone: eventData.start.timeZone || 'UTC'
+          },
+          end: {
+            dateTime: eventData.end.dateTime,
+            timeZone: eventData.end.timeZone || 'UTC'
+          },
+          reminders: eventData.reminders,
+          recurrence: recurrenceRules
         };
 
-        // Only add recurrence if a rule exists
-        if (recurrenceRule) {
-          console.log('Adding recurrence rule to event:', recurrenceRule);
-          Object.assign(requestBody, { recurrence: [recurrenceRule] });
-        }
-
-        console.log('Final event request body:', requestBody);
+        console.log('Final event request body:', JSON.stringify(requestBody, null, 2));
 
         const createResponse = await calendar.events.insert({
           calendarId,
