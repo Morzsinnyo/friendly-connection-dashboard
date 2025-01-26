@@ -39,21 +39,14 @@ const createClient = async () => {
   }
 };
 
-const createSupabaseClient = () => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  return createClient(supabaseUrl, supabaseKey);
-};
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, eventData, calendarId, contactName, contactId } = await req.json();
-    console.log('Received request:', { action, calendarId, contactName, contactId });
+    const { action, eventData, calendarId, contactName } = await req.json();
+    console.log('Received request:', { action, calendarId, contactName });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -83,42 +76,27 @@ serve(async (req) => {
           throw new Error('Missing required event fields');
         }
 
-        const extendedProperties = {
-          private: {
-            contactId: contactId || '',
-            reminderStatus: 'pending'
-          }
+        // Ensure the event is 1 hour long
+        const startDate = new Date(eventData.start.dateTime);
+        const endDate = new Date(startDate);
+        endDate.setHours(startDate.getHours() + 1);
+
+        const event = {
+          ...eventData,
+          start: {
+            ...eventData.start,
+            dateTime: startDate.toISOString(),
+          },
+          end: {
+            ...eventData.end,
+            dateTime: endDate.toISOString(),
+          },
         };
-
-        if (eventData.frequency) {
-          const recurrenceRule = getRecurrenceRule(eventData.frequency);
-          if (recurrenceRule) {
-            eventData.recurrence = [recurrenceRule];
-          }
-          delete eventData.frequency;
-        }
-
-        if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
-        if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
 
         const createResponse = await calendar.events.insert({
           calendarId,
-          requestBody: {
-            ...eventData,
-            extendedProperties,
-          },
+          requestBody: event,
         });
-        
-        if (contactId) {
-          const supabase = createSupabaseClient();
-          await supabase
-            .from('contacts')
-            .update({ 
-              calendar_event_id: createResponse.data.id,
-              reminder_status: 'pending'
-            })
-            .eq('id', contactId);
-        }
         
         result = createResponse.data;
         break;

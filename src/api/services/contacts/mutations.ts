@@ -2,22 +2,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Contact, ContactInsert, ContactUpdate } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
-import { addWeeks, addMonths } from "date-fns";
+import { addWeeks, addMonths, setHours, setMinutes } from "date-fns";
 
 const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
+  // First set the time to 12:00 PM
+  let nextDate = setHours(setMinutes(currentDate, 0), 12);
+  
   switch (frequency) {
     case 'Every week':
-      return addWeeks(currentDate, 1);
+      return addWeeks(nextDate, 1);
     case 'Every 2 weeks':
-      return addWeeks(currentDate, 2);
+      return addWeeks(nextDate, 2);
     case 'Monthly':
-      return addMonths(currentDate, 1);
+      return addMonths(nextDate, 1);
     case 'Every 2 months':
-      return addMonths(currentDate, 2);
+      return addMonths(nextDate, 2);
     case 'Every 3 months':
-      return addMonths(currentDate, 3);
+      return addMonths(nextDate, 3);
     default:
-      return currentDate;
+      return nextDate;
   }
 };
 
