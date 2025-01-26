@@ -4,6 +4,25 @@ import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { addWeeks, addMonths } from "date-fns";
 
+const calculateNextReminder = (frequency: string): Date => {
+  const today = new Date();
+  
+  switch (frequency) {
+    case 'Every week':
+      return addWeeks(today, 1);
+    case 'Every 2 weeks':
+      return addWeeks(today, 2);
+    case 'Monthly':
+      return addMonths(today, 1);
+    case 'Every 2 months':
+      return addMonths(today, 2);
+    case 'Every 3 months':
+      return addMonths(today, 3);
+    default:
+      return today;
+  }
+};
+
 export const contactMutations = {
   create: async (contact: ContactInsert): Promise<ApiResponse<Contact>> => {
     console.log('Creating new contact:', contact);
@@ -307,18 +326,5 @@ export const contactMutations = {
     return contactMutations.update(id, {
       last_contact: lastContact
     });
-  }
-};
-
-const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
-  switch (frequency) {
-    case 'Every week':
-      return addWeeks(currentDate, 1);
-    case 'Every 2 weeks':
-      return addWeeks(currentDate, 2);
-    case 'Monthly':
-      return addMonths(currentDate, 1);
-    default:
-      return currentDate;
   }
 };

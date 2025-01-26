@@ -14,6 +14,10 @@ const getRecurrenceRule = (frequency: string): string => {
       return 'RRULE:FREQ=WEEKLY;INTERVAL=2';
     case 'Monthly':
       return 'RRULE:FREQ=MONTHLY';
+    case 'Every 2 months':
+      return 'RRULE:FREQ=MONTHLY;INTERVAL=2';
+    case 'Every 3 months':
+      return 'RRULE:FREQ=MONTHLY;INTERVAL=3';
     default:
       return '';
   }
