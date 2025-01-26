@@ -4,22 +4,20 @@ import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { addWeeks, addMonths } from "date-fns";
 
-const calculateNextReminder = (frequency: string): Date => {
-  const today = new Date();
-  
+const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
   switch (frequency) {
     case 'Every week':
-      return addWeeks(today, 1);
+      return addWeeks(currentDate, 1);
     case 'Every 2 weeks':
-      return addWeeks(today, 2);
+      return addWeeks(currentDate, 2);
     case 'Monthly':
-      return addMonths(today, 1);
+      return addMonths(currentDate, 1);
     case 'Every 2 months':
-      return addMonths(today, 2);
+      return addMonths(currentDate, 2);
     case 'Every 3 months':
-      return addMonths(today, 3);
+      return addMonths(currentDate, 3);
     default:
-      return today;
+      return currentDate;
   }
 };
 
