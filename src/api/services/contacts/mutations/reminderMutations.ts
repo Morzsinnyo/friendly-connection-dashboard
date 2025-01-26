@@ -143,7 +143,14 @@ export const reminderMutations = {
       throw fetchError;
     }
 
-    const updates = {
+    // Define the type for the updates object
+    type ContactUpdates = {
+      reminder_status: 'pending' | 'completed' | 'skipped';
+      next_reminder?: string;
+      last_contact?: string;
+    };
+
+    const updates: ContactUpdates = {
       reminder_status: status
     };
 
