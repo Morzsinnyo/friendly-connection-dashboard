@@ -24,6 +24,7 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
+      <span className="text-sm font-medium text-muted-foreground">Tags</span>
       {tags.map((tag, index) => (
         <div key={index} className="relative group">
           <Badge variant="secondary" className="pr-6">
