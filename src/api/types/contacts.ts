@@ -11,3 +11,11 @@ export interface ContactFilters {
   company?: string[];
   searchQuery?: string;
 }
+
+export interface CustomRecurrence {
+  interval: number;
+  unit: 'day' | 'week' | 'month' | 'year';
+  ends: 'never' | 'on' | 'after';
+  endDate: string | null;
+  occurrences: number | null;
+}
