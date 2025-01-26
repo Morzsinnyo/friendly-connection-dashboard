@@ -26,13 +26,14 @@ const getRecurrenceRule = (frequency: string, customRecurrence?: any): string =>
     return rrule;
   }
 
-  // Handle standard frequencies with explicit intervals
-  const rule = {
+  // Standard frequencies with explicit intervals
+  const frequencies = {
     'Every week': 'RRULE:FREQ=WEEKLY;INTERVAL=1',
     'Every 2 weeks': 'RRULE:FREQ=WEEKLY;INTERVAL=2',
     'Monthly': 'RRULE:FREQ=MONTHLY;INTERVAL=1'
-  }[frequency];
+  };
 
+  const rule = frequencies[frequency];
   console.log('Generated standard RRULE:', rule);
   return rule || '';
 };
@@ -93,17 +94,33 @@ serve(async (req) => {
         const recurrenceRule = getRecurrenceRule(eventData.frequency, eventData.customRecurrence);
         console.log('Using recurrence rule:', recurrenceRule);
 
-        if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
-        if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
+        // Ensure timezone is set
+        const eventWithTimezone = {
+          ...eventData,
+          start: { ...eventData.start, timeZone: eventData.start.timeZone || 'UTC' },
+          end: { ...eventData.end, timeZone: eventData.end.timeZone || 'UTC' }
+        };
 
-        const { frequency, customRecurrence, ...cleanEventData } = eventData;
+        // Create the event request body
+        const requestBody = {
+          summary: eventWithTimezone.summary,
+          description: eventWithTimezone.description,
+          start: eventWithTimezone.start,
+          end: eventWithTimezone.end,
+          reminders: eventWithTimezone.reminders,
+        };
+
+        // Only add recurrence if a rule exists
+        if (recurrenceRule) {
+          console.log('Adding recurrence rule to event:', recurrenceRule);
+          Object.assign(requestBody, { recurrence: [recurrenceRule] });
+        }
+
+        console.log('Final event request body:', requestBody);
 
         const createResponse = await calendar.events.insert({
           calendarId,
-          requestBody: {
-            ...cleanEventData,
-            recurrence: recurrenceRule ? [recurrenceRule] : undefined,
-          },
+          requestBody,
         });
         
         console.log('Event created successfully:', createResponse.data);
