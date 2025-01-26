@@ -9,15 +9,12 @@ import {
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
 import { format } from "date-fns";
-import { useState } from "react";
-import { CustomRecurrenceDialog } from "./recurrence/CustomRecurrenceDialog";
-import { CustomRecurrence } from "@/api/types/contacts";
 
-type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Custom' | null;
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
 
 interface ReminderSectionProps {
   selectedReminder: ReminderFrequency;
-  onReminderSelect: (frequency: ReminderFrequency, customRecurrence?: CustomRecurrence) => void;
+  onReminderSelect: (frequency: ReminderFrequency) => void;
   contactName: string;
   isLoading?: boolean;
   nextReminder?: Date | null;
@@ -25,7 +22,7 @@ interface ReminderSectionProps {
   contactId: string;
 }
 
-const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly', 'Custom'];
+const REMINDER_OPTIONS: ReminderFrequency[] = ['Every week', 'Every 2 weeks', 'Monthly'];
 
 export function ReminderSection({ 
   selectedReminder, 
@@ -36,21 +33,6 @@ export function ReminderSection({
   reminderStatus = 'pending',
   contactId,
 }: ReminderSectionProps) {
-  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
-
-  const handleReminderSelect = (frequency: ReminderFrequency) => {
-    if (frequency === 'Custom') {
-      setIsCustomDialogOpen(true);
-    } else {
-      onReminderSelect(frequency);
-    }
-  };
-
-  const handleCustomRecurrence = (recurrence: CustomRecurrence) => {
-    onReminderSelect('Custom', recurrence);
-    setIsCustomDialogOpen(false);
-  };
-
   return (
     <div className="relative space-y-4">
       {isLoading && <LoadingOverlay message="Updating reminder..." />}
@@ -68,7 +50,7 @@ export function ReminderSection({
               {REMINDER_OPTIONS.map((frequency) => (
                 <DropdownMenuItem
                   key={frequency}
-                  onClick={() => handleReminderSelect(frequency)}
+                  onClick={() => onReminderSelect(frequency)}
                   className="flex justify-between items-center"
                 >
                   <span>{frequency}</span>
@@ -114,12 +96,6 @@ export function ReminderSection({
           )}
         </div>
       )}
-
-      <CustomRecurrenceDialog
-        isOpen={isCustomDialogOpen}
-        onClose={() => setIsCustomDialogOpen(false)}
-        onSave={handleCustomRecurrence}
-      />
     </div>
   );
 }
