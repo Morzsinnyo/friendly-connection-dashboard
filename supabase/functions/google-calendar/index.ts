@@ -6,7 +6,24 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getRecurrenceRule = (frequency: string): string => {
+const getRecurrenceRule = (frequency: string, customRecurrence?: any): string => {
+  if (!frequency) return '';
+
+  if (frequency === 'Custom' && customRecurrence) {
+    const { interval, unit, ends, endDate, occurrences } = customRecurrence;
+    let rrule = `RRULE:FREQ=${unit.toUpperCase()};INTERVAL=${interval}`;
+    
+    if (ends === 'on' && endDate) {
+      const until = new Date(endDate).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      rrule += `;UNTIL=${until}`;
+    } else if (ends === 'after' && occurrences) {
+      rrule += `;COUNT=${occurrences}`;
+    }
+    
+    return rrule;
+  }
+
+  // Handle standard frequencies
   switch (frequency) {
     case 'Every week':
       return 'RRULE:FREQ=WEEKLY';
@@ -35,12 +52,6 @@ const createClient = async () => {
   }
 };
 
-const createSupabaseClient = () => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  return createClient(supabaseUrl, supabaseKey);
-};
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -48,8 +59,8 @@ serve(async (req) => {
   }
 
   try {
-    const { action, eventData, calendarId, contactName, contactId } = await req.json();
-    console.log('Received request:', { action, calendarId, contactName, contactId });
+    const { action, eventData, calendarId, contactName } = await req.json();
+    console.log('Received request:', { action, calendarId, contactName });
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -79,80 +90,24 @@ serve(async (req) => {
           throw new Error('Missing required event fields');
         }
 
-        const extendedProperties = {
-          private: {
-            contactId: contactId || '',
-            reminderStatus: 'pending'
-          }
-        };
-
-        if (eventData.frequency) {
-          const recurrenceRule = getRecurrenceRule(eventData.frequency);
-          if (recurrenceRule) {
-            eventData.recurrence = [recurrenceRule];
-          }
-          delete eventData.frequency;
-        }
+        const recurrenceRule = getRecurrenceRule(eventData.frequency, eventData.customRecurrence);
+        console.log('Generated recurrence rule:', recurrenceRule);
 
         if (!eventData.start.timeZone) eventData.start.timeZone = 'UTC';
         if (!eventData.end.timeZone) eventData.end.timeZone = 'UTC';
 
+        // Remove custom fields before creating event
+        const { frequency, customRecurrence, ...cleanEventData } = eventData;
+
         const createResponse = await calendar.events.insert({
           calendarId,
           requestBody: {
-            ...eventData,
-            extendedProperties,
+            ...cleanEventData,
+            recurrence: recurrenceRule ? [recurrenceRule] : undefined,
           },
         });
         
-        if (contactId) {
-          const supabase = createSupabaseClient();
-          await supabase
-            .from('contacts')
-            .update({ 
-              calendar_event_id: createResponse.data.id,
-              reminder_status: 'pending'
-            })
-            .eq('id', contactId);
-        }
-        
         result = createResponse.data;
-        break;
-      }
-
-      case 'updateEventStatus': {
-        console.log('Updating event status');
-        const event = await calendar.events.get({
-          calendarId,
-          eventId: eventData.id
-        });
-
-        const contactId = event.data.extendedProperties?.private?.contactId;
-        if (contactId) {
-          const supabase = createSupabaseClient();
-          await supabase
-            .from('contacts')
-            .update({ 
-              reminder_status: eventData.status,
-              last_contact: eventData.status === 'completed' ? new Date().toISOString() : null
-            })
-            .eq('id', contactId);
-        }
-
-        const updatedEvent = await calendar.events.patch({
-          calendarId,
-          eventId: eventData.id,
-          requestBody: {
-            extendedProperties: {
-              private: {
-                ...event.data.extendedProperties?.private,
-                reminderStatus: eventData.status
-              }
-            }
-          }
-        });
-        
-        result = updatedEvent.data;
         break;
       }
 
