@@ -196,6 +196,7 @@ export const GoogleCalendar = () => {
         <EventList
           events={events}
           onDeleteEvent={deleteEvent}
+          onStatusChange={fetchEvents}
         />
       )}
     </div>
