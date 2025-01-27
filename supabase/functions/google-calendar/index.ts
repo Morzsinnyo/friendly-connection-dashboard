@@ -6,20 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getRecurrenceRule = (frequency: string): string => {
+const getRecurrenceRule = (frequency: string): string[] => {
   switch (frequency) {
     case 'Every week':
-      return 'RRULE:FREQ=WEEKLY';
+      return ['RRULE:FREQ=WEEKLY'];
     case 'Every 2 weeks':
-      return 'RRULE:FREQ=WEEKLY;INTERVAL=2';
+      return ['RRULE:FREQ=WEEKLY;INTERVAL=2'];
     case 'Monthly':
-      return 'RRULE:FREQ=MONTHLY';
+      return ['RRULE:FREQ=MONTHLY'];
     case 'Every 2 months':
-      return 'RRULE:FREQ=MONTHLY;INTERVAL=2';
+      return ['RRULE:FREQ=MONTHLY;INTERVAL=2'];
     case 'Every 3 months':
-      return 'RRULE:FREQ=MONTHLY;INTERVAL=3';
+      return ['RRULE:FREQ=MONTHLY;INTERVAL=3'];
     default:
-      return '';
+      return [];
   }
 };
 
@@ -71,7 +71,7 @@ serve(async (req) => {
       }
 
       case 'createEvent': {
-        console.log('Creating calendar event');
+        console.log('Creating calendar event with data:', eventData);
         if (!eventData.summary || !eventData.start || !eventData.end) {
           throw new Error('Missing required event fields');
         }
@@ -80,6 +80,9 @@ serve(async (req) => {
         const startDate = new Date(eventData.start.dateTime);
         const endDate = new Date(startDate);
         endDate.setHours(startDate.getHours() + 1);
+
+        const recurrence = eventData.frequency ? getRecurrenceRule(eventData.frequency) : [];
+        console.log('Recurrence rule:', recurrence);
 
         const event = {
           ...eventData,
@@ -91,8 +94,10 @@ serve(async (req) => {
             ...eventData.end,
             dateTime: endDate.toISOString(),
           },
+          recurrence,
         };
 
+        console.log('Creating event with configuration:', event);
         const createResponse = await calendar.events.insert({
           calendarId,
           requestBody: event,
