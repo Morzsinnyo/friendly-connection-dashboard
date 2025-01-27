@@ -44,6 +44,13 @@ export function ReminderStatusBadge({
     }
   };
 
+  const handleSkip = async (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setIsRescheduleOpen(true);
+      resolve();
+    });
+  };
+
   const handleReschedule = async (newDate: Date) => {
     if (!calendarId) {
       toast.error("Calendar ID is required");
@@ -97,7 +104,7 @@ export function ReminderStatusBadge({
         contactId={contactId}
         currentStatus={status}
         onStatusChange={onStatusChange}
-        onSkip={() => setIsRescheduleOpen(true)}
+        onSkip={handleSkip}
       />
       <RescheduleDialog
         isOpen={isRescheduleOpen}

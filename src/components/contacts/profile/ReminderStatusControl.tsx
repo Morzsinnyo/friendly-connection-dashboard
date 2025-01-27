@@ -49,7 +49,11 @@ export function ReminderStatusControl({
           className="w-[140px]"
           disabled={disabled || isUpdating}
         >
-          <ReminderStatus status={currentStatus} />
+          <ReminderStatus 
+            status={currentStatus}
+            contactId={contactId}
+            currentStatus={currentStatus}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">
