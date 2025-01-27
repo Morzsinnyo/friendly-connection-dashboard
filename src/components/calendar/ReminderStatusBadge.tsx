@@ -3,6 +3,7 @@ import { ReminderStatus } from "./ReminderStatus";
 import { RescheduleDialog } from "./RescheduleDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { LoadingState } from "@/components/common/LoadingState";
 
 interface ReminderStatusBadgeProps {
   status: 'pending' | 'completed' | 'skipped';
@@ -19,29 +20,46 @@ export function ReminderStatusBadge({
 }: ReminderStatusBadgeProps) {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [calendarId, setCalendarId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchCalendarId();
-  }, []); // Run once on mount
+    console.log('[ReminderStatusBadge] Initializing calendar ID fetch');
+    let mounted = true;
 
-  const fetchCalendarId = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const fetchCalendarId = async () => {
+      try {
+        console.log('[ReminderStatusBadge] Fetching user data');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !mounted) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('calendar_id')
-        .eq('id', user.id)
-        .single();
+        console.log('[ReminderStatusBadge] Fetching profile data');
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('calendar_id')
+          .eq('id', user.id)
+          .single();
 
-      if (profile?.calendar_id) {
-        setCalendarId(profile.calendar_id);
+        if (mounted) {
+          console.log('[ReminderStatusBadge] Setting calendar ID:', profile?.calendar_id);
+          setCalendarId(profile?.calendar_id || null);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('[ReminderStatusBadge] Error fetching calendar ID:', error);
+        if (mounted) {
+          setIsLoading(false);
+          toast.error("Failed to load calendar settings");
+        }
       }
-    } catch (error) {
-      console.error('Error fetching calendar ID:', error);
-    }
-  };
+    };
+
+    fetchCalendarId();
+
+    return () => {
+      console.log('[ReminderStatusBadge] Cleaning up calendar ID fetch');
+      mounted = false;
+    };
+  }, []);
 
   const handleSkip = async (): Promise<void> => {
     return new Promise((resolve) => {
@@ -57,7 +75,7 @@ export function ReminderStatusBadge({
     }
 
     try {
-      console.log('Handling reschedule for contact:', contactId);
+      console.log('[ReminderStatusBadge] Handling reschedule for contact:', contactId);
       
       // First mark the current reminder as skipped
       const { error: statusError } = await supabase
@@ -94,10 +112,14 @@ export function ReminderStatusBadge({
       toast.success("Event rescheduled successfully");
       setIsRescheduleOpen(false);
     } catch (error) {
-      console.error('Error in handleReschedule:', error);
+      console.error('[ReminderStatusBadge] Error in handleReschedule:', error);
       toast.error("Failed to reschedule reminder");
     }
   };
+
+  if (isLoading) {
+    return <LoadingState message="Loading calendar settings..." />;
+  }
 
   return (
     <>
