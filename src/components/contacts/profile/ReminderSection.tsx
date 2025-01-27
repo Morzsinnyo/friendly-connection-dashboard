@@ -40,11 +40,11 @@ export function ReminderSection({
   contactId,
 }: ReminderSectionProps) {
   return (
-    <div className="relative space-y-4">
+    <div className="relative">
       {isLoading && <LoadingOverlay message="Updating reminder..." />}
       
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -76,32 +76,32 @@ export function ReminderSection({
               onClick={() => onReminderSelect(null)}
             >
               <X className="h-4 w-4 mr-2" />
-              Remove Reminder
+              Remove
             </Button>
           )}
         </div>
 
         {selectedReminder && (
-          <ReminderStatusControl
-            contactId={contactId}
-            currentStatus={reminderStatus}
-            disabled={!nextReminder}
-          />
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                Checking in {selectedReminder.toLowerCase()}
+                {nextReminder && (
+                  <span className="ml-2">
+                    (Next: {format(nextReminder, "MMM d")})
+                  </span>
+                )}
+              </span>
+            </div>
+            
+            <ReminderStatusControl
+              contactId={contactId}
+              currentStatus={reminderStatus}
+              disabled={!nextReminder}
+            />
+          </>
         )}
       </div>
-      
-      {selectedReminder && (
-        <div className="text-sm text-muted-foreground space-y-1">
-          <p>
-            Reminder set to check in with {contactName} {selectedReminder.toLowerCase()}
-          </p>
-          {nextReminder && (
-            <p>
-              Next reminder: {format(nextReminder, "PPP 'at' p")}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }
