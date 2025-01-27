@@ -15,9 +15,10 @@ interface CalendarEvent {
 interface EventListProps {
   events: CalendarEvent[];
   onDeleteEvent: (eventId: string) => void;
+  onStatusChange: () => void;
 }
 
-export const EventList = ({ events, onDeleteEvent }: EventListProps) => {
+export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListProps) => {
   const isReminderEvent = (summary: string) => {
     return summary.toLowerCase().includes("time to contact");
   };
@@ -38,6 +39,7 @@ export const EventList = ({ events, onDeleteEvent }: EventListProps) => {
               <ReminderStatusBadge
                 status={event.reminderStatus}
                 contactId={event.contactId}
+                onStatusChange={onStatusChange}
               />
             )}
             

@@ -15,12 +15,14 @@ interface ReminderStatusProps {
   contactId: string;
   currentStatus: 'pending' | 'completed' | 'skipped';
   disabled?: boolean;
+  onStatusChange?: () => void;
 }
 
 export function ReminderStatus({
   contactId,
   currentStatus,
   disabled = false,
+  onStatusChange,
 }: ReminderStatusProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { updateReminderStatus } = useContactStatus(contactId);
@@ -31,6 +33,7 @@ export function ReminderStatus({
     setIsUpdating(true);
     try {
       await updateReminderStatus(newStatus);
+      onStatusChange?.();
     } finally {
       setIsUpdating(false);
     }
@@ -44,7 +47,7 @@ export function ReminderStatus({
     },
     completed: {
       icon: Check,
-      variant: "secondary" as const, // Changed from 'success' to 'secondary'
+      variant: "secondary" as const,
       label: "Completed",
     },
     skipped: {
