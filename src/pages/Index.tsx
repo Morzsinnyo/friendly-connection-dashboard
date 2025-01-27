@@ -1,95 +1,75 @@
-import { useState, useEffect } from "react";
 import { ContactsList } from "@/components/contacts/ContactsList";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { EventList } from "@/components/calendar/EventList";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Index = () => {
-  const [calendarId, setCalendarId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    fetchCalendarId();
-  }, []);
-
-  const fetchCalendarId = async () => {
-    try {
+  const { data: events = [], isLoading: isLoadingEvents } = useQuery({
+    queryKey: ['calendar-events'],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) return [];
 
-      const { data: profile, error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('calendar_id')
         .eq('id', user.id)
         .single();
 
+      if (!profile?.calendar_id) return [];
+
+      const { data, error } = await supabase.functions.invoke('google-calendar', {
+        body: { action: 'listEvents', calendarId: profile.calendar_id }
+      });
+
       if (error) throw error;
-      if (profile?.calendar_id) {
-        setCalendarId(profile.calendar_id);
-      }
-    } catch (error) {
-      console.error('Error fetching calendar ID:', error);
-      toast.error('Failed to fetch calendar settings');
+      return data.items || [];
     }
-  };
+  });
 
-  const updateCalendarId = async () => {
+  const handleDeleteEvent = async (eventId: string) => {
     try {
-      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      if (!user) return;
 
-      const { error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .update({ calendar_id: calendarId })
-        .eq('id', user.id);
+        .select('calendar_id')
+        .eq('id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (!profile?.calendar_id) return;
 
-      toast.success('Calendar ID updated successfully');
+      await supabase.functions.invoke('google-calendar', {
+        body: { 
+          action: 'deleteEvent', 
+          eventData: { id: eventId }, 
+          calendarId: profile.calendar_id 
+        }
+      });
+
+      toast.success('Event deleted successfully');
     } catch (error) {
-      console.error('Error updating calendar ID:', error);
-      toast.error('Failed to update calendar ID');
-    } finally {
-      setIsLoading(false);
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event');
     }
   };
 
   return (
-    <div className="p-4 space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Google Calendar Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="calendarId" className="text-sm font-medium">
-              Calendar ID
-            </label>
-            <div className="flex gap-2">
-              <Input
-                id="calendarId"
-                value={calendarId}
-                onChange={(e) => setCalendarId(e.target.value)}
-                placeholder="example@gmail.com"
-                className="flex-1"
-              />
-              <Button 
-                onClick={updateCalendarId} 
-                disabled={isLoading}
-              >
-                Save
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Enter your Google Calendar ID to sync events. You can find this in your Google Calendar settings.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="container mx-auto p-4">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Upcoming Events</h2>
+        {isLoadingEvents ? (
+          <div>Loading events...</div>
+        ) : (
+          <EventList 
+            events={events} 
+            onDeleteEvent={handleDeleteEvent}
+            showReminderControl={false}
+          />
+        )}
+      </div>
       <ContactsList />
     </div>
   );

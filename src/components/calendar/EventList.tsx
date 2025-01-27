@@ -16,9 +16,15 @@ interface EventListProps {
   events: CalendarEvent[];
   onDeleteEvent: (eventId: string) => void;
   onEventStatusChange?: () => void;
+  showReminderControl?: boolean;
 }
 
-export const EventList = ({ events, onDeleteEvent, onEventStatusChange }: EventListProps) => {
+export const EventList = ({ 
+  events, 
+  onDeleteEvent, 
+  onEventStatusChange,
+  showReminderControl = true 
+}: EventListProps) => {
   const getContactIdFromSummary = (summary: string): string | undefined => {
     const match = summary.match(/contact-id:(\S+)/);
     return match ? match[1] : undefined;
@@ -41,7 +47,7 @@ export const EventList = ({ events, onDeleteEvent, onEventStatusChange }: EventL
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {contactId && (
+              {showReminderControl && contactId && (
                 <ReminderStatusControl
                   contactId={contactId}
                   currentStatus={event.reminderStatus || 'pending'}
