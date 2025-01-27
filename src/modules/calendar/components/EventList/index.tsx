@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { ReminderStatusBadge } from "@/components/calendar/ReminderStatusBadge";
+import { ReminderBadge } from "@/modules/reminders/components/ReminderBadge";
 
 interface CalendarEvent {
   id: string;
@@ -36,7 +36,7 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
           
           <div className="flex items-center gap-4">
             {isReminderEvent(event.summary) && event.contactId && event.reminderStatus && (
-              <ReminderStatusBadge
+              <ReminderBadge
                 status={event.reminderStatus}
                 contactId={event.contactId}
                 onStatusChange={onStatusChange}
