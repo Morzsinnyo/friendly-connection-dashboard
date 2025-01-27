@@ -1,33 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CalendarSettings } from '@/components/calendar/CalendarSettings';
-import { EventForm } from '@/components/calendar/EventForm';
-import { EventList } from '@/components/calendar/EventList';
+import { EventForm } from '../components/EventForm';
+import { EventList } from '../components/EventList';
 import { useCalendarState } from '../hooks/useCalendarState';
+import { useEventManagement } from '../hooks/useEventManagement';
 
 export const CalendarView = () => {
   const { events, calendarId, isLoading, fetchEvents, setCalendarId } = useCalendarState();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  const deleteEvent = async (eventId: string) => {
-    try {
-      console.log('Deleting event:', eventId);
-      const { error } = await supabase.functions.invoke('google-calendar', {
-        body: { action: 'deleteEvent', calendarId, eventData: { id: eventId } }
-      });
-
-      if (error) throw error;
-      
-      fetchEvents();
-      toast.success('Event deleted successfully');
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      toast.error('Failed to delete event');
-    }
-  };
+  const { deleteEvent } = useEventManagement(calendarId || '', fetchEvents);
 
   if (isLoading) {
     return <div className="p-4">Loading calendar...</div>;
