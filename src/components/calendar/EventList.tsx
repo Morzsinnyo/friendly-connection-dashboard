@@ -20,7 +20,6 @@ interface EventListProps {
 
 export const EventList = ({ events, onDeleteEvent, onEventStatusChange }: EventListProps) => {
   const getContactIdFromSummary = (summary: string): string | undefined => {
-    // Extract contact ID from event data if it exists
     const match = summary.match(/contact-id:(\S+)/);
     return match ? match[1] : undefined;
   };
@@ -33,14 +32,7 @@ export const EventList = ({ events, onDeleteEvent, onEventStatusChange }: EventL
 
         return (
           <div key={event.id} className="flex justify-between items-center p-4 border rounded-lg">
-            <div className="flex items-center gap-4 flex-1">
-              {contactId && (
-                <ReminderStatusControl
-                  contactId={contactId}
-                  currentStatus={event.reminderStatus || 'pending'}
-                  onStatusChange={onEventStatusChange}
-                />
-              )}
+            <div className="flex items-center gap-4">
               <div>
                 <h3 className="font-medium">{displaySummary}</h3>
                 <p className="text-sm text-gray-500">
@@ -48,7 +40,14 @@ export const EventList = ({ events, onDeleteEvent, onEventStatusChange }: EventL
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {contactId && (
+                <ReminderStatusControl
+                  contactId={contactId}
+                  currentStatus={event.reminderStatus || 'pending'}
+                  onStatusChange={onEventStatusChange}
+                />
+              )}
               {event.htmlLink && (
                 <Button
                   variant="outline"
