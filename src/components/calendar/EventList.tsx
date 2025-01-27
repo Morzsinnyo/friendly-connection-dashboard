@@ -40,6 +40,7 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
                 status={event.reminderStatus}
                 contactId={event.contactId}
                 onStatusChange={onStatusChange}
+                eventSummary={event.summary}
               />
             )}
             
@@ -63,4 +64,4 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
       ))}
     </div>
   );
-};
+}
