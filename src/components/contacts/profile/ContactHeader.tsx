@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit, Trash, Bell, Briefcase } from "lucide-react";
+import { Edit, Trash, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -144,20 +144,6 @@ export function ContactHeader({
 
       <div className="flex space-x-2">
         <GiftIdeasDropdown giftIdeas={giftIdeas} onAddGiftIdea={onAddGiftIdea} />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4 mr-2" />
-              Reminder
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Every week</DropdownMenuItem>
-            <DropdownMenuItem>Every 2 weeks</DropdownMenuItem>
-            <DropdownMenuItem>Monthly</DropdownMenuItem>
-            <DropdownMenuItem>Custom...</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   );
