@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit, Trash, Plus, Bell, Briefcase } from "lucide-react";
+import { Edit, Trash, Bell, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -128,10 +128,6 @@ export function ContactHeader({
           <Button variant="outline" onClick={() => navigate(`/contact/create?edit=${contact.id}`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
-          </Button>
-          <Button variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            New
           </Button>
           <Button variant="destructive">
             <Trash className="h-4 w-4 mr-2" />
