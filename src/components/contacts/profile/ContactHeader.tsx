@@ -17,6 +17,9 @@ import { TagsSection } from "./header/TagsSection";
 import { GiftIdeasDropdown } from "./header/GiftIdeasDropdown";
 import { AgeDisplay } from "./header/AgeDisplay";
 import { ReminderSection } from "./ReminderSection";
+import { ReminderStatus } from "@/api/types/contacts";
+
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
 
 interface ContactHeaderProps {
   contact: any;
@@ -26,11 +29,11 @@ interface ContactHeaderProps {
   handleEdit: () => void;
   giftIdeas: string[];
   onAddGiftIdea: (idea: string) => void;
-  selectedReminder: string | null;
-  onReminderSelect: (frequency: string | null) => void;
+  selectedReminder: ReminderFrequency;
+  onReminderSelect: (frequency: ReminderFrequency) => void;
   isReminderLoading?: boolean;
   nextReminder?: Date | null;
-  reminderStatus?: 'pending' | 'completed' | 'skipped';
+  reminderStatus?: ReminderStatus;
   contactId: string;
 }
 
