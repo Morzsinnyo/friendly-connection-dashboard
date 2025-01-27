@@ -66,11 +66,17 @@ export const GoogleCalendar = () => {
 
   const filterNextEventPerContact = async (events: CalendarEvent[]) => {
     const contactEventsMap = new Map<string, CalendarEvent>();
+    const nonReminderEvents: CalendarEvent[] = [];
     
     for (const event of events) {
       const contactName = extractContactInfo(event.summary);
       
       if (contactName) {
+        // Skip completed events
+        if (event.reminderStatus === 'completed') {
+          continue;
+        }
+
         // Fetch contact information
         const { data: contacts } = await supabase
           .from('contacts')
@@ -80,8 +86,10 @@ export const GoogleCalendar = () => {
 
         if (contacts) {
           const existingEvent = contactEventsMap.get(contactName);
+          const eventDate = new Date(event.start.dateTime);
           
-          if (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime)) {
+          // Only update if this is the first event or if it's earlier than the existing one
+          if (!existingEvent || eventDate < new Date(existingEvent.start.dateTime)) {
             contactEventsMap.set(contactName, {
               ...event,
               contactId: contacts.id,
@@ -89,14 +97,12 @@ export const GoogleCalendar = () => {
             });
           }
         }
+      } else {
+        nonReminderEvents.push(event);
       }
     }
 
-    const nonContactEvents = events.filter(event => 
-      !extractContactInfo(event.summary)
-    );
-
-    return [...contactEventsMap.values(), ...nonContactEvents];
+    return [...contactEventsMap.values(), ...nonReminderEvents];
   };
 
   const fetchEvents = async () => {
