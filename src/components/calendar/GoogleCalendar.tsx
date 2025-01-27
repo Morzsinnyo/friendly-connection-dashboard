@@ -13,6 +13,8 @@ interface CalendarEvent {
   start: { dateTime: string };
   end: { dateTime: string };
   htmlLink?: string;
+  contactId?: string;
+  reminderStatus?: 'pending' | 'completed' | 'skipped';
 }
 
 export const GoogleCalendar = () => {
@@ -50,7 +52,9 @@ export const GoogleCalendar = () => {
         const contactName = contactMatch[1].trim();
         const existingEvent = contactEventsMap.get(contactName);
         
-        if (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime)) {
+        // Only include non-completed events
+        if (event.reminderStatus !== 'completed' && 
+            (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime))) {
           contactEventsMap.set(contactName, event);
         }
       }
@@ -78,8 +82,18 @@ export const GoogleCalendar = () => {
 
       if (error) throw error;
       
-      console.log('Successfully fetched events:', data.items);
-      const filteredEvents = filterNextEventPerContact(data.items || []);
+      // Process events to include reminder status
+      const processedEvents = data.items.map((event: CalendarEvent) => {
+        const contactIdMatch = event.summary.match(/contact-id:(\S+)/);
+        return {
+          ...event,
+          contactId: contactIdMatch ? contactIdMatch[1] : undefined,
+          reminderStatus: 'pending' // Default status, will be updated from the database
+        };
+      });
+
+      console.log('Successfully fetched events:', processedEvents);
+      const filteredEvents = filterNextEventPerContact(processedEvents);
       console.log('Filtered events:', filteredEvents);
       setEvents(filteredEvents);
     } catch (error) {
@@ -108,6 +122,11 @@ export const GoogleCalendar = () => {
       console.error('Error deleting event:', error);
       toast.error('Failed to delete event');
     }
+  };
+
+  const handleEventStatusChange = () => {
+    // Refresh events after status change
+    fetchEvents();
   };
 
   useEffect(() => {
@@ -181,6 +200,7 @@ export const GoogleCalendar = () => {
         <EventList
           events={events}
           onDeleteEvent={deleteEvent}
+          onEventStatusChange={handleEventStatusChange}
         />
       )}
     </div>
