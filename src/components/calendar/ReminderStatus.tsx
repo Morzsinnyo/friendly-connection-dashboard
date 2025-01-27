@@ -16,6 +16,7 @@ interface ReminderStatusProps {
   currentStatus: 'pending' | 'completed' | 'skipped';
   disabled?: boolean;
   onStatusChange?: () => void;
+  onSkip?: () => void;  // Added this prop
 }
 
 export function ReminderStatus({
@@ -23,6 +24,7 @@ export function ReminderStatus({
   currentStatus,
   disabled = false,
   onStatusChange,
+  onSkip,
 }: ReminderStatusProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { updateReminderStatus } = useContactStatus(contactId);
@@ -32,6 +34,10 @@ export function ReminderStatus({
     
     setIsUpdating(true);
     try {
+      if (newStatus === 'skipped' && onSkip) {
+        onSkip();
+        return;
+      }
       await updateReminderStatus(newStatus);
       onStatusChange?.();
     } finally {
