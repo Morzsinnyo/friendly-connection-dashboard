@@ -99,12 +99,6 @@ export function ContactProfile() {
     return <div className="p-6">Contact not found</div>;
   }
 
-  const calculateAge = (birthday: string) => {
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    return differenceInYears(today, birthDate);
-  };
-
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
