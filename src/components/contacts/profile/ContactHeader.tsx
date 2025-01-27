@@ -19,8 +19,6 @@ import { AgeDisplay } from "./header/AgeDisplay";
 import { ReminderSection } from "./ReminderSection";
 import { ReminderStatus } from "@/api/types/contacts";
 
-type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
-
 interface ContactHeaderProps {
   contact: any;
   isEditing: boolean;
@@ -29,8 +27,8 @@ interface ContactHeaderProps {
   handleEdit: () => void;
   giftIdeas: string[];
   onAddGiftIdea: (idea: string) => void;
-  selectedReminder: ReminderFrequency;
-  onReminderSelect: (frequency: ReminderFrequency) => void;
+  selectedReminder: string | null;
+  onReminderSelect: (frequency: string | null) => void;
   nextReminder: Date | null;
   reminderStatus: ReminderStatus;
   isLoading: boolean;
