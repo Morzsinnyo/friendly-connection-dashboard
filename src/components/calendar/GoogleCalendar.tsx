@@ -13,6 +13,8 @@ interface CalendarEvent {
   start: { dateTime: string };
   end: { dateTime: string };
   htmlLink?: string;
+  contactId?: string;
+  reminderStatus?: 'pending' | 'completed' | 'skipped';
 }
 
 export const GoogleCalendar = () => {
@@ -40,25 +42,41 @@ export const GoogleCalendar = () => {
     }
   };
 
-  const filterNextEventPerContact = (events: CalendarEvent[]) => {
+  const extractContactInfo = (summary: string) => {
+    const contactMatch = summary.toLowerCase().match(/(.+?)(?:\s*-\s*it's time to contact|time to contact\s*)/i);
+    return contactMatch ? contactMatch[1].trim() : null;
+  };
+
+  const filterNextEventPerContact = async (events: CalendarEvent[]) => {
     const contactEventsMap = new Map<string, CalendarEvent>();
     
-    events.forEach(event => {
-      const contactMatch = event.summary.toLowerCase().match(/(.+?)(?:\s*-\s*it's time to contact|time to contact\s*)/i);
+    for (const event of events) {
+      const contactName = extractContactInfo(event.summary);
       
-      if (contactMatch) {
-        const contactName = contactMatch[1].trim();
-        const existingEvent = contactEventsMap.get(contactName);
-        
-        if (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime)) {
-          contactEventsMap.set(contactName, event);
+      if (contactName) {
+        // Fetch contact information
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('id, reminder_status')
+          .ilike('full_name', contactName)
+          .single();
+
+        if (contacts) {
+          const existingEvent = contactEventsMap.get(contactName);
+          
+          if (!existingEvent || new Date(event.start.dateTime) < new Date(existingEvent.start.dateTime)) {
+            contactEventsMap.set(contactName, {
+              ...event,
+              contactId: contacts.id,
+              reminderStatus: contacts.reminder_status as 'pending' | 'completed' | 'skipped'
+            });
+          }
         }
       }
-    });
+    }
 
     const nonContactEvents = events.filter(event => 
-      !event.summary.toLowerCase().includes("time to contact") &&
-      !event.summary.toLowerCase().includes("it's time to contact")
+      !extractContactInfo(event.summary)
     );
 
     return [...contactEventsMap.values(), ...nonContactEvents];
@@ -79,34 +97,14 @@ export const GoogleCalendar = () => {
       if (error) throw error;
       
       console.log('Successfully fetched events:', data.items);
-      const filteredEvents = filterNextEventPerContact(data.items || []);
-      console.log('Filtered events:', filteredEvents);
+      const filteredEvents = await filterNextEventPerContact(data.items || []);
+      console.log('Filtered events with contact info:', filteredEvents);
       setEvents(filteredEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to fetch calendar events');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const deleteEvent = async (eventId: string) => {
-    if (!calendarId) return;
-
-    try {
-      console.log('Deleting event with ID:', eventId);
-      const { error } = await supabase.functions.invoke('google-calendar', {
-        body: { action: 'deleteEvent', eventData: { id: eventId }, calendarId }
-      });
-
-      if (error) throw error;
-
-      console.log('Successfully deleted event:', eventId);
-      toast.success('Event deleted successfully');
-      fetchEvents();
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      toast.error('Failed to delete event');
     }
   };
 

@@ -15,6 +15,9 @@ export interface CalendarEvent {
     email: string;
     responseStatus?: 'needsAction' | 'declined' | 'tentative' | 'accepted';
   }>;
+  contactId?: string;
+  reminderStatus?: 'pending' | 'completed' | 'skipped';
+  htmlLink?: string;
 }
 
 export interface CalendarEventCreate extends Omit<CalendarEvent, 'id'> {}
