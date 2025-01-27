@@ -44,7 +44,7 @@ export function ReminderStatus({
     },
     completed: {
       icon: Check,
-      variant: "success" as const,
+      variant: "secondary" as const, // Changed from 'success' to 'secondary'
       label: "Completed",
     },
     skipped: {

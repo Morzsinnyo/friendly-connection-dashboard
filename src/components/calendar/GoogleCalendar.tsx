@@ -23,6 +23,23 @@ export const GoogleCalendar = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  const deleteEvent = async (eventId: string) => {
+    try {
+      console.log('Deleting event:', eventId);
+      const { error } = await supabase.functions.invoke('google-calendar', {
+        body: { action: 'deleteEvent', calendarId, eventData: { id: eventId } }
+      });
+
+      if (error) throw error;
+      
+      setEvents(events.filter(event => event.id !== eventId));
+      toast.success('Event deleted successfully');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event');
+    }
+  };
+
   const fetchCalendarId = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
