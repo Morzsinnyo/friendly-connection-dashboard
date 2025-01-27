@@ -10,6 +10,7 @@ import { ContactHeader } from "./profile/ContactHeader";
 import { ContactInfo } from "./profile/ContactInfo";
 import { NotesSection } from "./profile/NotesSection";
 import { RelationshipCard } from "./profile/RelationshipCard";
+import { ReminderSection } from "./profile/ReminderSection";
 import { useContactProfile } from "@/hooks/contacts/useContactProfile";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
@@ -98,6 +99,12 @@ export function ContactProfile() {
     return <div className="p-6">Contact not found</div>;
   }
 
+  const calculateAge = (birthday: string) => {
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    return differenceInYears(today, birthDate);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
@@ -109,11 +116,6 @@ export function ContactProfile() {
           handleEdit={handleEdit}
           giftIdeas={contact.gift_ideas || []}
           onAddGiftIdea={handleAddGiftIdea}
-          selectedReminder={selectedReminder}
-          onReminderSelect={handleReminderSelect}
-          nextReminder={contact.next_reminder ? new Date(contact.next_reminder) : null}
-          reminderStatus={(contact.reminder_status as ReminderStatus) || 'pending'}
-          isLoading={updateReminderMutation.isPending}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -165,6 +167,16 @@ export function ContactProfile() {
             contactId={contact.id}
           />
         </div>
+
+        <ReminderSection
+          selectedReminder={selectedReminder}
+          onReminderSelect={handleReminderSelect}
+          contactName={contact.full_name}
+          isLoading={updateReminderMutation.isPending}
+          contactId={contact.id}
+          nextReminder={contact.next_reminder ? new Date(contact.next_reminder) : null}
+          reminderStatus={(contact.reminder_status as ReminderStatus) || 'pending'}
+        />
       </div>
     </div>
   );

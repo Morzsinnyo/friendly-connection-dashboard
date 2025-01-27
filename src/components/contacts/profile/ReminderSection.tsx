@@ -10,23 +10,25 @@ import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
 import { format } from "date-fns";
 
-const REMINDER_OPTIONS = [
-  'Every week',
-  'Every 2 weeks',
-  'Monthly',
-  'Every 2 months',
-  'Every 3 months'
-];
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
 
 interface ReminderSectionProps {
-  selectedReminder: string | null;
-  onReminderSelect: (frequency: string | null) => void;
+  selectedReminder: ReminderFrequency;
+  onReminderSelect: (frequency: ReminderFrequency) => void;
   contactName: string;
   isLoading?: boolean;
   nextReminder?: Date | null;
   reminderStatus?: 'pending' | 'completed' | 'skipped';
   contactId: string;
 }
+
+const REMINDER_OPTIONS: ReminderFrequency[] = [
+  'Every week',
+  'Every 2 weeks',
+  'Monthly',
+  'Every 2 months',
+  'Every 3 months'
+];
 
 export function ReminderSection({ 
   selectedReminder, 
