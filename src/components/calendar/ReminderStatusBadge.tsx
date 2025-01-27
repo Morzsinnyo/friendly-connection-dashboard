@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ReminderStatus } from "./ReminderStatus";
 import { RescheduleDialog } from "./RescheduleDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,10 +20,9 @@ export function ReminderStatusBadge({
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [calendarId, setCalendarId] = useState<string | null>(null);
 
-  // Fetch calendar ID when component mounts
-  useState(() => {
+  useEffect(() => {
     fetchCalendarId();
-  });
+  }, []); // Run once on mount
 
   const fetchCalendarId = async () => {
     try {
@@ -45,7 +44,7 @@ export function ReminderStatusBadge({
   };
 
   const handleSkip = async (): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       setIsRescheduleOpen(true);
       resolve();
     });
@@ -91,10 +90,12 @@ export function ReminderStatusBadge({
 
       // Refresh the events list
       onStatusChange();
+      
+      toast.success("Event rescheduled successfully");
+      setIsRescheduleOpen(false);
     } catch (error) {
       console.error('Error in handleReschedule:', error);
       toast.error("Failed to reschedule reminder");
-      throw error;
     }
   };
 
