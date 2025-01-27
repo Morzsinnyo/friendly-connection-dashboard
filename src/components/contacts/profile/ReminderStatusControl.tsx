@@ -15,12 +15,14 @@ interface ReminderStatusControlProps {
   contactId: string;
   currentStatus: 'pending' | 'completed' | 'skipped';
   disabled?: boolean;
+  onStatusChange?: () => void;
 }
 
 export function ReminderStatusControl({
   contactId,
   currentStatus,
   disabled = false,
+  onStatusChange,
 }: ReminderStatusControlProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { updateReminderStatus } = useContactStatus(contactId);
@@ -32,6 +34,7 @@ export function ReminderStatusControl({
     try {
       await updateReminderStatus(newStatus);
       toast.success(`Reminder marked as ${newStatus}`);
+      onStatusChange?.(); // Call the callback if provided
     } catch (error) {
       console.error('Error updating reminder status:', error);
       toast.error('Failed to update reminder status');
