@@ -16,6 +16,7 @@ import { FriendshipScore } from "./header/FriendshipScore";
 import { TagsSection } from "./header/TagsSection";
 import { GiftIdeasDropdown } from "./header/GiftIdeasDropdown";
 import { AgeDisplay } from "./header/AgeDisplay";
+import { ReminderSection } from "./ReminderSection";
 
 interface ContactHeaderProps {
   contact: any;
@@ -25,6 +26,12 @@ interface ContactHeaderProps {
   handleEdit: () => void;
   giftIdeas: string[];
   onAddGiftIdea: (idea: string) => void;
+  selectedReminder: string | null;
+  onReminderSelect: (frequency: string | null) => void;
+  isReminderLoading?: boolean;
+  nextReminder?: Date | null;
+  reminderStatus?: 'pending' | 'completed' | 'skipped';
+  contactId: string;
 }
 
 export function ContactHeader({
@@ -35,6 +42,12 @@ export function ContactHeader({
   handleEdit,
   giftIdeas,
   onAddGiftIdea,
+  selectedReminder,
+  onReminderSelect,
+  isReminderLoading,
+  nextReminder,
+  reminderStatus,
+  contactId,
 }: ContactHeaderProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -142,8 +155,17 @@ export function ContactHeader({
         onRemoveTag={handleRemoveTag}
       />
 
-      <div className="flex space-x-2">
+      <div className="flex items-center space-x-4">
         <GiftIdeasDropdown giftIdeas={giftIdeas} onAddGiftIdea={onAddGiftIdea} />
+        <ReminderSection
+          selectedReminder={selectedReminder}
+          onReminderSelect={onReminderSelect}
+          contactName={contact.full_name}
+          isLoading={isReminderLoading}
+          nextReminder={nextReminder}
+          reminderStatus={reminderStatus}
+          contactId={contactId}
+        />
       </div>
     </div>
   );
