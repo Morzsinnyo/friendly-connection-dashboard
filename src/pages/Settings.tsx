@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function Settings() {
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
       
       <Card>
@@ -22,6 +22,25 @@ export default function Settings() {
               </p>
             </div>
             <ThemeToggle />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tutorial</CardTitle>
+          <CardDescription>
+            Watch this video to learn how to use the application effectively.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
+            <iframe 
+              src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=fc47f87b-68a2-4ba6-a73e-ff9291ad204e" 
+              frameBorder="0" 
+              allowFullScreen 
+              className="absolute top-0 left-0 w-full h-full rounded-lg"
+            />
           </div>
         </CardContent>
       </Card>
