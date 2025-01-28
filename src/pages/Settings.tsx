@@ -1,7 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { Copy } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
+  const { toast } = useToast();
+  const serviceAccountEmail = "calendar-integration@aesthetic-genre-447912-m8.iam.gserviceaccount.com";
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(serviceAccountEmail);
+    toast({
+      description: "Service account email copied to clipboard",
+    });
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
@@ -41,6 +54,13 @@ export default function Settings() {
               allowFullScreen 
               className="absolute top-0 left-0 w-full h-full rounded-lg"
             />
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <p className="text-sm text-muted-foreground flex-1">{serviceAccountEmail}</p>
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              <Copy className="h-4 w-4 mr-2" />
+              Copy
+            </Button>
           </div>
         </CardContent>
       </Card>
