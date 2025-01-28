@@ -9,24 +9,34 @@ export function DashboardLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden md:block">
           <AppSidebar />
         </div>
 
-        {/* Mobile Sidebar */}
+        {/* Mobile Sidebar - only visible on mobile */}
         <Sheet>
-          <SheetTrigger asChild className="absolute left-4 top-4 md:hidden">
-            <Button variant="ghost" size="icon">
+          <SheetTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute left-4 top-4 md:hidden z-50"
+            >
               <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Sidebar</span>
+              <span className="sr-only">Toggle Menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-[80%] max-w-[300px]">
-            <AppSidebar />
+          <SheetContent 
+            side="left" 
+            className="p-0 w-[80%] max-w-[300px] border-r"
+          >
+            <nav className="h-full bg-background">
+              <AppSidebar />
+            </nav>
           </SheetContent>
         </Sheet>
 
+        {/* Main Content */}
         <main className="flex-1 overflow-auto px-4 py-4 md:px-6 md:py-6">
           <div className="md:hidden h-14" /> {/* Spacer for mobile menu button */}
           <Outlet />
