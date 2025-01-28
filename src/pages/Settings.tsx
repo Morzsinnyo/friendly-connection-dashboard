@@ -16,8 +16,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
+    <div className="container mx-auto space-y-6 max-w-3xl px-4 sm:px-6">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Settings</h1>
       
       <Card>
         <CardHeader>
@@ -46,7 +46,7 @@ export default function Settings() {
             Watch this video to learn how to use the application effectively.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
             <iframe 
               src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=8f424735-4701-405a-9e20-9b9dc52ec960" 
@@ -55,9 +55,9 @@ export default function Settings() {
               className="absolute top-0 left-0 w-full h-full rounded-lg"
             />
           </div>
-          <div className="mt-4 flex items-center gap-2">
-            <p className="text-sm text-muted-foreground flex-1">{serviceAccountEmail}</p>
-            <Button variant="outline" size="sm" onClick={handleCopy}>
+          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <p className="text-sm text-muted-foreground break-all flex-1">{serviceAccountEmail}</p>
+            <Button variant="outline" size="sm" onClick={handleCopy} className="w-full sm:w-auto">
               <Copy className="h-4 w-4 mr-2" />
               Copy
             </Button>
