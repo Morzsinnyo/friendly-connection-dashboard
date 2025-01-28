@@ -36,7 +36,7 @@ export default function Settings() {
         <CardContent>
           <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
             <iframe 
-              src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=fc47f87b-68a2-4ba6-a73e-ff9291ad204e" 
+              src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=8f424735-4701-405a-9e20-9b9dc52ec960" 
               frameBorder="0" 
               allowFullScreen 
               className="absolute top-0 left-0 w-full h-full rounded-lg"
