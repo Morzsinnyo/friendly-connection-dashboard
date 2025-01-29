@@ -50,7 +50,9 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-2 text-lg font-semibold">
+            Dashboard
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
@@ -59,11 +61,13 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className={isActive ? "text-primary font-bold" : ""}
+                      className={`w-full rounded-lg p-3 transition-colors hover:bg-accent ${
+                        isActive ? "bg-primary text-primary-foreground" : ""
+                      }`}
                     >
                       <RouterLink to={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
+                        <item.icon className="h-5 w-5" />
+                        <span className="ml-3">{item.title}</span>
                       </RouterLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -72,10 +76,10 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={handleLogout}
-                  className="text-red-500 hover:text-red-600"
+                  className="w-full rounded-lg p-3 text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  <LogOut />
-                  <span>Logout</span>
+                  <LogOut className="h-5 w-5" />
+                  <span className="ml-3">Logout</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
