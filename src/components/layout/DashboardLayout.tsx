@@ -38,9 +38,7 @@ export function DashboardLayout() {
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="h-full overflow-y-auto">
-              <AppSidebar className="h-full w-full" />
-            </div>
+            <AppSidebar className="h-full w-full" />
           </div>
         </div>
 
