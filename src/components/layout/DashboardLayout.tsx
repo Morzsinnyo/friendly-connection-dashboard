@@ -62,23 +62,25 @@ export function DashboardLayout() {
           </div>
         </div>
 
-        {/* Mobile Menu Trigger */}
-        <div className="fixed top-4 left-4 z-50 md:hidden">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent"
-            onClick={toggleMobileMenu}
-          >
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </div>
-
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-6 pt-16 md:pt-6">
-          <div className="mx-auto max-w-7xl">
-            <Outlet />
+        <main className="flex-1 overflow-auto">
+          {/* Mobile Menu Trigger - Moved inside main content */}
+          <div className="p-4 md:hidden">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent"
+              onClick={toggleMobileMenu}
+            >
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+          </div>
+
+          <div className="p-4 md:p-6 pt-0 md:pt-6">
+            <div className="mx-auto max-w-7xl">
+              <Outlet />
+            </div>
           </div>
         </main>
       </div>
