@@ -38,7 +38,9 @@ export function DashboardLayout() {
                 console.log("[DashboardLayout] Sheet opened");
               }}
             >
-              <AppSidebar />
+              <div className="flex h-full">
+                <AppSidebar />
+              </div>
             </SheetContent>
           </Sheet>
         </div>
