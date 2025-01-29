@@ -34,12 +34,14 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-background shadow-lg transition-transform duration-300 ease-in-out",
+              "fixed inset-y-0 left-0 w-[280px] bg-background shadow-lg transition-transform duration-300 ease-in-out flex flex-col",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <AppSidebar className="h-full w-full" />
+            <div className="flex-1 overflow-y-auto">
+              <AppSidebar className="h-full w-full" />
+            </div>
           </div>
         </div>
 
