@@ -23,7 +23,7 @@ export function DashboardLayout() {
           <AppSidebar />
         </div>
 
-        {/* Custom Mobile Menu */}
+        {/* Mobile Menu Overlay */}
         <div 
           className={cn(
             "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm md:hidden",
@@ -31,6 +31,7 @@ export function DashboardLayout() {
           )}
           onClick={toggleMobileMenu}
         >
+          {/* Mobile Menu Panel */}
           <div 
             className={cn(
               "fixed inset-y-0 left-0 w-[280px] bg-background shadow-lg transition-transform duration-300 ease-in-out",
