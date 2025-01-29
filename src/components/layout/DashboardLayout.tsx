@@ -6,6 +6,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 export function DashboardLayout() {
+  console.log("[DashboardLayout] Rendering dashboard layout");
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -22,6 +24,7 @@ export function DashboardLayout() {
                 variant="ghost" 
                 size="icon" 
                 className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent"
+                onClick={() => console.log("[DashboardLayout] Mobile menu trigger clicked")}
               >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
@@ -30,10 +33,12 @@ export function DashboardLayout() {
             <SheetContent 
               side="left" 
               className="w-[280px] p-0"
+              onOpenAutoFocus={(e) => {
+                e.preventDefault();
+                console.log("[DashboardLayout] Sheet opened");
+              }}
             >
-              <SidebarProvider>
-                <AppSidebar />
-              </SidebarProvider>
+              <AppSidebar />
             </SheetContent>
           </Sheet>
         </div>
