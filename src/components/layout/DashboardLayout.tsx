@@ -13,7 +13,6 @@ export function DashboardLayout() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // The required distance between touchStart and touchEnd to be detected as a swipe
   const minSwipeDistance = 50;
 
   const toggleMobileMenu = () => {
@@ -37,7 +36,6 @@ export function DashboardLayout() {
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    // Close on left swipe, open on right swipe from edge
     if (isLeftSwipe && isMobileMenuOpen) {
       console.log("[DashboardLayout] Closing sidebar via swipe");
       setIsMobileMenuOpen(false);
@@ -78,20 +76,20 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-sidebar shadow-lg transition-transform duration-300 ease-in-out",
+              "fixed inset-y-0 left-0 w-[280px] bg-white shadow-lg transition-transform duration-300 ease-in-out",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex h-full flex-col overflow-hidden">
               {/* Mobile Header */}
-              <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-border">
+              <div className="flex h-14 items-center justify-between px-4">
                 <span className="font-semibold">Menu</span>
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={toggleMobileMenu}
-                  className="hover:bg-sidebar-accent"
+                  className="hover:bg-accent"
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -107,7 +105,7 @@ export function DashboardLayout() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {/* Mobile Menu Trigger - Moved inside main content */}
+          {/* Mobile Menu Trigger */}
           <div className="p-4 md:hidden">
             <Button 
               variant="ghost" 
