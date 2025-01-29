@@ -27,8 +27,8 @@ export function DashboardLayout() {
         {/* Mobile Menu Overlay */}
         <div 
           className={cn(
-            "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm md:hidden",
-            isMobileMenuOpen ? "block" : "hidden"
+            "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm transition-all duration-300 md:hidden",
+            isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
           onClick={toggleMobileMenu}
         >

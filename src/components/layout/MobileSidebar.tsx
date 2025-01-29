@@ -38,7 +38,7 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full animate-in slide-in-from-left duration-300">
       <nav className="flex-1 px-2 pb-4 space-y-1">
         {items.map((item) => {
           const isActive = location.pathname === item.url;
@@ -48,9 +48,10 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
               to={item.url}
               onClick={onClose}
               className={cn(
-                "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors",
+                "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-all duration-200",
+                "transform hover:scale-[1.02] active:scale-[0.98]",
                 isActive
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-accent hover:text-accent-foreground"
               )}
             >
@@ -63,7 +64,11 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
       <div className="px-2 pb-4">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center px-4 py-3 text-sm font-medium rounded-md text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+          className={cn(
+            "flex w-full items-center px-4 py-3 text-sm font-medium rounded-md",
+            "transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]",
+            "text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          )}
         >
           <LogOut className="mr-3 h-5 w-5" />
           Logout
