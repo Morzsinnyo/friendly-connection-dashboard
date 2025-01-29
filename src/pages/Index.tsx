@@ -58,7 +58,7 @@ const Index = () => {
   };
 
   return (
-    <div className="p-4 space-y-8">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Google Calendar Settings</CardTitle>
@@ -68,7 +68,7 @@ const Index = () => {
             <label htmlFor="calendarId" className="text-sm font-medium">
               Calendar ID
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 id="calendarId"
                 value={calendarId}
@@ -79,6 +79,7 @@ const Index = () => {
               <Button 
                 onClick={updateCalendarId} 
                 disabled={isLoading}
+                className="w-full sm:w-auto"
               >
                 Save
               </Button>

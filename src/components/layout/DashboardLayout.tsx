@@ -18,7 +18,7 @@ export function DashboardLayout() {
         <div className="fixed top-4 left-4 z-50 md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
@@ -29,7 +29,7 @@ export function DashboardLayout() {
           </Sheet>
         </div>
 
-        <main className="flex-1 overflow-auto px-4 py-4 md:px-6 md:py-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6 pt-16 md:pt-6">
           <Outlet />
         </main>
       </div>
