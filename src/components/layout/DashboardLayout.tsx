@@ -1,5 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./Sidebar";
+import { MobileSidebar } from "./MobileSidebar";
 import { Outlet } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export function DashboardLayout() {
               
               {/* Mobile Sidebar Content */}
               <div className="flex-1 overflow-y-auto">
-                <AppSidebar className="h-full" />
+                <MobileSidebar onClose={toggleMobileMenu} />
               </div>
             </div>
           </div>
