@@ -34,13 +34,29 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-background shadow-lg transition-transform duration-300 ease-in-out flex flex-col",
+              "fixed inset-y-0 left-0 w-[280px] bg-sidebar shadow-lg transition-transform duration-300 ease-in-out",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex-1 overflow-y-auto">
-              <AppSidebar className="h-full w-full" />
+            <div className="flex h-full flex-col overflow-hidden">
+              {/* Mobile Header */}
+              <div className="flex h-14 items-center justify-between px-4 border-b border-sidebar-border">
+                <span className="font-semibold">Menu</span>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={toggleMobileMenu}
+                  className="hover:bg-sidebar-accent"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </div>
+              
+              {/* Mobile Sidebar Content */}
+              <div className="flex-1 overflow-y-auto">
+                <AppSidebar className="h-full" />
+              </div>
             </div>
           </div>
         </div>
