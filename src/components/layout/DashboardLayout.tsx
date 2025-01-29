@@ -31,7 +31,9 @@ export function DashboardLayout() {
               side="left" 
               className="w-[280px] p-0"
             >
-              <AppSidebar />
+              <SidebarProvider>
+                <AppSidebar />
+              </SidebarProvider>
             </SheetContent>
           </Sheet>
         </div>

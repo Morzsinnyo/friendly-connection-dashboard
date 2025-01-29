@@ -46,8 +46,10 @@ export function AppSidebar() {
     }
   };
 
+  console.log("[AppSidebar] Rendering with location:", location.pathname);
+
   return (
-    <Sidebar>
+    <Sidebar className="h-full">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 text-lg font-semibold">
@@ -57,6 +59,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => {
                 const isActive = location.pathname === item.url;
+                console.log(`[AppSidebar] Menu item ${item.title} - isActive:`, isActive);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
