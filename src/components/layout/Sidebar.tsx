@@ -12,6 +12,7 @@ import {
 import { useLocation, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
@@ -31,7 +32,7 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ className }: { className?: string }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -49,7 +50,7 @@ export function AppSidebar() {
   console.log("[AppSidebar] Rendering with location:", location.pathname);
 
   return (
-    <Sidebar className="h-full">
+    <Sidebar className={cn("h-full", className)}>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 text-lg font-semibold">

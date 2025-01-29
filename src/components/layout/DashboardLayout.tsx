@@ -32,15 +32,13 @@ export function DashboardLayout() {
             </SheetTrigger>
             <SheetContent 
               side="left" 
-              className="w-[280px] p-0"
+              className="w-[280px] p-0 block"
               onOpenAutoFocus={(e) => {
                 e.preventDefault();
                 console.log("[DashboardLayout] Sheet opened");
               }}
             >
-              <div className="flex h-full">
-                <AppSidebar />
-              </div>
+              <AppSidebar className="h-full w-full" />
             </SheetContent>
           </Sheet>
         </div>
