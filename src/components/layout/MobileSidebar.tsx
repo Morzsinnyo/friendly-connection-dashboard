@@ -51,8 +51,8 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
                 "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-all duration-200",
                 "transform hover:scale-[1.02] active:scale-[0.98]",
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm dark:text-primary-foreground"
+                  : "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent dark:hover:text-accent-foreground"
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />
@@ -67,7 +67,8 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
           className={cn(
             "flex w-full items-center px-4 py-3 text-sm font-medium rounded-md",
             "transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]",
-            "text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            "text-destructive hover:bg-destructive hover:text-destructive-foreground",
+            "dark:text-destructive dark:hover:bg-destructive dark:hover:text-destructive-foreground"
           )}
         >
           <LogOut className="mr-3 h-5 w-5" />
