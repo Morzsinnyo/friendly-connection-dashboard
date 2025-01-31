@@ -3,9 +3,14 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Copy, Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { CalendarSettings } from "@/components/calendar/CalendarSettings";
+import { useUserProfile } from "@/hooks/contacts/useUserProfile";
+import { useState } from "react";
 
 export default function Settings() {
   const { toast } = useToast();
+  const { data: profile, refetch } = useUserProfile();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const serviceAccountEmail = "calendar-integration@aesthetic-genre-447912-m8.iam.gserviceaccount.com";
 
   const handleCopy = () => {
@@ -62,6 +67,12 @@ export default function Settings() {
               Copy
             </Button>
           </div>
+          <CalendarSettings
+            calendarId={profile?.calendar_id || null}
+            onCalendarIdUpdate={() => refetch()}
+            isSettingsOpen={isSettingsOpen}
+            onSettingsOpenChange={setIsSettingsOpen}
+          />
           <Button 
             variant="default" 
             size="sm" 
