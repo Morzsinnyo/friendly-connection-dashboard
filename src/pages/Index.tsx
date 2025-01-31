@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [calendarId, setCalendarId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCalendarId();
@@ -61,7 +63,15 @@ const Index = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Google Calendar Settings</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Google Calendar Settings</CardTitle>
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/settings")}
+            >
+              Tutorial
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Settings() {
@@ -62,6 +62,15 @@ export default function Settings() {
               Copy
             </Button>
           </div>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="w-full sm:w-auto bg-green-500 hover:bg-green-600"
+            onClick={() => window.open('https://calendar.google.com/', '_blank')}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Google Calendar
+          </Button>
         </CardContent>
       </Card>
     </div>
