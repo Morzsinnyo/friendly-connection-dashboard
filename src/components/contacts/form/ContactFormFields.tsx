@@ -110,19 +110,6 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
       </div>
 
       <div>
-        <Label htmlFor="businessPhone" className="text-foreground">
-          <Phone className="w-4 h-4 inline mr-2" />
-          Business Phone
-        </Label>
-        <Input
-          id="businessPhone"
-          value={formData.businessPhone}
-          onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-          className="bg-background border-border text-foreground focus-visible:ring-ring"
-        />
-      </div>
-
-      <div>
         <Label htmlFor="mobilePhone" className="text-foreground">
           <Phone className="w-4 h-4 inline mr-2" />
           Mobile Phone
@@ -131,6 +118,19 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           id="mobilePhone"
           value={formData.mobilePhone}
           onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })}
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="businessPhone" className="text-foreground">
+          <Phone className="w-4 h-4 inline mr-2" />
+          Business Phone
+        </Label>
+        <Input
+          id="businessPhone"
+          value={formData.businessPhone}
+          onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
           className="bg-background border-border text-foreground focus-visible:ring-ring"
         />
       </div>

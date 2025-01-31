@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactFormFields } from "./form/ContactFormFields";
 import { AvatarUpload } from "./form/AvatarUpload";
@@ -13,6 +13,7 @@ import { SocialMediaFields } from "./form/SocialMediaFields";
 const statusOptions = [
   "Family Member",
   "Close Friend",
+  "Friend",
   "Business Contact",
   "Acquaintance",
   "Other",
@@ -206,7 +207,15 @@ export function CreateContact() {
   return (
     <div className="min-h-screen bg-background p-6">
       <Card className="max-w-2xl mx-auto border-border">
-        <CardHeader className="border-b border-border">
+        <CardHeader className="border-b border-border relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-4 top-1/2 -translate-y-1/2"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <CardTitle className="text-2xl font-bold text-center text-foreground">
             {editId ? 'Edit Contact' : 'Create New Contact'}
           </CardTitle>
