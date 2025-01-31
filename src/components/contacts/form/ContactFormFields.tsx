@@ -64,6 +64,32 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
       </div>
 
       <div>
+        <Label htmlFor="jobTitle" className="text-foreground">
+          <Briefcase className="w-4 h-4 inline mr-2" />
+          Job Title
+        </Label>
+        <Input
+          id="jobTitle"
+          value={formData.jobTitle}
+          onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="company" className="text-foreground">
+          <Briefcase className="w-4 h-4 inline mr-2" />
+          Company
+        </Label>
+        <Input
+          id="company"
+          value={formData.company}
+          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+          className="bg-background border-border text-foreground focus-visible:ring-ring"
+        />
+      </div>
+
+      <div>
         <Label htmlFor="email" className="text-foreground">
           <Mail className="w-4 h-4 inline mr-2" />
           Email
