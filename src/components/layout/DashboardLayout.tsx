@@ -76,14 +76,14 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-white shadow-lg transition-transform duration-300 ease-in-out",
+              "fixed inset-y-0 left-0 w-[280px] bg-background border-r transition-transform duration-300 ease-in-out",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex h-full flex-col overflow-hidden">
               {/* Mobile Header */}
-              <div className="flex h-14 items-center justify-between px-4">
+              <div className="flex h-14 items-center justify-between px-4 border-b">
                 <span className="font-semibold">Menu</span>
                 <Button 
                   variant="ghost" 
