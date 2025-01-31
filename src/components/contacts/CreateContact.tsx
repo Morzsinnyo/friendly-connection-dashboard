@@ -204,7 +204,7 @@ export function CreateContact() {
     }
   };
 
-  return (
+return (
     <div className="min-h-screen bg-background p-6">
       <Card className="max-w-2xl mx-auto border-border">
         <CardHeader className="border-b border-border relative">
