@@ -5,6 +5,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { ContactProfile } from "./components/contacts/ContactProfile";
+import { CreateContact } from "./components/contacts/CreateContact";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
       {
         path: "calendar",
         element: <GoogleCalendar />,
+      },
+      {
+        path: "contact/create",
+        element: <CreateContact />,
       },
       {
         path: "contact/:id",
