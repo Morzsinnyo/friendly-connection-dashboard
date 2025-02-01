@@ -18,6 +18,7 @@ import { GiftIdeasDropdown } from "./header/GiftIdeasDropdown";
 import { AgeDisplay } from "./header/AgeDisplay";
 import { ReminderSection } from "./ReminderSection";
 import { ReminderStatus } from "@/api/types/contacts";
+import { contactMutations } from "@/api/services/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
 
@@ -55,6 +56,7 @@ export function ContactHeader({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [score, setScore] = useState(contact.friendship_score || 0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const updateTagsMutation = useMutation({
     mutationFn: async (tags: string[]) => {
@@ -72,6 +74,21 @@ export function ContactHeader({
     onError: (error) => {
       toast.error('Failed to update tags');
       console.error('Error updating tags:', error);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      console.log('Deleting contact:', contactId);
+      return contactMutations.delete(contactId);
+    },
+    onSuccess: () => {
+      toast.success('Contact deleted successfully');
+      navigate('/contacts');
+    },
+    onError: (error) => {
+      console.error('Error deleting contact:', error);
+      toast.error('Failed to delete contact');
     },
   });
 
@@ -107,6 +124,17 @@ export function ContactHeader({
   const handleRemoveTag = (tagToRemove: string) => {
     const updatedTags = (contact.tags || []).filter(tag => tag !== tagToRemove);
     updateTagsMutation.mutate(updatedTags);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this contact?')) {
+      setIsDeleting(true);
+      try {
+        await deleteMutation.mutateAsync();
+      } finally {
+        setIsDeleting(false);
+      }
+    }
   };
 
   return (
@@ -145,9 +173,13 @@ export function ContactHeader({
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button variant="destructive">
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
             <Trash className="h-4 w-4 mr-2" />
-            Delete
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </div>
