@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import DashboardLayout from "./components/layout/DashboardLayout";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
