@@ -3,6 +3,8 @@ import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
+import { ContactProfile } from "./components/contacts/ContactProfile";
 
 export const router = createBrowserRouter([
   {
@@ -12,6 +14,14 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Index />,
+      },
+      {
+        path: "calendar",
+        element: <GoogleCalendar />,
+      },
+      {
+        path: "contact/:id",
+        element: <ContactProfile />,
       },
       {
         path: "settings",
