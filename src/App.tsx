@@ -4,7 +4,18 @@ import { router } from "./router"
 import { ThemeProvider } from "./components/theme/ThemeProvider"
 import { Toaster } from "sonner"
 import { initPostHog } from "./lib/posthog"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import "./App.css"
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+})
 
 function App() {
   useEffect(() => {
@@ -13,10 +24,12 @@ function App() {
   }, [])
 
   return (
-    <ThemeProvider>
-      <RouterProvider router={router} />
-      <Toaster position="top-right" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <RouterProvider router={router} />
+        <Toaster position="top-right" />
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 
