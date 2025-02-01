@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { ContactsList } from "@/components/contacts/ContactsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { CalendarSettings } from "@/components/calendar/CalendarSettings";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
+import { posthog } from "@/lib/posthog";
 
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const navigate = useNavigate();
   const { data: profile, refetch } = useUserProfile();
+
+  useEffect(() => {
+    // Track page view
+    posthog.capture('$pageview', {
+      page: 'index'
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
