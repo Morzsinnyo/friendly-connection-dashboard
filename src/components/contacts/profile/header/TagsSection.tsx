@@ -1,24 +1,8 @@
-import { useState } from "react";
-import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
+import { Tag, X, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { contactQueries } from "@/api/services/contacts/queries";
-import { useQuery } from "@tanstack/react-query";
-import { LoadingState } from "@/components/common/LoadingState";
+import { useState } from "react";
 
 interface TagsSectionProps {
   tags: string[];
@@ -29,36 +13,14 @@ interface TagsSectionProps {
 export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
   const [newTag, setNewTag] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
-  const [open, setOpen] = useState(false);
 
-  console.log('Current tags:', tags);
-
-  const { data: tagsResponse, isLoading, error } = useQuery({
-    queryKey: ['uniqueTags'],
-    queryFn: async () => {
-      console.log('Fetching unique tags');
-      const response = await contactQueries.getAllUniqueTags();
-      console.log('Fetched tags response:', response);
-      return response;
-    },
-  });
-
-  const existingTags = tagsResponse?.data || [];
-
-  const handleAddTag = (value: string) => {
-    console.log('Adding tag:', value);
-    if (value?.trim()) {
-      onAddTag(value.trim());
+  const handleAddTag = () => {
+    if (newTag.trim()) {
+      onAddTag(newTag.trim());
       setNewTag("");
       setIsAddingTag(false);
-      setOpen(false);
     }
   };
-
-  if (error) {
-    console.error('Error loading tags:', error);
-    return <div>Error loading tags</div>;
-  }
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
@@ -79,56 +41,18 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
       ))}
       {isAddingTag ? (
         <div className="flex items-center gap-2">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[200px] justify-between"
-              >
-                {newTag || "Select tag..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandInput
-                  placeholder="Search tag..."
-                  value={newTag}
-                  onValueChange={setNewTag}
-                  className="h-9"
-                />
-                {isLoading ? (
-                  <LoadingState message="Loading tags..." />
-                ) : (
-                  <>
-                    <CommandEmpty>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start"
-                        onClick={() => handleAddTag(newTag)}
-                      >
-                        Create "{newTag}"
-                      </Button>
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {existingTags.map((tag) => (
-                        <CommandItem
-                          key={tag}
-                          value={tag}
-                          onSelect={() => handleAddTag(tag)}
-                        >
-                          {tag}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </>
-                )}
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <Button size="sm" onClick={() => handleAddTag(newTag)}>
+          <Input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            placeholder="Enter tag name"
+            className="w-32"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddTag();
+              }
+            }}
+          />
+          <Button size="sm" onClick={handleAddTag}>
             Add
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setIsAddingTag(false)}>

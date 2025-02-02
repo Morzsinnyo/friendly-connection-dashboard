@@ -54,46 +54,6 @@ export const contactQueries = {
     return formatApiResponse(query);
   },
 
-  getAllUniqueTags: async (): Promise<ApiResponse<string[]>> => {
-    console.log('Fetching all unique tags');
-    
-    try {
-      const { data: contacts, error } = await supabase
-        .from('contacts')
-        .select('tags');
-
-      if (error) {
-        console.error('Error fetching tags:', error);
-        return { data: [], error };
-      }
-
-      if (!contacts) {
-        console.log('No contacts found, returning empty tags array');
-        return { data: [], error: null };
-      }
-
-      // Extract and deduplicate tags, ensuring we handle null/undefined cases
-      const uniqueTags = Array.from(
-        new Set(
-          contacts
-            .reduce((acc: string[], contact) => {
-              if (contact.tags && Array.isArray(contact.tags)) {
-                return [...acc, ...contact.tags];
-              }
-              return acc;
-            }, [])
-            .filter(Boolean)
-        )
-      ).sort();
-
-      console.log('Found unique tags:', uniqueTags);
-      return { data: uniqueTags, error: null };
-    } catch (err) {
-      console.error('Unexpected error in getAllUniqueTags:', err);
-      return { data: [], error: err as Error };
-    }
-  },
-
   getRelatedContacts: async (contactId: string): Promise<ApiResponse<Contact[]>> => {
     console.log('Fetching related contacts for ID:', contactId);
     
