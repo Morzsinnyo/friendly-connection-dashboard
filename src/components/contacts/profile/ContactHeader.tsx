@@ -139,7 +139,7 @@ export function ContactHeader({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div className="flex items-start space-x-4">
           <img
             src={contact.avatar_url || "/placeholder.svg"}

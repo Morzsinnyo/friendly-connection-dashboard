@@ -106,7 +106,7 @@ export function DashboardLayout() {
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           {/* Mobile Menu Trigger */}
-          <div className="p-4 md:hidden">
+          <div className="p-4 md:hidden fixed top-0 left-0">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -118,7 +118,7 @@ export function DashboardLayout() {
             </Button>
           </div>
 
-          <div className="p-4 md:p-6 pt-0 md:pt-6">
+          <div className="p-4 md:p-6 pt-16 md:pt-6">
             <div className="mx-auto max-w-7xl">
               <Outlet />
             </div>
