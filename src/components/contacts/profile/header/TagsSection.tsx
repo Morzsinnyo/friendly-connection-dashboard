@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Tag, X, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
@@ -24,40 +26,26 @@ interface TagsSectionProps {
 }
 
 export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
+  const [newTag, setNewTag] = useState("");
+  const [isAddingTag, setIsAddingTag] = useState(false);
   const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
 
-  console.log('Current tags:', tags);
-
-  const { data: existingTags = [], isLoading } = useQuery({
+  const { data: existingTags = [] } = useQuery({
     queryKey: ['uniqueTags'],
     queryFn: async () => {
-      console.log('Fetching unique tags');
       const response = await contactQueries.getAllUniqueTags();
-      console.log('Fetched tags:', response.data);
-      return response.data || [];
+      return response.data;
     },
   });
 
-  const handleSelect = (currentValue: string) => {
-    console.log('Selected tag:', currentValue);
-    onAddTag(currentValue);
-    setInputValue("");
-    setOpen(false);
-  };
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && inputValue) {
-      e.preventDefault();
-      handleSelect(inputValue);
+  const handleAddTag = (value: string) => {
+    if (value.trim()) {
+      onAddTag(value.trim());
+      setNewTag("");
+      setIsAddingTag(false);
+      setOpen(false);
     }
   };
-
-  const filteredTags = existingTags
-    .filter(tag => !tags.includes(tag))
-    .filter(tag => 
-      tag.toLowerCase().includes(inputValue.toLowerCase())
-    );
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
@@ -76,57 +64,71 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
           </Badge>
         </div>
       ))}
-      
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 px-2"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder="Type a tag..."
-              value={inputValue}
-              onValueChange={setInputValue}
-              onKeyDown={handleInputKeyDown}
-              className="border-none focus:ring-0"
-            />
-            {isLoading ? (
-              <CommandEmpty>Loading tags...</CommandEmpty>
-            ) : (
-              <>
-                <CommandEmpty>
-                  {inputValue && (
-                    <button
-                      className="w-full p-2 text-sm text-left hover:bg-accent"
-                      onClick={() => handleSelect(inputValue)}
-                    >
-                      Create tag "{inputValue}"
-                    </button>
-                  )}
-                </CommandEmpty>
+      {isAddingTag ? (
+        <div className="flex items-center gap-2">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-[200px] justify-between"
+              >
+                {newTag || "Select tag..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput
+                  placeholder="Search tag..."
+                  value={newTag}
+                  onValueChange={setNewTag}
+                  className="h-9"
+                />
+                <CommandEmpty>No tag found.</CommandEmpty>
                 <CommandGroup>
-                  {filteredTags.map((tag) => (
+                  {existingTags.map((tag) => (
                     <CommandItem
                       key={tag}
                       value={tag}
-                      onSelect={() => handleSelect(tag)}
-                      className="cursor-pointer"
+                      onSelect={() => handleAddTag(tag)}
                     >
                       {tag}
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              </>
-            )}
-          </Command>
-        </PopoverContent>
-      </Popover>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <Input
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            placeholder="Or type new tag"
+            className="w-32"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddTag(newTag);
+              }
+            }}
+          />
+          <Button size="sm" onClick={() => handleAddTag(newTag)}>
+            Add
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setIsAddingTag(false)}>
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAddingTag(true)}
+          className="h-6"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }
