@@ -33,25 +33,32 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
 
   console.log('Current tags:', tags);
 
-  const { data: existingTags = [], isLoading } = useQuery({
+  const { data: tagsResponse, isLoading, error } = useQuery({
     queryKey: ['uniqueTags'],
     queryFn: async () => {
       console.log('Fetching unique tags');
       const response = await contactQueries.getAllUniqueTags();
-      console.log('Fetched tags:', response.data);
-      return response.data || [];
+      console.log('Fetched tags response:', response);
+      return response;
     },
   });
 
+  const existingTags = tagsResponse?.data || [];
+
   const handleAddTag = (value: string) => {
     console.log('Adding tag:', value);
-    if (value.trim()) {
+    if (value?.trim()) {
       onAddTag(value.trim());
       setNewTag("");
       setIsAddingTag(false);
       setOpen(false);
     }
   };
+
+  if (error) {
+    console.error('Error loading tags:', error);
+    return <div>Error loading tags</div>;
+  }
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
@@ -121,17 +128,6 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
               </Command>
             </PopoverContent>
           </Popover>
-          <Input
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Or type new tag"
-            className="w-32"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleAddTag(newTag);
-              }
-            }}
-          />
           <Button size="sm" onClick={() => handleAddTag(newTag)}>
             Add
           </Button>
