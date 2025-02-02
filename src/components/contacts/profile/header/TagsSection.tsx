@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -26,25 +25,26 @@ interface TagsSectionProps {
 }
 
 export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
-  const [newTag, setNewTag] = useState("");
-  const [isAddingTag, setIsAddingTag] = useState(false);
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
 
-  const { data: existingTags = [] } = useQuery({
+  console.log('Current tags:', tags);
+
+  const { data: existingTags = [], isLoading } = useQuery({
     queryKey: ['uniqueTags'],
     queryFn: async () => {
+      console.log('Fetching unique tags');
       const response = await contactQueries.getAllUniqueTags();
+      console.log('Fetched tags:', response.data);
       return response.data;
     },
   });
 
-  const handleAddTag = (value: string) => {
-    if (value.trim()) {
-      onAddTag(value.trim());
-      setNewTag("");
-      setIsAddingTag(false);
-      setOpen(false);
-    }
+  const handleSelect = (currentValue: string) => {
+    console.log('Selected tag:', currentValue);
+    onAddTag(currentValue);
+    setValue("");
+    setOpen(false);
   };
 
   return (
@@ -64,71 +64,53 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
           </Badge>
         </div>
       ))}
-      {isAddingTag ? (
-        <div className="flex items-center gap-2">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[200px] justify-between"
-              >
-                {newTag || "Select tag..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandInput
-                  placeholder="Search tag..."
-                  value={newTag}
-                  onValueChange={setNewTag}
-                  className="h-9"
-                />
-                <CommandEmpty>No tag found.</CommandEmpty>
-                <CommandGroup>
-                  {existingTags.map((tag) => (
-                    <CommandItem
-                      key={tag}
-                      value={tag}
-                      onSelect={() => handleAddTag(tag)}
-                    >
-                      {tag}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <Input
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Or type new tag"
-            className="w-32"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleAddTag(newTag);
-              }
-            }}
-          />
-          <Button size="sm" onClick={() => handleAddTag(newTag)}>
-            Add
+      
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="h-8 px-2"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Tag
+            <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setIsAddingTag(false)}>
-            Cancel
-          </Button>
-        </div>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsAddingTag(true)}
-          className="h-6"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      )}
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Search or add tag..."
+              value={value}
+              onValueChange={setValue}
+            />
+            <CommandEmpty>
+              {value && (
+                <button
+                  className="w-full p-2 text-sm text-left hover:bg-accent"
+                  onClick={() => handleSelect(value)}
+                >
+                  Create tag "{value}"
+                </button>
+              )}
+            </CommandEmpty>
+            <CommandGroup>
+              {existingTags
+                .filter(tag => !tags.includes(tag))
+                .map((tag) => (
+                  <CommandItem
+                    key={tag}
+                    value={tag}
+                    onSelect={() => handleSelect(tag)}
+                  >
+                    {tag}
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
