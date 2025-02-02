@@ -26,9 +26,9 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
   return (
     <div className="space-y-4">
       {events.map((event) => (
-        <div key={event.id} className="flex justify-between items-center p-4 border rounded-lg">
-          <div className="flex-1">
-            <h3 className="font-medium">{event.summary}</h3>
+        <div key={event.id} className="flex justify-between items-center pr-4 py-4 border rounded-lg">
+          <div className="flex-1 pl-4">
+            <h3 className="font-medium text-left">{event.summary}</h3>
             <p className="text-sm text-gray-500">
               {new Date(event.start.dateTime).toLocaleString()}
             </p>
