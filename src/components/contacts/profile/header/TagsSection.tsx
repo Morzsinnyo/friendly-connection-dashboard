@@ -35,7 +35,7 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
       console.log('Fetching unique tags');
       const response = await contactQueries.getAllUniqueTags();
       console.log('Fetched tags:', response.data);
-      return response.data;
+      return response.data || [];
     },
   });
 
@@ -96,28 +96,34 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
               onKeyDown={handleInputKeyDown}
               className="border-none focus:ring-0"
             />
-            <CommandEmpty>
-              {inputValue && (
-                <button
-                  className="w-full p-2 text-sm text-left hover:bg-accent"
-                  onClick={() => handleSelect(inputValue)}
-                >
-                  Create tag "{inputValue}"
-                </button>
-              )}
-            </CommandEmpty>
-            <CommandGroup>
-              {filteredTags.map((tag) => (
-                <CommandItem
-                  key={tag}
-                  value={tag}
-                  onSelect={() => handleSelect(tag)}
-                  className="cursor-pointer"
-                >
-                  {tag}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {isLoading ? (
+              <CommandEmpty>Loading tags...</CommandEmpty>
+            ) : (
+              <>
+                <CommandEmpty>
+                  {inputValue && (
+                    <button
+                      className="w-full p-2 text-sm text-left hover:bg-accent"
+                      onClick={() => handleSelect(inputValue)}
+                    >
+                      Create tag "{inputValue}"
+                    </button>
+                  )}
+                </CommandEmpty>
+                <CommandGroup>
+                  {filteredTags.map((tag) => (
+                    <CommandItem
+                      key={tag}
+                      value={tag}
+                      onSelect={() => handleSelect(tag)}
+                      className="cursor-pointer"
+                    >
+                      {tag}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
           </Command>
         </PopoverContent>
       </Popover>
