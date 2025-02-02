@@ -1,8 +1,23 @@
-import { Tag, X, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { contactQueries } from "@/api/services/contacts/queries";
+import { useQuery } from "@tanstack/react-query";
 
 interface TagsSectionProps {
   tags: string[];
@@ -13,12 +28,22 @@ interface TagsSectionProps {
 export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
   const [newTag, setNewTag] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const handleAddTag = () => {
-    if (newTag.trim()) {
-      onAddTag(newTag.trim());
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ['uniqueTags'],
+    queryFn: async () => {
+      const response = await contactQueries.getAllUniqueTags();
+      return response.data;
+    },
+  });
+
+  const handleAddTag = (value: string) => {
+    if (value.trim()) {
+      onAddTag(value.trim());
       setNewTag("");
       setIsAddingTag(false);
+      setOpen(false);
     }
   };
 
@@ -41,18 +66,53 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
       ))}
       {isAddingTag ? (
         <div className="flex items-center gap-2">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-[200px] justify-between"
+              >
+                {newTag || "Select tag..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput
+                  placeholder="Search tag..."
+                  value={newTag}
+                  onValueChange={setNewTag}
+                  className="h-9"
+                />
+                <CommandEmpty>No tag found.</CommandEmpty>
+                <CommandGroup>
+                  {existingTags.map((tag) => (
+                    <CommandItem
+                      key={tag}
+                      value={tag}
+                      onSelect={() => handleAddTag(tag)}
+                    >
+                      {tag}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Input
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
-            placeholder="Enter tag name"
+            placeholder="Or type new tag"
             className="w-32"
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                handleAddTag();
+                handleAddTag(newTag);
               }
             }}
           />
-          <Button size="sm" onClick={handleAddTag}>
+          <Button size="sm" onClick={() => handleAddTag(newTag)}>
             Add
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setIsAddingTag(false)}>

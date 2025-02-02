@@ -54,6 +54,31 @@ export const contactQueries = {
     return formatApiResponse(query);
   },
 
+  getAllUniqueTags: async (): Promise<ApiResponse<string[]>> => {
+    console.log('Fetching all unique tags');
+    
+    const { data: contacts, error } = await supabase
+      .from('contacts')
+      .select('tags');
+
+    if (error) {
+      console.error('Error fetching tags:', error);
+      throw error;
+    }
+
+    // Extract and deduplicate tags
+    const uniqueTags = Array.from(
+      new Set(
+        contacts
+          .flatMap(contact => contact.tags || [])
+          .filter(Boolean)
+      )
+    ).sort();
+
+    console.log('Found unique tags:', uniqueTags);
+    return { data: uniqueTags, error: null };
+  },
+
   getRelatedContacts: async (contactId: string): Promise<ApiResponse<Contact[]>> => {
     console.log('Fetching related contacts for ID:', contactId);
     
