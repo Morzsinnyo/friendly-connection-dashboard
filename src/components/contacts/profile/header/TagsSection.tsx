@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
+import { Tag, X, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
@@ -26,7 +25,7 @@ interface TagsSectionProps {
 
 export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  const [inputValue, setInputValue] = useState("");
 
   console.log('Current tags:', tags);
 
@@ -43,9 +42,22 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
   const handleSelect = (currentValue: string) => {
     console.log('Selected tag:', currentValue);
     onAddTag(currentValue);
-    setValue("");
+    setInputValue("");
     setOpen(false);
   };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue) {
+      e.preventDefault();
+      handleSelect(inputValue);
+    }
+  };
+
+  const filteredTags = existingTags
+    .filter(tag => !tags.includes(tag))
+    .filter(tag => 
+      tag.toLowerCase().includes(inputValue.toLowerCase())
+    );
 
   return (
     <div className="flex flex-wrap gap-2 items-center">
@@ -69,44 +81,42 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            role="combobox"
-            aria-expanded={open}
+            size="sm"
             className="h-8 px-2"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Tag
-            <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+            <Plus className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="start">
           <Command>
             <CommandInput
-              placeholder="Search or add tag..."
-              value={value}
-              onValueChange={setValue}
+              placeholder="Type a tag..."
+              value={inputValue}
+              onValueChange={setInputValue}
+              onKeyDown={handleInputKeyDown}
+              className="border-none focus:ring-0"
             />
             <CommandEmpty>
-              {value && (
+              {inputValue && (
                 <button
                   className="w-full p-2 text-sm text-left hover:bg-accent"
-                  onClick={() => handleSelect(value)}
+                  onClick={() => handleSelect(inputValue)}
                 >
-                  Create tag "{value}"
+                  Create tag "{inputValue}"
                 </button>
               )}
             </CommandEmpty>
             <CommandGroup>
-              {existingTags
-                .filter(tag => !tags.includes(tag))
-                .map((tag) => (
-                  <CommandItem
-                    key={tag}
-                    value={tag}
-                    onSelect={() => handleSelect(tag)}
-                  >
-                    {tag}
-                  </CommandItem>
-                ))}
+              {filteredTags.map((tag) => (
+                <CommandItem
+                  key={tag}
+                  value={tag}
+                  onSelect={() => handleSelect(tag)}
+                  className="cursor-pointer"
+                >
+                  {tag}
+                </CommandItem>
+              ))}
             </CommandGroup>
           </Command>
         </PopoverContent>
