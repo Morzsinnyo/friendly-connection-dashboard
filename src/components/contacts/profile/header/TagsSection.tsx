@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tag, X, Plus, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { contactQueries } from "@/api/services/contacts/queries";
 import { useQuery } from "@tanstack/react-query";
+import { LoadingState } from "@/components/common/LoadingState";
 
 interface TagsSectionProps {
   tags: string[];
@@ -30,15 +31,20 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const { data: existingTags = [] } = useQuery({
+  console.log('Current tags:', tags);
+
+  const { data: existingTags = [], isLoading } = useQuery({
     queryKey: ['uniqueTags'],
     queryFn: async () => {
+      console.log('Fetching unique tags');
       const response = await contactQueries.getAllUniqueTags();
-      return response.data;
+      console.log('Fetched tags:', response.data);
+      return response.data || [];
     },
   });
 
   const handleAddTag = (value: string) => {
+    console.log('Adding tag:', value);
     if (value.trim()) {
       onAddTag(value.trim());
       setNewTag("");
@@ -86,18 +92,32 @@ export function TagsSection({ tags, onAddTag, onRemoveTag }: TagsSectionProps) {
                   onValueChange={setNewTag}
                   className="h-9"
                 />
-                <CommandEmpty>No tag found.</CommandEmpty>
-                <CommandGroup>
-                  {existingTags.map((tag) => (
-                    <CommandItem
-                      key={tag}
-                      value={tag}
-                      onSelect={() => handleAddTag(tag)}
-                    >
-                      {tag}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
+                {isLoading ? (
+                  <LoadingState message="Loading tags..." />
+                ) : (
+                  <>
+                    <CommandEmpty>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={() => handleAddTag(newTag)}
+                      >
+                        Create "{newTag}"
+                      </Button>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {existingTags.map((tag) => (
+                        <CommandItem
+                          key={tag}
+                          value={tag}
+                          onSelect={() => handleAddTag(tag)}
+                        >
+                          {tag}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </>
+                )}
               </Command>
             </PopoverContent>
           </Popover>
