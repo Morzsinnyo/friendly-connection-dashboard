@@ -84,7 +84,7 @@ export function ContactHeader({
     },
     onSuccess: () => {
       toast.success('Contact deleted successfully');
-      navigate('/contacts');
+      navigate('/'); // Updated to navigate to index
     },
     onError: (error) => {
       console.error('Error deleting contact:', error);
