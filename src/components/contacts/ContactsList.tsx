@@ -32,8 +32,10 @@ export function ContactsList() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
   const [filterCompany, setFilterCompany] = useState<string[]>([]);
+  const [filterTags, setFilterTags] = useState<string[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   const [availableCompanies, setAvailableCompanies] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,16 +53,33 @@ export function ContactsList() {
 
       setContacts(data as Contact[]);
 
-      // Extract unique statuses and companies
+      // Extract unique statuses, companies and tags
       const statuses = [...new Set(data?.map(contact => contact.status).filter(Boolean))];
       const companies = [...new Set(data?.map(contact => contact.company).filter(Boolean))];
+      const tags = [...new Set(data?.flatMap(contact => contact.tags || []).filter(Boolean))];
       
       setAvailableStatuses(statuses);
       setAvailableCompanies(companies);
+      setAvailableTags(tags);
     };
 
     fetchContacts();
   }, []);
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'business contact':
+        return 'bg-[#F2FCE2] text-green-800';
+      case 'personal contact':
+        return 'bg-[#D3E4FD] text-blue-800';
+      case 'family':
+        return 'bg-[#E5DEFF] text-purple-800';
+      case 'friend':
+        return 'bg-[#FEC6A1] text-orange-800';
+      default:
+        return 'bg-[#FFDEE2] text-pink-800';
+    }
+  };
 
   const getReminderStatusIcon = (status: string) => {
     switch (status) {
@@ -95,7 +114,10 @@ export function ContactsList() {
     const matchesCompany = filterCompany.length === 0 || 
       (contact.company && filterCompany.includes(contact.company));
 
-    return matchesSearch && matchesStatus && matchesCompany;
+    const matchesTags = filterTags.length === 0 ||
+      (contact.tags && contact.tags.some(tag => filterTags.includes(tag)));
+
+    return matchesSearch && matchesStatus && matchesCompany && matchesTags;
   });
 
   const handleContactClick = (contactId: string) => {
@@ -193,6 +215,32 @@ export function ContactsList() {
                       ))}
                     </div>
                   </div>
+                  <div className="space-y-4">
+                    <Label>Tags</Label>
+                    <div className="space-y-2">
+                      {availableTags.map((tag) => (
+                        <div key={tag} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`tag-${tag}`}
+                            checked={filterTags.includes(tag)}
+                            onCheckedChange={(checked) => {
+                              setFilterTags(prev =>
+                                checked
+                                  ? [...prev, tag]
+                                  : prev.filter(t => t !== tag)
+                              );
+                            }}
+                          />
+                          <label
+                            htmlFor={`tag-${tag}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {tag}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
@@ -267,7 +315,10 @@ export function ContactsList() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      <Badge 
+                        variant="secondary" 
+                        className={getStatusColor(contact.status)}
+                      >
                         {contact.status}
                       </Badge>
                     </td>
