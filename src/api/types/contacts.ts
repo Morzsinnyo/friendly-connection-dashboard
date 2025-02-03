@@ -15,7 +15,7 @@ export interface ContactResponse {
   mobile_phone?: string | null;
   status?: string | null;
   birthday?: string | null;
-  notes?: Json;
+  notes?: Json | null;
   avatar_url?: string | null;
   last_contact?: string | null;
   gift_ideas?: string[];
@@ -86,6 +86,7 @@ export function transformContactResponse(response: ContactResponse): Contact {
   return {
     ...response,
     notes: transformedNotes,
+    reminder_status: response.reminder_status || 'pending'
   };
 }
 
@@ -115,4 +116,11 @@ export function transformContactForDatabase(contact: Partial<Contact>): Partial<
     ...rest,
     notes: transformedNotes,
   };
+}
+
+// Add ContactFilters type that was missing
+export interface ContactFilters {
+  search?: string;
+  tags?: string[];
+  status?: string;
 }

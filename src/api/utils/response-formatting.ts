@@ -42,7 +42,7 @@ export async function formatContactResponse(
   }
 
   try {
-    const transformedContact = transformContactResponse(data as ContactResponse);
+    const transformedContact = transformContactResponse(data);
     return {
       data: transformedContact,
       error: null,
@@ -78,7 +78,7 @@ export async function formatContactsResponse(
 
   try {
     const transformedContacts = data.map(contact => 
-      transformContactResponse(contact as ContactResponse)
+      transformContactResponse(contact)
     );
     return {
       data: transformedContacts,
