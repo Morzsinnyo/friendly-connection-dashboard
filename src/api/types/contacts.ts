@@ -12,7 +12,7 @@ export interface Contact {
   mobile_phone?: string | null;
   status?: string | null;
   birthday?: string | null;
-  notes?: EditorContent | null;
+  notes?: EditorContent;
   avatar_url?: string | null;
   last_contact?: string | null;
   gift_ideas?: string[];
@@ -30,7 +30,7 @@ export interface Contact {
   facebook_url?: string | null;
   last_reminder_completed?: string | null;
   calendar_event_id?: string | null;
-  reminder_status?: string;
+  reminder_status?: ReminderStatus;
   custom_recurrence_interval?: number | null;
   custom_recurrence_unit?: string | null;
   custom_recurrence_ends?: string | null;
@@ -39,11 +39,24 @@ export interface Contact {
   note_version?: number;
 }
 
+export type ContactInsert = Omit<Contact, 'id' | 'created_at' | 'updated_at'>;
+export type ContactUpdate = Partial<ContactInsert>;
+
+export type ReminderStatus = 'pending' | 'completed' | 'skipped';
+
+export interface ContactFilters {
+  status?: string[];
+  company?: string[];
+  searchQuery?: string;
+}
+
 export type ContactResponse = Omit<Contact, 'notes'> & {
   notes?: Json;
 };
 
 export function transformContactResponse(response: ContactResponse): Contact {
+  if (!response) return response;
+  
   return {
     ...response,
     notes: response.notes ? String(response.notes) : null,
