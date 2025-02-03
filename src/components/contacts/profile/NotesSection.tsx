@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
+import { getNoteContent } from "@/api/types/contacts";
 
 interface NotesSectionProps {
   contactId: string;
@@ -11,7 +12,7 @@ interface NotesSectionProps {
 }
 
 export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
-  const [notes, setNotes] = useState(initialNotes || '');
+  const [notes, setNotes] = useState(getNoteContent(initialNotes));
   const { updateNotesMutation } = useContactMutations(contactId);
 
   const debouncedUpdate = debounce((newNotes: string) => {

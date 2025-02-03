@@ -11,3 +11,10 @@ export interface ContactFilters {
   company?: string[];
   searchQuery?: string;
 }
+
+export function getNoteContent(note: any): string {
+  if (!note) return '';
+  if (typeof note === 'string') return note;
+  if (typeof note === 'object' && note.content) return note.content;
+  return '';
+}
