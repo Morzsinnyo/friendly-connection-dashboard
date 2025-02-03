@@ -1,48 +1,51 @@
-import { Database } from "@/integrations/supabase/types";
-import { EditorContent } from "./editor";
+import { Json } from '@/integrations/supabase/types';
+import { EditorContent } from './editor';
 
-// Helper type to transform Json to EditorContent
-type TransformNotes<T> = Omit<T, 'notes'> & {
+export interface Contact {
+  id: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  full_name: string;
+  email?: string | null;
+  business_phone?: string | null;
+  mobile_phone?: string | null;
+  status?: string | null;
+  birthday?: string | null;
   notes?: EditorContent | null;
-};
-
-export type Contact = TransformNotes<Database['public']['Tables']['contacts']['Row']>;
-export type ContactInsert = Database['public']['Tables']['contacts']['Insert'];
-export type ContactUpdate = Database['public']['Tables']['contacts']['Update'];
-
-export type ReminderStatus = 'pending' | 'completed' | 'skipped';
-
-export interface ContactFilters {
-  status?: string[];
-  company?: string[];
-  searchQuery?: string;
+  avatar_url?: string | null;
+  last_contact?: string | null;
+  gift_ideas?: string[];
+  job_title?: string | null;
+  company?: string | null;
+  friendship_score?: number;
+  tags?: string[];
+  related_contacts?: string[];
+  scheduled_followup?: string | null;
+  reminder_frequency?: string | null;
+  next_reminder?: string | null;
+  instagram_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  facebook_url?: string | null;
+  last_reminder_completed?: string | null;
+  calendar_event_id?: string | null;
+  reminder_status?: string;
+  custom_recurrence_interval?: number | null;
+  custom_recurrence_unit?: string | null;
+  custom_recurrence_ends?: string | null;
+  custom_recurrence_end_date?: string | null;
+  custom_recurrence_occurrences?: number | null;
+  note_version?: number;
 }
 
-// Helper function to transform database notes to EditorContent
-export const transformDatabaseNotes = (notes: any): EditorContent | null => {
-  if (!notes) return null;
-  
-  // If notes is already in EditorContent format
-  if (typeof notes === 'object' && notes.type === 'doc') {
-    return notes as EditorContent;
-  }
-  
-  // If notes is a string
-  if (typeof notes === 'string') {
-    return notes;
-  }
-  
-  // Convert other formats to string
-  return String(notes);
+export type ContactResponse = Omit<Contact, 'notes'> & {
+  notes?: Json;
 };
 
-// Helper function to transform EditorContent to database format
-export const transformNotesToDatabase = (notes: EditorContent | null): any => {
-  if (!notes) return null;
-  
-  if (typeof notes === 'string') {
-    return notes;
-  }
-  
-  return notes;
-};
+export function transformContactResponse(response: ContactResponse): Contact {
+  return {
+    ...response,
+    notes: response.notes ? String(response.notes) : null,
+  };
+}

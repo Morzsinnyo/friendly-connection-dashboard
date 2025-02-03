@@ -67,7 +67,7 @@ export function RichTextEditor({ initialContent, onChange, className }: RichText
         className="p-4 min-h-[200px] focus:outline-none"
         contentEditable
         onInput={handleChange}
-        dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : JSON.stringify(content) }}
+        dangerouslySetInnerHTML={{ __html: content || '' }}
       />
     </Card>
   );

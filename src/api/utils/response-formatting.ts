@@ -1,36 +1,32 @@
-import { ApiResponse } from "../types/common";
-import { transformDatabaseNotes } from "../types/contacts";
+import { ApiResponse } from '@/api/types/common';
+import { Contact, ContactResponse, transformContactResponse } from '@/api/types/contacts';
 
-export const formatApiResponse = async <T extends { notes?: any }>(
-  promise: Promise<{ data: T | T[] | null; error: any }>
-): Promise<ApiResponse<T>> => {
-  try {
-    const { data, error } = await promise;
-    
-    if (error) {
-      console.error('API Error:', error);
-      return { data: null, error };
-    }
-
-    if (Array.isArray(data)) {
-      const transformedData = data.map(item => ({
-        ...item,
-        notes: transformDatabaseNotes(item.notes)
-      }));
-      return { data: transformedData as T[], error: null };
-    }
-
-    if (data) {
-      const transformedData = {
-        ...data,
-        notes: transformDatabaseNotes(data.notes)
-      };
-      return { data: transformedData as T, error: null };
-    }
-
-    return { data: null, error: null };
-  } catch (error) {
-    console.error('Error formatting API response:', error);
-    return { data: null, error };
+export function formatApiResponse<T>(data: T | null, error: Error | null = null): ApiResponse<T> {
+  if (error) {
+    return {
+      data: null,
+      error,
+    };
   }
-};
+
+  return {
+    data,
+    error: null,
+  };
+}
+
+export function formatContactResponse(response: ContactResponse | null, error: Error | null = null): ApiResponse<Contact> {
+  if (error || !response) {
+    return formatApiResponse(null, error);
+  }
+
+  return formatApiResponse(transformContactResponse(response));
+}
+
+export function formatContactsResponse(responses: ContactResponse[] | null, error: Error | null = null): ApiResponse<Contact[]> {
+  if (error || !responses) {
+    return formatApiResponse(null, error);
+  }
+
+  return formatApiResponse(responses.map(transformContactResponse));
+}
