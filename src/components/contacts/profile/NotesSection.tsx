@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
+import { RichTextEditor } from "./editor/RichTextEditor";
+import { EditorContent } from "@/api/types/editor";
 
 interface NotesSectionProps {
   contactId: string;
@@ -11,10 +12,10 @@ interface NotesSectionProps {
 }
 
 export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
-  const [notes, setNotes] = useState(initialNotes || '');
+  const [notes, setNotes] = useState<EditorContent>(initialNotes || '');
   const { updateNotesMutation } = useContactMutations(contactId);
 
-  const debouncedUpdate = debounce((newNotes: string) => {
+  const debouncedUpdate = debounce((newNotes: EditorContent) => {
     console.log('Updating notes for contact:', contactId);
     updateNotesMutation.mutate(newNotes, {
       onError: () => {
@@ -29,8 +30,7 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
     };
   }, [debouncedUpdate]);
 
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newNotes = e.target.value;
+  const handleNotesChange = (newNotes: EditorContent) => {
     setNotes(newNotes);
     debouncedUpdate(newNotes);
   };
@@ -41,11 +41,10 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
         <CardTitle>Notes</CardTitle>
       </CardHeader>
       <CardContent>
-        <Textarea
-          value={notes}
+        <RichTextEditor
+          initialContent={notes}
           onChange={handleNotesChange}
-          placeholder="Add notes about this contact..."
-          className="min-h-[200px] resize-y"
+          className="min-h-[200px]"
         />
       </CardContent>
     </Card>

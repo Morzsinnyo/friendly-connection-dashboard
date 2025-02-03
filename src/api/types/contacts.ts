@@ -1,6 +1,9 @@
 import { Database } from "@/integrations/supabase/types";
+import { EditorContent } from "./editor";
 
-export type Contact = Database['public']['Tables']['contacts']['Row'];
+export type Contact = Omit<Database['public']['Tables']['contacts']['Row'], 'notes'> & {
+  notes?: EditorContent | null;
+};
 export type ContactInsert = Database['public']['Tables']['contacts']['Insert'];
 export type ContactUpdate = Database['public']['Tables']['contacts']['Update'];
 
