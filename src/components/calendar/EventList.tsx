@@ -23,6 +23,10 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
     return summary.toLowerCase().includes("time to contact");
   };
 
+  const getCalendarUrl = (eventId: string) => {
+    return `https://calendar.google.com/calendar/u/0/r/eventedit/${eventId}`;
+  };
+
   return (
     <div className="space-y-4">
       {events.map((event) => (
@@ -45,16 +49,14 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
             )}
             
             <div className="flex gap-2">
-              {event.htmlLink && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => window.open(event.htmlLink, '_blank')}
-                  title="Open in Google Calendar"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => window.open(getCalendarUrl(event.id), '_blank')}
+                title="Open in Google Calendar"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
               <Button variant="destructive" onClick={() => onDeleteEvent(event.id)}>
                 Delete
               </Button>
