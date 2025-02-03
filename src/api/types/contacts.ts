@@ -1,10 +1,26 @@
 import { Json } from '@/integrations/supabase/types';
 import { EditorContent } from './editor';
 
+// Enhanced ReminderStatus enum with more descriptive states
 export enum ReminderStatus {
   Pending = 'pending',
   Completed = 'completed',
-  Skipped = 'skipped'
+  Skipped = 'skipped',
+  Overdue = 'overdue',
+  InProgress = 'in_progress'
+}
+
+// New interface for structured note content
+export interface NoteContent {
+  blocks: NoteBlock[];
+  version: number;
+}
+
+export interface NoteBlock {
+  id: string;
+  type: 'paragraph' | 'heading1' | 'heading2' | 'bullet' | 'quote' | 'code';
+  content: string;
+  metadata?: Record<string, unknown>;
 }
 
 // Base interface for contact data as it exists in the database
@@ -46,21 +62,28 @@ export interface ContactResponse {
   note_version?: number;
 }
 
-// Interface for contact data after transformation for frontend use
+// Enhanced interface for contact data after transformation for frontend use
 export interface Contact extends Omit<ContactResponse, 'notes'> {
-  notes?: EditorContent;
+  notes?: EditorContent | NoteContent;
 }
 
+// Enhanced contact insert type
 export type ContactInsert = Omit<Contact, 'id' | 'created_at' | 'updated_at'>;
+
+// Enhanced contact update type with partial fields
 export type ContactUpdate = Partial<ContactInsert>;
 
-// Add ContactFilters type that was missing
+// Enhanced filters interface with additional filter options
 export interface ContactFilters {
   status?: string[];
   company?: string[];
   searchQuery?: string;
   search?: string;
   tags?: string[];
+  reminderStatus?: ReminderStatus[];
+  hasReminder?: boolean;
+  lastContactBefore?: Date;
+  lastContactAfter?: Date;
 }
 
 // Type guard to check if a value is a valid ContactResponse
@@ -74,19 +97,34 @@ export function isContactResponse(value: unknown): value is ContactResponse {
   );
 }
 
+// Type guard for NoteContent
+export function isNoteContent(value: unknown): value is NoteContent {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'blocks' in value &&
+    'version' in value &&
+    Array.isArray((value as NoteContent).blocks)
+  );
+}
+
 // Transform database response to frontend Contact type
 export function transformContactResponse(response: ContactResponse): Contact {
   if (!response) return response;
 
-  // Handle the notes field transformation
-  let transformedNotes: EditorContent = null;
+  let transformedNotes: EditorContent | NoteContent | null = null;
+  
   if (response.notes) {
     try {
       // If notes is already a string, use it directly
       if (typeof response.notes === 'string') {
         transformedNotes = response.notes;
       } 
-      // If it's JSON, stringify it
+      // If it's a NoteContent object, preserve its structure
+      else if (isNoteContent(response.notes)) {
+        transformedNotes = response.notes;
+      }
+      // Otherwise, stringify it
       else {
         transformedNotes = JSON.stringify(response.notes);
       }
@@ -112,11 +150,16 @@ export function transformContactForDatabase(contact: Partial<Contact>): Partial<
   let transformedNotes: Json | null = null;
   if (notes) {
     try {
+      // If notes is a NoteContent object, store as is
+      if (isNoteContent(notes)) {
+        transformedNotes = notes;
+      }
       // If notes is a string and looks like JSON, parse it
-      if (typeof notes === 'string' && (notes.startsWith('{') || notes.startsWith('['))) {
+      else if (typeof notes === 'string' && (notes.startsWith('{') || notes.startsWith('['))) {
         transformedNotes = JSON.parse(notes);
-      } else {
-        // Otherwise store as is
+      } 
+      // Otherwise store as is
+      else {
         transformedNotes = notes;
       }
     } catch (error) {
