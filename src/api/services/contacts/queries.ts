@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Contact, ContactFilters } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
-import { formatContactResponse, formatContactsResponse } from "@/api/utils/response-formatting";
+import { formatApiResponse } from "@/api/utils/response-formatting";
 
 export const contactQueries = {
   getAll: async (filters?: ContactFilters): Promise<ApiResponse<Contact[]>> => {
@@ -24,30 +24,34 @@ export const contactQueries = {
       query = query.ilike('full_name', `%${filters.searchQuery}%`);
     }
 
-    return formatContactsResponse(Promise.resolve(query));
+    return formatApiResponse(Promise.resolve(query));
   },
 
   getById: async (id: string): Promise<ApiResponse<Contact>> => {
     console.log('Fetching contact by ID:', id);
     
-    const query = supabase
-      .from('contacts')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+    );
 
-    return formatContactResponse(Promise.resolve(query));
+    return formatApiResponse(query);
   },
 
   getByIds: async (ids: string[]): Promise<ApiResponse<Contact[]>> => {
     console.log('Fetching contacts by IDs:', ids);
     
-    const query = supabase
-      .from('contacts')
-      .select('*')
-      .in('id', ids);
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select('*')
+        .in('id', ids)
+    );
 
-    return formatContactsResponse(Promise.resolve(query));
+    return formatApiResponse(query);
   },
 
   getRelatedContacts: async (contactId: string): Promise<ApiResponse<Contact[]>> => {
@@ -57,7 +61,7 @@ export const contactQueries = {
       .from('contacts')
       .select('related_contacts')
       .eq('id', contactId)
-      .maybeSingle();
+      .single();
 
     if (contactError) {
       console.error('Error fetching contact:', contactError);
@@ -69,11 +73,17 @@ export const contactQueries = {
       return { data: [], error: null };
     }
 
-    const query = supabase
+    const { data: relatedContacts, error: relatedError } = await supabase
       .from('contacts')
       .select('*')
       .in('id', contact.related_contacts);
 
-    return formatContactsResponse(Promise.resolve(query));
+    if (relatedError) {
+      console.error('Error fetching related contacts:', relatedError);
+      throw relatedError;
+    }
+
+    console.log('Found related contacts:', relatedContacts);
+    return { data: relatedContacts, error: null };
   }
 };

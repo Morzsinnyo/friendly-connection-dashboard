@@ -1,94 +1,23 @@
-import { ApiResponse } from '@/api/types/common';
-import { Contact, ContactResponse, transformContactResponse } from '@/api/types/contacts';
-import { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { ApiResponse } from '../types/common';
+import { handleApiError } from './error-handling';
+import { PostgrestError } from '@supabase/supabase-js';
 
 export async function formatApiResponse<T>(
-  promise: Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
+  promise: Promise<{ data: T | null; error: PostgrestError | null }>
 ): Promise<ApiResponse<T>> {
-  const { data, error } = await promise;
-  
-  if (error) {
-    console.error('API Error:', error);
-    return {
-      data: null,
-      error,
-    };
-  }
-
-  return {
-    data: Array.isArray(data) ? data[0] : data,
-    error: null,
-  };
-}
-
-export async function formatContactResponse(
-  promise: Promise<PostgrestSingleResponse<ContactResponse>>
-): Promise<ApiResponse<Contact>> {
-  const { data, error } = await promise;
-  
-  if (error) {
-    console.error('Contact API Error:', error);
-    return {
-      data: null,
-      error,
-    };
-  }
-
-  if (!data) {
-    return {
-      data: null,
-      error: null,
-    };
-  }
-
   try {
-    const transformedContact = transformContactResponse(data);
-    return {
-      data: transformedContact,
-      error: null,
-    };
+    const { data, error } = await promise;
+    if (error) throw error;
+    return { data: data as T, error: null };
   } catch (error) {
-    console.error('Error transforming contact:', error);
-    return {
-      data: null,
-      error: error instanceof Error ? error : new Error('Unknown error during contact transformation'),
-    };
+    return { data: null, error: handleApiError(error) };
   }
 }
 
-export async function formatContactsResponse(
-  promise: Promise<PostgrestResponse<ContactResponse>>
-): Promise<ApiResponse<Contact[]>> {
-  const { data, error } = await promise;
-  
-  if (error) {
-    console.error('Contacts API Error:', error);
-    return {
-      data: null,
-      error,
-    };
-  }
+export function createSuccessResponse<T>(data: T): ApiResponse<T> {
+  return { data, error: null };
+}
 
-  if (!data) {
-    return {
-      data: [],
-      error: null,
-    };
-  }
-
-  try {
-    const transformedContacts = data.map(contact => 
-      transformContactResponse(contact)
-    );
-    return {
-      data: transformedContacts,
-      error: null,
-    };
-  } catch (error) {
-    console.error('Error transforming contacts:', error);
-    return {
-      data: null,
-      error: error instanceof Error ? error : new Error('Unknown error during contacts transformation'),
-    };
-  }
+export function createErrorResponse<T>(error: Error): ApiResponse<T> {
+  return { data: null, error: handleApiError(error) };
 }

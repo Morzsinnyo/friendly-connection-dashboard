@@ -1,4 +1,4 @@
-import { Contact, ReminderStatus } from "@/api/types/contacts";
+import { Contact } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +59,7 @@ export const reminderMutations = {
           .update({
             reminder_frequency: null,
             next_reminder: null,
-            reminder_status: ReminderStatus.Pending
+            reminder_status: 'pending'
           })
           .eq('id', id)
           .select()
@@ -77,7 +77,7 @@ export const reminderMutations = {
         .update({
           reminder_frequency: frequency,
           next_reminder: nextReminder.toISOString(),
-          reminder_status: ReminderStatus.Pending
+          reminder_status: 'pending'
         })
         .eq('id', id)
         .select()
@@ -128,7 +128,7 @@ export const reminderMutations = {
 
   updateReminderStatus: async (
     id: string,
-    status: ReminderStatus
+    status: 'pending' | 'completed' | 'skipped'
   ): Promise<ApiResponse<Contact>> => {
     console.log('Updating reminder status:', { id, status });
     
@@ -145,7 +145,7 @@ export const reminderMutations = {
 
     // Define the type for the updates object
     type ContactUpdates = {
-      reminder_status: ReminderStatus;
+      reminder_status: 'pending' | 'completed' | 'skipped';
       next_reminder?: string;
       last_contact?: string;
     };
@@ -154,7 +154,7 @@ export const reminderMutations = {
       reminder_status: status
     };
 
-    if (status === ReminderStatus.Completed && contact.reminder_frequency) {
+    if (status === 'completed' && contact.reminder_frequency) {
       const nextReminder = calculateNextReminder(
         contact.reminder_frequency,
         contact.next_reminder ? new Date(contact.next_reminder) : new Date()

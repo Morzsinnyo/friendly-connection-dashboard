@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { contactMutations } from "@/api/services/contacts/mutations";
 import { toast } from "sonner";
-import { ReminderStatus } from "@/api/types/contacts";
 
 export const useContactStatus = (contactId: string) => {
   const queryClient = useQueryClient();
 
   const updateReminderStatusMutation = useMutation({
-    mutationFn: async (status: ReminderStatus) => {
+    mutationFn: async (status: 'pending' | 'completed' | 'skipped') => {
       const result = await contactMutations.updateReminderStatus(contactId, status);
       if (result.error) throw result.error;
       return result.data;

@@ -1,6 +1,6 @@
 import { Contact } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
-import { formatContactResponse } from "@/api/utils/response-formatting";
+import { formatApiResponse } from "@/api/utils/response-formatting";
 import { supabase } from "@/integrations/supabase/client";
 
 export const relationshipMutations = {
@@ -60,25 +60,29 @@ export const relationshipMutations = {
       throw updateErrorB;
     }
 
-    const query = supabase
-      .from('contacts')
-      .select('*')
-      .eq('id', contactAId)
-      .single();
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .select()
+        .eq('id', contactAId)
+        .single()
+    );
 
-    return formatContactResponse(Promise.resolve(query));
+    return formatApiResponse(query);
   },
 
   updateFriendshipScore: async (id: string, score: number): Promise<ApiResponse<Contact>> => {
     console.log('Updating friendship score for contact:', id, score);
     
-    const query = supabase
-      .from('contacts')
-      .update({ friendship_score: score })
-      .eq('id', id)
-      .select('*')
-      .single();
+    const query = Promise.resolve(
+      supabase
+        .from('contacts')
+        .update({ friendship_score: score })
+        .eq('id', id)
+        .select()
+        .single()
+    );
 
-    return formatContactResponse(Promise.resolve(query));
+    return formatApiResponse(query);
   }
 };
