@@ -35,7 +35,8 @@ export type Database = {
           linkedin_url: string | null
           mobile_phone: string | null
           next_reminder: string | null
-          notes: string | null
+          note_version: number | null
+          notes: Json | null
           related_contacts: string[] | null
           reminder_frequency: string | null
           reminder_status: string | null
@@ -71,7 +72,8 @@ export type Database = {
           linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
-          notes?: string | null
+          note_version?: number | null
+          notes?: Json | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
           reminder_status?: string | null
@@ -107,7 +109,8 @@ export type Database = {
           linkedin_url?: string | null
           mobile_phone?: string | null
           next_reminder?: string | null
-          notes?: string | null
+          note_version?: number | null
+          notes?: Json | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
           reminder_status?: string | null
