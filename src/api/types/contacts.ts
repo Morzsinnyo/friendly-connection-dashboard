@@ -1,7 +1,11 @@
 import { Json } from '@/integrations/supabase/types';
 import { EditorContent } from './editor';
 
-export type ReminderStatus = 'pending' | 'completed' | 'skipped';
+export enum ReminderStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+  Skipped = 'skipped'
+}
 
 // Base interface for contact data as it exists in the database
 export interface ContactResponse {
@@ -86,7 +90,7 @@ export function transformContactResponse(response: ContactResponse): Contact {
   return {
     ...response,
     notes: transformedNotes,
-    reminder_status: response.reminder_status || 'pending'
+    reminder_status: (response.reminder_status as ReminderStatus) || ReminderStatus.Pending
   };
 }
 
