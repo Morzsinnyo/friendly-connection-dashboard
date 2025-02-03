@@ -54,6 +54,15 @@ export interface Contact extends Omit<ContactResponse, 'notes'> {
 export type ContactInsert = Omit<Contact, 'id' | 'created_at' | 'updated_at'>;
 export type ContactUpdate = Partial<ContactInsert>;
 
+// Add ContactFilters type that was missing
+export interface ContactFilters {
+  status?: string[];
+  company?: string[];
+  searchQuery?: string;
+  search?: string;
+  tags?: string[];
+}
+
 // Type guard to check if a value is a valid ContactResponse
 export function isContactResponse(value: unknown): value is ContactResponse {
   return (
@@ -90,7 +99,7 @@ export function transformContactResponse(response: ContactResponse): Contact {
   return {
     ...response,
     notes: transformedNotes,
-    reminder_status: (response.reminder_status as ReminderStatus) || ReminderStatus.Pending
+    reminder_status: response.reminder_status || ReminderStatus.Pending
   };
 }
 
@@ -120,11 +129,4 @@ export function transformContactForDatabase(contact: Partial<Contact>): Partial<
     ...rest,
     notes: transformedNotes,
   };
-}
-
-// Add ContactFilters type that was missing
-export interface ContactFilters {
-  search?: string;
-  tags?: string[];
-  status?: string;
 }
