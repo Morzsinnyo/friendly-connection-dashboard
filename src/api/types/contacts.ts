@@ -1,7 +1,6 @@
 import { Json } from '@/integrations/supabase/types';
-import { EditorContent } from './editor';
 
-// Enhanced ReminderStatus enum with more descriptive states
+// Enhanced ReminderStatus enum to match database values
 export enum ReminderStatus {
   Pending = 'pending',
   Completed = 'completed',
@@ -11,16 +10,16 @@ export enum ReminderStatus {
 }
 
 // New interface for structured note content
-export interface NoteContent {
-  blocks: NoteBlock[];
-  version: number;
-}
-
 export interface NoteBlock {
   id: string;
   type: 'paragraph' | 'heading1' | 'heading2' | 'bullet' | 'quote' | 'code';
   content: string;
   metadata?: Record<string, unknown>;
+}
+
+export interface NoteContent {
+  blocks: NoteBlock[];
+  version: number;
 }
 
 // Base interface for contact data as it exists in the database
@@ -53,7 +52,7 @@ export interface ContactResponse {
   facebook_url?: string | null;
   last_reminder_completed?: string | null;
   calendar_event_id?: string | null;
-  reminder_status?: ReminderStatus;
+  reminder_status: ReminderStatus;
   custom_recurrence_interval?: number | null;
   custom_recurrence_unit?: string | null;
   custom_recurrence_ends?: string | null;
@@ -64,7 +63,7 @@ export interface ContactResponse {
 
 // Enhanced interface for contact data after transformation for frontend use
 export interface Contact extends Omit<ContactResponse, 'notes'> {
-  notes?: EditorContent | NoteContent;
+  notes?: string | NoteContent | null;
 }
 
 // Enhanced contact insert type
@@ -112,25 +111,20 @@ export function isNoteContent(value: unknown): value is NoteContent {
 export function transformContactResponse(response: ContactResponse): Contact {
   if (!response) return response;
 
-  let transformedNotes: EditorContent | NoteContent | null = null;
+  let transformedNotes: string | NoteContent | null = null;
   
   if (response.notes) {
-    try {
-      // If notes is already a string, use it directly
-      if (typeof response.notes === 'string') {
-        transformedNotes = response.notes;
-      } 
-      // If it's a NoteContent object, preserve its structure
-      else if (isNoteContent(response.notes)) {
-        transformedNotes = response.notes;
-      }
-      // Otherwise, stringify it
-      else {
+    if (typeof response.notes === 'string') {
+      transformedNotes = response.notes;
+    } else if (isNoteContent(response.notes)) {
+      transformedNotes = response.notes;
+    } else {
+      try {
         transformedNotes = JSON.stringify(response.notes);
+      } catch (error) {
+        console.error('Error transforming notes:', error);
+        transformedNotes = null;
       }
-    } catch (error) {
-      console.error('Error transforming notes:', error);
-      transformedNotes = null;
     }
   }
   
@@ -150,17 +144,14 @@ export function transformContactForDatabase(contact: Partial<Contact>): Partial<
   let transformedNotes: Json | null = null;
   if (notes) {
     try {
-      // If notes is a NoteContent object, store as is
       if (isNoteContent(notes)) {
-        transformedNotes = notes;
-      }
-      // If notes is a string and looks like JSON, parse it
-      else if (typeof notes === 'string' && (notes.startsWith('{') || notes.startsWith('['))) {
-        transformedNotes = JSON.parse(notes);
-      } 
-      // Otherwise store as is
-      else {
-        transformedNotes = notes;
+        transformedNotes = notes as Json;
+      } else if (typeof notes === 'string') {
+        if (notes.startsWith('{') || notes.startsWith('[')) {
+          transformedNotes = JSON.parse(notes) as Json;
+        } else {
+          transformedNotes = notes as Json;
+        }
       }
     } catch (error) {
       console.error('Error transforming notes for database:', error);
