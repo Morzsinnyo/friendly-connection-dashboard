@@ -24,7 +24,7 @@ export function RichTextEditor({ initialContent, onChange, className }: RichText
   }, [initialContent]);
 
   const applyFormat = useCallback((format: string) => {
-    document.execCommand(format, false);
+    document.execCommand(format);
   }, []);
 
   return (
@@ -57,7 +57,7 @@ export function RichTextEditor({ initialContent, onChange, className }: RichText
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => applyFormat('formatBlock', 'pre')}
+          onClick={() => applyFormat('formatBlock')}
           className="h-8 w-8 p-0"
         >
           <Code className="h-4 w-4" />
@@ -67,7 +67,7 @@ export function RichTextEditor({ initialContent, onChange, className }: RichText
         className="p-4 min-h-[200px] focus:outline-none"
         contentEditable
         onInput={handleChange}
-        dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : '' }}
+        dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : JSON.stringify(content) }}
       />
     </Card>
   );
