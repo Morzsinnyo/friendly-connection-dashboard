@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { format, differenceInYears } from "date-fns";
+import { format } from "date-fns";
 import { Calendar, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -14,6 +14,7 @@ import { useContactProfile } from "@/hooks/contacts/useContactProfile";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 import { Contact, ReminderStatus } from "@/api/types/contacts";
+import { getNoteContent } from "@/api/types/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
 
@@ -160,7 +161,10 @@ export function ContactProfile() {
             </div>
           </div>
 
-          <NotesSection contactId={contact.id} initialNotes={contact.notes} />
+          <NotesSection 
+            contactId={contact.id} 
+            initialNotes={getNoteContent(contact.notes)} 
+          />
           <RelationshipCard
             friendshipScore={contact.friendship_score || 0}
             contactId={contact.id}

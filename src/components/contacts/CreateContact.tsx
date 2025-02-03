@@ -9,6 +9,7 @@ import { ContactFormFields } from "./form/ContactFormFields";
 import { AvatarUpload } from "./form/AvatarUpload";
 import { useQuery } from "@tanstack/react-query";
 import { SocialMediaFields } from "./form/SocialMediaFields";
+import { getNoteContent } from "@/api/types/contacts";
 
 const statusOptions = [
   "Family Member",
@@ -73,7 +74,7 @@ export function CreateContact() {
         mobilePhone: contactData.mobile_phone || '',
         status: contactData.status || '',
         birthday: contactData.birthday ? new Date(contactData.birthday) : null,
-        notes: contactData.notes || '',
+        notes: getNoteContent(contactData.notes),
         jobTitle: contactData.job_title || '',
         company: contactData.company || '',
         instagramUrl: contactData.instagram_url || '',
