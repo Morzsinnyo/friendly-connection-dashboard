@@ -45,11 +45,11 @@ export const EventList = ({ events, onDeleteEvent, onStatusChange }: EventListPr
             )}
             
             <div className="flex gap-2">
-              {event.htmlLink && (
+              {event.id && (
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => window.open(event.htmlLink, '_blank')}
+                  onClick={() => window.open(`https://calendar.google.com/calendar/u/0/r/eventedit/${event.id}`, '_blank')}
                   title="Open in Google Calendar"
                 >
                   <ExternalLink className="h-4 w-4" />
