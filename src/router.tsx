@@ -6,11 +6,16 @@ import Auth from "./pages/Auth";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
