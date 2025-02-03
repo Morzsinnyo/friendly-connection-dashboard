@@ -1,6 +1,8 @@
 import { Json } from '@/integrations/supabase/types';
 import { EditorContent } from './editor';
 
+export type ReminderStatus = 'pending' | 'completed' | 'skipped';
+
 // Base interface for contact data as it exists in the database
 export interface ContactResponse {
   id: string;
@@ -47,14 +49,6 @@ export interface Contact extends Omit<ContactResponse, 'notes'> {
 
 export type ContactInsert = Omit<Contact, 'id' | 'created_at' | 'updated_at'>;
 export type ContactUpdate = Partial<ContactInsert>;
-
-export type ReminderStatus = 'pending' | 'completed' | 'skipped';
-
-export interface ContactFilters {
-  status?: string[];
-  company?: string[];
-  searchQuery?: string;
-}
 
 // Type guard to check if a value is a valid ContactResponse
 export function isContactResponse(value: unknown): value is ContactResponse {

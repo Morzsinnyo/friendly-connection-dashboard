@@ -1,6 +1,6 @@
 import { ApiResponse } from '@/api/types/common';
 import { Contact, ContactResponse, transformContactResponse } from '@/api/types/contacts';
-import { PostgrestResponse, PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
+import { PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export async function formatApiResponse<T>(
   promise: Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
@@ -42,7 +42,7 @@ export async function formatContactResponse(
   }
 
   try {
-    const transformedContact = transformContactResponse(data);
+    const transformedContact = transformContactResponse(data as ContactResponse);
     return {
       data: transformedContact,
       error: null,
@@ -77,7 +77,9 @@ export async function formatContactsResponse(
   }
 
   try {
-    const transformedContacts = data.map(transformContactResponse);
+    const transformedContacts = data.map(contact => 
+      transformContactResponse(contact as ContactResponse)
+    );
     return {
       data: transformedContacts,
       error: null,

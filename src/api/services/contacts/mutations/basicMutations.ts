@@ -10,7 +10,7 @@ export const basicMutations = {
     const query = supabase
       .from('contacts')
       .insert(contact)
-      .select()
+      .select('*')
       .single();
 
     return formatContactResponse(Promise.resolve(query));
@@ -23,7 +23,7 @@ export const basicMutations = {
       .from('contacts')
       .update(updates)
       .eq('id', id)
-      .select()
+      .select('*')
       .single();
 
     return formatContactResponse(Promise.resolve(query));
