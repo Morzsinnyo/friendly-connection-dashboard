@@ -24,7 +24,7 @@ export const contactQueries = {
       query = query.ilike('full_name', `%${filters.searchQuery}%`);
     }
 
-    return formatContactsResponse(query);
+    return formatContactsResponse(Promise.resolve(query));
   },
 
   getById: async (id: string): Promise<ApiResponse<Contact>> => {
@@ -34,9 +34,9 @@ export const contactQueries = {
       .from('contacts')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    return formatContactResponse(query);
+    return formatContactResponse(Promise.resolve(query));
   },
 
   getByIds: async (ids: string[]): Promise<ApiResponse<Contact[]>> => {
@@ -47,7 +47,7 @@ export const contactQueries = {
       .select('*')
       .in('id', ids);
 
-    return formatContactsResponse(query);
+    return formatContactsResponse(Promise.resolve(query));
   },
 
   getRelatedContacts: async (contactId: string): Promise<ApiResponse<Contact[]>> => {
@@ -57,7 +57,7 @@ export const contactQueries = {
       .from('contacts')
       .select('related_contacts')
       .eq('id', contactId)
-      .single();
+      .maybeSingle();
 
     if (contactError) {
       console.error('Error fetching contact:', contactError);
@@ -74,6 +74,6 @@ export const contactQueries = {
       .select('*')
       .in('id', contact.related_contacts);
 
-    return formatContactsResponse(query);
+    return formatContactsResponse(Promise.resolve(query));
   }
 };

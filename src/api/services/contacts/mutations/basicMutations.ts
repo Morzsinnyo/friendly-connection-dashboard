@@ -13,7 +13,7 @@ export const basicMutations = {
       .select()
       .single();
 
-    return formatContactResponse(query);
+    return formatContactResponse(Promise.resolve(query));
   },
 
   update: async (id: string, updates: ContactUpdate): Promise<ApiResponse<Contact>> => {
@@ -26,7 +26,7 @@ export const basicMutations = {
       .select()
       .single();
 
-    return formatContactResponse(query);
+    return formatContactResponse(Promise.resolve(query));
   },
 
   delete: async (id: string): Promise<ApiResponse<null>> => {
