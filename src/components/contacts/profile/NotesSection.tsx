@@ -8,6 +8,8 @@ import { getNoteContent } from "@/api/types/contacts";
 import { Note, createNote, groupNotesByDate, formatNoteTimestamp, notesToJson } from "@/api/types/notes";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface NotesSectionProps {
   contactId: string;
@@ -20,7 +22,6 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
   const { updateNotesMutation } = useContactMutations(contactId);
 
   useEffect(() => {
-    // Initialize notes from the contact data
     const existingNotes = getNoteContent(initialNotes);
     setNotes(existingNotes);
   }, [initialNotes]);
@@ -43,6 +44,13 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
     setNotes(updatedNotes);
     setCurrentNote("");
     debouncedUpdate(updatedNotes);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    const updatedNotes = notes.filter(note => note.id !== noteId);
+    setNotes(updatedNotes);
+    debouncedUpdate(updatedNotes);
+    toast.success('Note deleted successfully');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -82,12 +90,20 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
                   {dateNotes.map((note) => (
                     <div
                       key={note.id}
-                      className="p-3 rounded-lg bg-muted/50 space-y-1"
+                      className="group p-3 rounded-lg bg-muted/50 space-y-1 relative"
                     >
-                      <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                      <p className="text-sm whitespace-pre-wrap pr-8">{note.content}</p>
                       <p className="text-xs text-muted-foreground">
                         {formatNoteTimestamp(note.timestamp)}
                       </p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleDeleteNote(note.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
                     </div>
                   ))}
                 </div>
