@@ -40,7 +40,11 @@ export const parseNotes = (notes: Json[] | string | null): Note[] => {
       if (typeof note === 'string') {
         return createNote(note);
       }
-      return note as Note;
+      // Ensure the note has the required properties before casting
+      if (isValidNote(note)) {
+        return note as Note;
+      }
+      return createNote(String(note));
     });
   }
 
@@ -108,8 +112,8 @@ export const notesToJson = (notes: Note[] | string | null): Json[] => {
   
   if (typeof notes === 'string') {
     const note = createNote(notes);
-    return [note as Json];
+    return [{ ...note }];
   }
   
-  return notes as Json[];
+  return notes.map(note => ({ ...note }));
 };

@@ -197,7 +197,7 @@ export const useContactMutations = (contactId: string) => {
   });
 
   const updateNotesMutation = useMutation({
-    mutationFn: async (notes: string) => {
+    mutationFn: async (notes: Json[]) => {
       console.log('Updating notes for contact:', contactId, notes);
       const { error } = await supabase
         .from('contacts')
