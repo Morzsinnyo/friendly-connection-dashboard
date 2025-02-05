@@ -2,7 +2,8 @@ import { Contact } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { supabase } from "@/integrations/supabase/client";
-import { addWeeks, addMonths, setHours, setMinutes } from "date-fns";
+import { addWeeks, addMonths, setHours, setMinutes, format } from "date-fns";
+import { Note, parseNotes } from "@/api/types/notes";
 
 export const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
   // First set the time to 12:00 PM
@@ -22,6 +23,22 @@ export const calculateNextReminder = (frequency: string, currentDate: Date = new
     default:
       return nextDate;
   }
+};
+
+const getLatestNote = (notes: any): { content: string; timestamp: string } | null => {
+  if (!notes || !Array.isArray(notes) || notes.length === 0) return null;
+  const parsedNotes = parseNotes(notes);
+  if (parsedNotes.length === 0) return null;
+  
+  // Sort notes by timestamp in descending order
+  const sortedNotes = [...parsedNotes].sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  
+  return {
+    content: sortedNotes[0].content,
+    timestamp: sortedNotes[0].timestamp
+  };
 };
 
 export const reminderMutations = {
@@ -71,6 +88,18 @@ export const reminderMutations = {
 
     console.log('Setting new reminder:', { frequency, nextReminder });
     
+    // Fetch contact details including notes
+    const { data: contact, error: fetchError } = await supabase
+      .from('contacts')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching contact:', fetchError);
+      throw fetchError;
+    }
+
     const query = Promise.resolve(
       supabase
         .from('contacts')
@@ -90,6 +119,13 @@ export const reminderMutations = {
       console.log('Creating calendar event for reminder');
       try {
         const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000);
+        const latestNote = getLatestNote(contact.notes);
+        
+        let description = `Recurring reminder to keep in touch with ${contactName}`;
+        if (latestNote) {
+          const formattedDate = format(new Date(latestNote.timestamp), 'MMM d, yyyy');
+          description += `\n\nLatest Note (${formattedDate}):\n"${latestNote.content}"`;
+        }
         
         const response = await supabase.functions.invoke('google-calendar', {
           body: {
@@ -97,7 +133,7 @@ export const reminderMutations = {
             calendarId,
             eventData: {
               summary: `Time to contact ${contactName}`,
-              description: `Recurring reminder to keep in touch with ${contactName}`,
+              description,
               start: {
                 dateTime: nextReminder.toISOString(),
                 timeZone: 'UTC'

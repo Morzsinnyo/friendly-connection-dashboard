@@ -47,6 +47,7 @@ serve(async (req) => {
   try {
     const { action, eventData, calendarId, contactName } = await req.json();
     console.log('Received request:', { action, calendarId, contactName });
+    console.log('Event data:', eventData);
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -84,8 +85,13 @@ serve(async (req) => {
         const recurrence = eventData.frequency ? getRecurrenceRule(eventData.frequency) : [];
         console.log('Recurrence rule:', recurrence);
 
+        // Format description with proper line breaks
+        const description = eventData.description.replace(/\n/g, '\\n');
+        console.log('Formatted description:', description);
+
         const event = {
           ...eventData,
+          description,
           start: {
             ...eventData.start,
             dateTime: startDate.toISOString(),
