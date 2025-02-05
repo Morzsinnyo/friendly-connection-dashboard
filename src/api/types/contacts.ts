@@ -14,5 +14,6 @@ export interface ContactFilters {
 }
 
 export function getNoteContent(note: any): Note[] {
+  console.log('Getting note content:', note);
   return parseNotes(note);
 }

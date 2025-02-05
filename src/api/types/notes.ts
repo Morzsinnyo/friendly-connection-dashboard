@@ -13,14 +13,32 @@ export interface NotesState {
 
 // Convert string or Json[] to Note[]
 export const parseNotes = (notes: any): Note[] => {
+  console.log('Parsing notes:', notes);
   if (!notes) return [];
-  if (typeof notes === 'string') return [createNote(notes)];
+  
+  // If it's already a Note array, return it
+  if (Array.isArray(notes) && notes.every(isValidNote)) {
+    console.log('Notes are already in correct format');
+    return notes;
+  }
+
+  // If it's a string, create a single note
+  if (typeof notes === 'string') {
+    console.log('Converting string to note');
+    return [createNote(notes)];
+  }
+
+  // If it's an array of strings or mixed content
   if (Array.isArray(notes)) {
+    console.log('Converting array to notes');
     return notes.map(note => {
       if (typeof note === 'string') return createNote(note);
-      return note as Note;
+      if (isValidNote(note)) return note;
+      return createNote(String(note));
     });
   }
+
+  console.log('Unable to parse notes, returning empty array');
   return [];
 };
 
@@ -80,6 +98,7 @@ export const createNote = (content: string): Note => ({
 
 // Utility function to convert notes to database format
 export const notesToJson = (notes: Note[] | string | null): any[] => {
+  console.log('Converting notes to JSON:', notes);
   if (!notes) return [];
   if (typeof notes === 'string') return [createNote(notes)];
   return notes;
