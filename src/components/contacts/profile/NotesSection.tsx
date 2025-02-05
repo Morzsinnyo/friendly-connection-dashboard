@@ -5,13 +5,13 @@ import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
 import { getNoteContent } from "@/api/types/contacts";
-import { Note, createNote, groupNotesByDate, formatNoteTimestamp } from "@/api/types/notes";
+import { Note, createNote, groupNotesByDate, formatNoteTimestamp, notesToJson } from "@/api/types/notes";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 interface NotesSectionProps {
   contactId: string;
-  initialNotes?: string | null;
+  initialNotes?: any;
 }
 
 export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
@@ -22,22 +22,13 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
   useEffect(() => {
     // Initialize notes from the contact data
     const existingNotes = getNoteContent(initialNotes);
-    if (existingNotes) {
-      try {
-        const parsedNotes = JSON.parse(existingNotes);
-        if (Array.isArray(parsedNotes)) {
-          setNotes(parsedNotes);
-        }
-      } catch (error) {
-        console.error('Error parsing notes:', error);
-        setNotes([]);
-      }
-    }
+    setNotes(existingNotes);
   }, [initialNotes]);
 
   const debouncedUpdate = debounce((updatedNotes: Note[]) => {
     console.log('Updating notes for contact:', contactId);
-    updateNotesMutation.mutate(JSON.stringify(updatedNotes), {
+    const jsonNotes = notesToJson(updatedNotes);
+    updateNotesMutation.mutate(jsonNotes, {
       onError: () => {
         toast.error('Failed to save notes');
       }

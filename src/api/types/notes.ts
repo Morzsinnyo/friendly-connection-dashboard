@@ -1,3 +1,5 @@
+import { Json } from "@/integrations/supabase/types";
+
 export interface Note {
   id: string;
   content: string;
@@ -12,17 +14,28 @@ export interface NotesState {
 }
 
 // Convert string or Json[] to Note[]
-export const parseNotes = (notes: any): Note[] => {
+export const parseNotes = (notes: Json[] | string | null): Note[] => {
   console.log('Parsing notes:', notes);
   if (!notes) return [];
 
   if (typeof notes === 'string') {
-    console.log('Converting string to note');
-    return [createNote(notes)];
+    try {
+      const parsedNotes = JSON.parse(notes);
+      if (Array.isArray(parsedNotes)) {
+        return parsedNotes.map(note => {
+          if (typeof note === 'string') {
+            return createNote(note);
+          }
+          return note as Note;
+        });
+      }
+      return [createNote(notes)];
+    } catch {
+      return [createNote(notes)];
+    }
   }
 
   if (Array.isArray(notes)) {
-    console.log('Converting array to notes');
     return notes.map(note => {
       if (typeof note === 'string') {
         return createNote(note);
@@ -31,7 +44,6 @@ export const parseNotes = (notes: any): Note[] => {
     });
   }
 
-  console.log('Unable to parse notes, returning empty array');
   return [];
 };
 
@@ -90,9 +102,14 @@ export const createNote = (content: string): Note => ({
 });
 
 // Utility function to convert notes to database format
-export const notesToJson = (notes: Note[] | string | null): any[] => {
+export const notesToJson = (notes: Note[] | string | null): Json[] => {
   console.log('Converting notes to JSON:', notes);
   if (!notes) return [];
-  if (typeof notes === 'string') return [createNote(notes)];
-  return notes;
+  
+  if (typeof notes === 'string') {
+    const note = createNote(notes);
+    return [note as Json];
+  }
+  
+  return notes as Json[];
 };
