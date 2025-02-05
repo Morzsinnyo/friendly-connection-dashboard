@@ -11,6 +11,7 @@ import {
   isReminderError,
   isTransitionError 
 } from "@/api/types/errors";
+import { Json } from "@/integrations/supabase/types";  // Import Json type
 
 const calculateNextReminder = (frequency: string): Date => {
   const today = new Date();

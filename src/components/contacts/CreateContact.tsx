@@ -21,19 +21,35 @@ const statusOptions = [
   "Other",
 ];
 
+interface FormData {
+  fullName: string;
+  email: string;
+  businessPhone: string;
+  mobilePhone: string;
+  status: string;
+  birthday: Date | null;
+  notes: string;  // Updated type to string
+  jobTitle: string;
+  company: string;
+  instagramUrl: string;
+  linkedinUrl: string;
+  twitterUrl: string;
+  facebookUrl: string;
+}
+
 export function CreateContact() {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   const [isLoading, setIsLoading] = useState(false);
   const [avatar, setAvatar] = useState<File | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
     businessPhone: "",
     mobilePhone: "",
     status: "",
-    birthday: null as Date | null,
-    notes: "",
+    birthday: null,
+    notes: "",  // Initialize as empty string
     jobTitle: "",
     company: "",
     instagramUrl: "",
@@ -68,6 +84,7 @@ export function CreateContact() {
   // Populate form data when editing
   useEffect(() => {
     if (contactData) {
+      const notes = getNoteContent(contactData.notes);
       setFormData({
         fullName: contactData.full_name,
         email: contactData.email || '',
@@ -75,7 +92,7 @@ export function CreateContact() {
         mobilePhone: contactData.mobile_phone || '',
         status: contactData.status || '',
         birthday: contactData.birthday ? new Date(contactData.birthday) : null,
-        notes: getNoteContent(contactData.notes),
+        notes: notes.length > 0 ? notes[0].content : '',  // Convert Note[] to string
         jobTitle: contactData.job_title || '',
         company: contactData.company || '',
         instagramUrl: contactData.instagram_url || '',
