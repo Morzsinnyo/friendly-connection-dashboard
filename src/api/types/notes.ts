@@ -15,26 +15,19 @@ export interface NotesState {
 export const parseNotes = (notes: any): Note[] => {
   console.log('Parsing notes:', notes);
   if (!notes) return [];
-  
-  // If it's already a Note array, return it
-  if (Array.isArray(notes) && notes.every(isValidNote)) {
-    console.log('Notes are already in correct format');
-    return notes;
-  }
 
-  // If it's a string, create a single note
   if (typeof notes === 'string') {
     console.log('Converting string to note');
     return [createNote(notes)];
   }
 
-  // If it's an array of strings or mixed content
   if (Array.isArray(notes)) {
     console.log('Converting array to notes');
     return notes.map(note => {
-      if (typeof note === 'string') return createNote(note);
-      if (isValidNote(note)) return note;
-      return createNote(String(note));
+      if (typeof note === 'string') {
+        return createNote(note);
+      }
+      return note as Note;
     });
   }
 
