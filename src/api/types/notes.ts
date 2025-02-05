@@ -11,6 +11,19 @@ export interface NotesState {
   error: Error | null;
 }
 
+// Convert string or Json[] to Note[]
+export const parseNotes = (notes: any): Note[] => {
+  if (!notes) return [];
+  if (typeof notes === 'string') return [createNote(notes)];
+  if (Array.isArray(notes)) {
+    return notes.map(note => {
+      if (typeof note === 'string') return createNote(note);
+      return note as Note;
+    });
+  }
+  return [];
+};
+
 // Utility function to sort notes by timestamp
 export const sortNotesByDate = (notes: Note[]): Note[] => {
   return [...notes].sort((a, b) => 
@@ -64,3 +77,10 @@ export const createNote = (content: string): Note => ({
   timestamp: new Date().toISOString(),
   type: 'note'
 });
+
+// Utility function to convert notes to database format
+export const notesToJson = (notes: Note[] | string | null): any[] => {
+  if (!notes) return [];
+  if (typeof notes === 'string') return [createNote(notes)];
+  return notes;
+};

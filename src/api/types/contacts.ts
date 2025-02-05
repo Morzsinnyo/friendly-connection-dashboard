@@ -1,5 +1,5 @@
 import { Database } from "@/integrations/supabase/types";
-import { Note } from "./notes";
+import { Note, parseNotes } from "./notes";
 
 export type Contact = Database['public']['Tables']['contacts']['Row'];
 export type ContactInsert = Database['public']['Tables']['contacts']['Insert'];
@@ -13,8 +13,6 @@ export interface ContactFilters {
   searchQuery?: string;
 }
 
-export function getNoteContent(note: Note | string | null): string {
-  if (!note) return '';
-  if (typeof note === 'string') return note;
-  return note.content || '';
+export function getNoteContent(note: any): Note[] {
+  return parseNotes(note);
 }
