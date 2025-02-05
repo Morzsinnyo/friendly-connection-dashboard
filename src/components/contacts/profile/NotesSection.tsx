@@ -64,11 +64,11 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
 
   return (
     <Card className="flex flex-col h-[600px]">
-      <CardHeader>
+      <CardHeader className="flex-none">
         <CardTitle>Notes</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col h-full space-y-4">
-        <div className="flex flex-col space-y-2">
+      <CardContent className="flex flex-col flex-1 space-y-4 overflow-hidden">
+        <div className="flex-none">
           <Textarea
             value={currentNote}
             onChange={(e) => setCurrentNote(e.target.value)}
@@ -79,11 +79,11 @@ export function NotesSection({ contactId, initialNotes }: NotesSectionProps) {
           />
         </div>
         
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 h-[calc(100%-120px)] pr-4">
           <div className="space-y-6">
             {Object.entries(groupedNotes).map(([date, dateNotes]) => (
               <div key={date} className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background/95 backdrop-blur-sm py-2">
+                <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background/95 backdrop-blur-sm py-2 z-10">
                   {date}
                 </h3>
                 <div className="space-y-2">
