@@ -46,15 +46,15 @@ serve(async (req) => {
 
   try {
     const { action, eventData, calendarId, contactName } = await req.json();
-    console.log('Received request:', { action, calendarId, contactName });
-    console.log('Event data:', eventData);
+    console.log('[Google Calendar] Request received:', { action, calendarId, contactName });
+    console.log('[Google Calendar] Event data:', JSON.stringify(eventData, null, 2));
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
     }
 
     const calendar = await createClient();
-    console.log('Google Calendar client initialized');
+    console.log('[Google Calendar] Client initialized');
 
     let result;
     switch (action) {
@@ -72,7 +72,14 @@ serve(async (req) => {
       }
 
       case 'createEvent': {
-        console.log('Creating calendar event with data:', eventData);
+        console.log('[Google Calendar] Creating event with data:', {
+          summary: eventData.summary,
+          description: eventData.description,
+          start: eventData.start,
+          end: eventData.end,
+          recurrence: eventData.frequency ? getRecurrenceRule(eventData.frequency) : []
+        });
+
         if (!eventData.summary || !eventData.start || !eventData.end) {
           throw new Error('Missing required event fields');
         }
@@ -83,11 +90,11 @@ serve(async (req) => {
         endDate.setHours(startDate.getHours() + 1);
 
         const recurrence = eventData.frequency ? getRecurrenceRule(eventData.frequency) : [];
-        console.log('Recurrence rule:', recurrence);
+        console.log('[Google Calendar] Recurrence rule:', recurrence);
 
         // Format description with proper line breaks
         const description = eventData.description.replace(/\n/g, '\\n');
-        console.log('Formatted description:', description);
+        console.log('[Google Calendar] Formatted description:', description);
 
         const event = {
           ...eventData,
@@ -103,12 +110,13 @@ serve(async (req) => {
           recurrence,
         };
 
-        console.log('Creating event with configuration:', event);
+        console.log('[Google Calendar] Final event configuration:', JSON.stringify(event, null, 2));
         const createResponse = await calendar.events.insert({
           calendarId,
           requestBody: event,
         });
         
+        console.log('[Google Calendar] Event created successfully:', createResponse.data);
         result = createResponse.data;
         break;
       }
@@ -196,7 +204,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in Google Calendar function:', error);
+    console.error('[Google Calendar] Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

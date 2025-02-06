@@ -26,14 +26,26 @@ export const calculateNextReminder = (frequency: string, currentDate: Date = new
 };
 
 const getLatestNote = (notes: any): { content: string; timestamp: string } | null => {
-  if (!notes || !Array.isArray(notes) || notes.length === 0) return null;
+  console.log('[getLatestNote] Input notes:', notes);
+  
+  if (!notes || !Array.isArray(notes) || notes.length === 0) {
+    console.log('[getLatestNote] No valid notes found');
+    return null;
+  }
+  
   const parsedNotes = parseNotes(notes);
-  if (parsedNotes.length === 0) return null;
+  console.log('[getLatestNote] Parsed notes:', parsedNotes);
+  
+  if (parsedNotes.length === 0) {
+    console.log('[getLatestNote] No parsed notes available');
+    return null;
+  }
   
   // Sort notes by timestamp in descending order
   const sortedNotes = [...parsedNotes].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
+  console.log('[getLatestNote] Sorted notes, latest:', sortedNotes[0]);
   
   return {
     content: sortedNotes[0].content,
