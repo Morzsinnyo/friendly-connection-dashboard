@@ -93,7 +93,7 @@ serve(async (req) => {
         console.log('[Google Calendar] Recurrence rule:', recurrence);
 
         // Format description with proper line breaks
-        const description = eventData.description.replace(/\n/g, '\\n');
+        const description = eventData.description.replace(/\\n/g, '\n');
         console.log('[Google Calendar] Formatted description:', description);
 
         const event = {

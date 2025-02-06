@@ -33,7 +33,8 @@ const getLatestNote = (notes: any): { content: string; timestamp: string } | nul
     return null;
   }
   
-  const parsedNotes = parseNotes(notes);
+  // Parse notes if they're not already parsed
+  const parsedNotes = Array.isArray(notes[0]) ? parseNotes(notes) : notes;
   console.log('[getLatestNote] Parsed notes:', parsedNotes);
   
   if (parsedNotes.length === 0) {
