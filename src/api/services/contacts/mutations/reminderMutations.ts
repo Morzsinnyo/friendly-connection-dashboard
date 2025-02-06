@@ -3,7 +3,6 @@ import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { supabase } from "@/integrations/supabase/client";
 import { addWeeks, addMonths, setHours, setMinutes, format } from "date-fns";
-import { Note, parseNotes } from "@/api/types/notes";
 
 export const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
   // First set the time to 12:00 PM
@@ -26,37 +25,25 @@ export const calculateNextReminder = (frequency: string, currentDate: Date = new
 };
 
 const getLatestNote = (notes: any): { content: string; timestamp: string } | null => {
-  console.log('[getLatestNote] Raw notes input:', notes);
+  console.log('[getLatestNote] Processing notes:', notes);
   
   if (!notes || !Array.isArray(notes) || notes.length === 0) {
-    console.log('[getLatestNote] No valid notes found');
+    console.log('[getLatestNote] No notes found');
     return null;
   }
   
-  // Parse notes if they're not already parsed
-  const parsedNotes = Array.isArray(notes[0]) ? parseNotes(notes) : notes;
-  console.log('[getLatestNote] Parsed notes:', parsedNotes);
-  
-  if (parsedNotes.length === 0) {
-    console.log('[getLatestNote] No parsed notes available');
-    return null;
-  }
-  
-  // Sort notes by timestamp in descending order
-  const sortedNotes = [...parsedNotes].sort((a, b) => 
+  // Sort by timestamp (newest first)
+  const sortedNotes = [...notes].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
   
-  const latestNote = sortedNotes[0];
-  console.log('[getLatestNote] Latest note selected:', latestNote);
+  console.log('[getLatestNote] Latest note:', sortedNotes[0]);
   
   return {
-    content: latestNote.content,
-    timestamp: latestNote.timestamp
+    content: sortedNotes[0].content,
+    timestamp: sortedNotes[0].timestamp
   };
 };
-
-// ... keep existing code
 
 export const reminderMutations = {
   updateReminder: async (
