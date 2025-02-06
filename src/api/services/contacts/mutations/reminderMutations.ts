@@ -128,10 +128,10 @@ export const reminderMutations = {
         const latestNote = getLatestNote(contact.notes);
         console.log('Latest note for calendar event:', latestNote);
         
-        let description = `Recurring reminder to keep in touch with ${contactName}`;
+        let description = `Recurring reminder to keep in touch with ${contactName}\n\n`;
         if (latestNote) {
           const formattedDate = format(new Date(latestNote.timestamp), 'MMM d, yyyy');
-          description += `\n\nLatest Note (${formattedDate}):\n${latestNote.content}`;
+          description += `Latest Note (${formattedDate}):\n${latestNote.content}`;
         }
         
         console.log('Calendar event description:', description);
