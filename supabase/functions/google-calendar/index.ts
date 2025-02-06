@@ -47,7 +47,6 @@ serve(async (req) => {
   try {
     const { action, eventData, calendarId, contactName } = await req.json();
     console.log('[Google Calendar] Request received:', { action, calendarId, contactName });
-    console.log('[Google Calendar] Event data:', JSON.stringify(eventData, null, 2));
     
     if (!calendarId) {
       throw new Error('Calendar ID is required');
@@ -71,6 +70,10 @@ serve(async (req) => {
           throw new Error('Missing required event fields');
         }
 
+        if (!eventData.description) {
+          console.warn('[Google Calendar] No description provided for event');
+        }
+
         // Ensure the event is 1 hour long
         const startDate = new Date(eventData.start.dateTime);
         const endDate = new Date(startDate);
@@ -79,13 +82,12 @@ serve(async (req) => {
         const recurrence = eventData.frequency ? getRecurrenceRule(eventData.frequency) : [];
         console.log('[Google Calendar] Recurrence rule:', recurrence);
 
-        // Use the passed description, ensuring proper line breaks
-        const description = eventData.description?.replace(/\\n/g, '\n') || '';
-        console.log('[Google Calendar] Formatted description:', description);
+        // Use the description directly without transformation
+        console.log('[Google Calendar] Using description:', eventData.description);
 
         const event = {
           summary: eventData.summary,
-          description: description,
+          description: eventData.description, // Use description directly
           start: {
             dateTime: startDate.toISOString(),
             timeZone: 'UTC',
