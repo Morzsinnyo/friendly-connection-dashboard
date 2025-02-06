@@ -26,7 +26,7 @@ export const calculateNextReminder = (frequency: string, currentDate: Date = new
 };
 
 const getLatestNote = (notes: any): { content: string; timestamp: string } | null => {
-  console.log('[getLatestNote] Input notes:', notes);
+  console.log('[getLatestNote] Raw notes input:', notes);
   
   if (!notes || !Array.isArray(notes) || notes.length === 0) {
     console.log('[getLatestNote] No valid notes found');
@@ -46,13 +46,17 @@ const getLatestNote = (notes: any): { content: string; timestamp: string } | nul
   const sortedNotes = [...parsedNotes].sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-  console.log('[getLatestNote] Sorted notes, latest:', sortedNotes[0]);
+  
+  const latestNote = sortedNotes[0];
+  console.log('[getLatestNote] Latest note selected:', latestNote);
   
   return {
-    content: sortedNotes[0].content,
-    timestamp: sortedNotes[0].timestamp
+    content: latestNote.content,
+    timestamp: latestNote.timestamp
   };
 };
+
+// ... keep existing code
 
 export const reminderMutations = {
   updateReminder: async (
@@ -113,6 +117,8 @@ export const reminderMutations = {
       throw fetchError;
     }
 
+    console.log('Fetched contact data:', contact);
+
     const query = Promise.resolve(
       supabase
         .from('contacts')
@@ -133,12 +139,15 @@ export const reminderMutations = {
       try {
         const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000);
         const latestNote = getLatestNote(contact.notes);
+        console.log('Latest note for calendar event:', latestNote);
         
         let description = `Recurring reminder to keep in touch with ${contactName}`;
         if (latestNote) {
           const formattedDate = format(new Date(latestNote.timestamp), 'MMM d, yyyy');
-          description += `\n\nLatest Note (${formattedDate}):\n"${latestNote.content}"`;
+          description += `\n\nLatest Note (${formattedDate}):\n${latestNote.content}`;
         }
+        
+        console.log('Calendar event description:', description);
         
         const response = await supabase.functions.invoke('google-calendar', {
           body: {

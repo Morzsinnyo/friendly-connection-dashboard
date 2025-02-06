@@ -58,19 +58,6 @@ serve(async (req) => {
 
     let result;
     switch (action) {
-      case 'listEvents': {
-        console.log('Fetching calendar events');
-        const response = await calendar.events.list({
-          calendarId,
-          timeMin: new Date().toISOString(),
-          maxResults: 10,
-          singleEvents: true,
-          orderBy: 'startTime',
-        });
-        result = response.data;
-        break;
-      }
-
       case 'createEvent': {
         console.log('[Google Calendar] Creating event with data:', {
           summary: eventData.summary,
@@ -92,22 +79,23 @@ serve(async (req) => {
         const recurrence = eventData.frequency ? getRecurrenceRule(eventData.frequency) : [];
         console.log('[Google Calendar] Recurrence rule:', recurrence);
 
-        // Format description with proper line breaks
+        // Ensure proper line breaks in description
         const description = eventData.description.replace(/\\n/g, '\n');
         console.log('[Google Calendar] Formatted description:', description);
 
         const event = {
-          ...eventData,
-          description,
+          summary: eventData.summary,
+          description: description,
           start: {
-            ...eventData.start,
             dateTime: startDate.toISOString(),
+            timeZone: 'UTC',
           },
           end: {
-            ...eventData.end,
             dateTime: endDate.toISOString(),
+            timeZone: 'UTC',
           },
           recurrence,
+          reminders: eventData.reminders,
         };
 
         console.log('[Google Calendar] Final event configuration:', JSON.stringify(event, null, 2));
@@ -118,6 +106,19 @@ serve(async (req) => {
         
         console.log('[Google Calendar] Event created successfully:', createResponse.data);
         result = createResponse.data;
+        break;
+      }
+
+      case 'listEvents': {
+        console.log('Fetching calendar events');
+        const response = await calendar.events.list({
+          calendarId,
+          timeMin: new Date().toISOString(),
+          maxResults: 10,
+          singleEvents: true,
+          orderBy: 'startTime',
+        });
+        result = response.data;
         break;
       }
 
