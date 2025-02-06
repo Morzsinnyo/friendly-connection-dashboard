@@ -134,32 +134,36 @@ export const reminderMutations = {
           description += `Latest Note (${formattedDate}):\n${latestNote.content}`;
         }
         
-        console.log('Calendar event description:', description);
+        console.log('Calendar event description before API call:', description);
+        
+        const eventData = {
+          summary: `Time to contact ${contactName}`,
+          description,
+          start: {
+            dateTime: nextReminder.toISOString(),
+            timeZone: 'UTC'
+          },
+          end: {
+            dateTime: endTime.toISOString(),
+            timeZone: 'UTC'
+          },
+          frequency,
+          reminders: {
+            useDefault: false,
+            overrides: [
+              { method: 'popup', minutes: 1440 },
+              { method: 'email', minutes: 1440 }
+            ]
+          }
+        };
+
+        console.log('Full event data being sent to calendar API:', JSON.stringify(eventData, null, 2));
         
         const response = await supabase.functions.invoke('google-calendar', {
           body: {
             action: 'createEvent',
             calendarId,
-            eventData: {
-              summary: `Time to contact ${contactName}`,
-              description,
-              start: {
-                dateTime: nextReminder.toISOString(),
-                timeZone: 'UTC'
-              },
-              end: {
-                dateTime: endTime.toISOString(),
-                timeZone: 'UTC'
-              },
-              frequency,
-              reminders: {
-                useDefault: false,
-                overrides: [
-                  { method: 'popup', minutes: 1440 },
-                  { method: 'email', minutes: 1440 }
-                ]
-              }
-            }
+            eventData
           }
         });
         console.log('Calendar event creation response:', response);
