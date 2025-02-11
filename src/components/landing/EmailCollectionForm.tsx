@@ -1,5 +1,7 @@
 
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { landingMutations } from "@/api/services/landing/mutations";
 
@@ -45,25 +47,24 @@ export function EmailCollectionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-[768px]">
-      <div className="flex gap-4">
-        <input
+    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Input
           type="email"
-          placeholder="Your Email..."
+          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 px-6 py-4 text-lg font-medium text-[#071A52] bg-white border-2 border-[#071A52] rounded-full focus:outline-none focus:border-[#A7FF83]"
+          className="flex-1"
           disabled={isLoading}
           required
         />
-        <button 
-          type="submit" 
-          disabled={isLoading}
-          className="px-8 py-4 text-lg font-semibold bg-[#A7FF83] text-[#071A52] rounded-full hover:bg-[#A7FF83]/90"
-        >
-          {isLoading ? "Processing..." : "Join Free"}
-        </button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Subscribing..." : "Subscribe"}
+        </Button>
       </div>
+      <p className="text-sm text-muted-foreground text-center">
+        Join our mailing list to stay updated
+      </p>
     </form>
   );
 }
