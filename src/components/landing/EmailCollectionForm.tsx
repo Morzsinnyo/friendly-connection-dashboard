@@ -45,28 +45,24 @@ export function EmailCollectionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-[1125px] mx-auto">
-      <div className="flex gap-5 max-md:flex-col">
-        <div className="flex-1">
-          <input
-            type="email"
-            placeholder="Your Email..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-16 py-9 text-3xl font-semibold text-gray-400 bg-white border-4 border-[#071A52] rounded-[51px] focus:outline-none focus:border-[#17B978] max-md:px-5"
-            disabled={isLoading}
-            required
-          />
-        </div>
-        <div className="w-[27%] max-md:w-full">
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full px-16 py-8 text-3xl font-semibold bg-[#A7FF83] text-[#071A52] rounded-[100px] hover:bg-[#A7FF83]/90 max-md:px-5"
-          >
-            {isLoading ? "Processing..." : "Join Free"}
-          </button>
-        </div>
+    <form onSubmit={handleSubmit} className="w-full max-w-[768px]">
+      <div className="flex gap-4">
+        <input
+          type="email"
+          placeholder="Your Email..."
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="flex-1 px-6 py-4 text-lg font-medium text-[#071A52] bg-white border-2 border-[#071A52] rounded-full focus:outline-none focus:border-[#A7FF83]"
+          disabled={isLoading}
+          required
+        />
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className="px-8 py-4 text-lg font-semibold bg-[#A7FF83] text-[#071A52] rounded-full hover:bg-[#A7FF83]/90"
+        >
+          {isLoading ? "Processing..." : "Join Free"}
+        </button>
       </div>
     </form>
   );
