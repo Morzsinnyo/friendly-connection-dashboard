@@ -1,5 +1,7 @@
+
 import { createBrowserRouter } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -11,6 +13,10 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 export const router = createBrowserRouter([
   {
     path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/dashboard",
     element: (
       <ProtectedRoute>
         <DashboardLayout />
