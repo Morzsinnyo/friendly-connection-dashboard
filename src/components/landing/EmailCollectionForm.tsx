@@ -47,24 +47,25 @@ export function EmailCollectionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
           type="email"
-          placeholder="Enter your email"
+          placeholder="Your Email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1"
+          className="flex-1 h-12 text-lg rounded-full border-2 border-gray-200 focus:border-[#17B978] px-6"
           disabled={isLoading}
           required
         />
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Subscribing..." : "Subscribe"}
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="h-12 px-8 text-lg font-medium bg-[#A7FF83] text-[#071A52] hover:bg-[#A7FF83]/90 rounded-full"
+        >
+          {isLoading ? "Processing..." : "Join Free"}
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground text-center">
-        Join our mailing list to stay updated
-      </p>
     </form>
   );
 }
