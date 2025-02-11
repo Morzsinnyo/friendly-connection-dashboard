@@ -1,7 +1,5 @@
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { landingMutations } from "@/api/services/landing/mutations";
 
@@ -47,24 +45,28 @@ export function EmailCollectionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Input
-          type="email"
-          placeholder="Your Email..."
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 h-12 text-lg rounded-full border-2 border-gray-200 focus:border-[#17B978] px-6"
-          disabled={isLoading}
-          required
-        />
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="h-12 px-8 text-lg font-medium bg-[#A7FF83] text-[#071A52] hover:bg-[#A7FF83]/90 rounded-full"
-        >
-          {isLoading ? "Processing..." : "Join Free"}
-        </Button>
+    <form onSubmit={handleSubmit} className="w-full max-w-[1125px] mx-auto">
+      <div className="flex gap-5 max-md:flex-col">
+        <div className="flex-1">
+          <input
+            type="email"
+            placeholder="Your Email..."
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-16 py-9 text-3xl font-semibold text-gray-400 bg-white border-4 border-[#071A52] rounded-[51px] focus:outline-none focus:border-[#17B978] max-md:px-5"
+            disabled={isLoading}
+            required
+          />
+        </div>
+        <div className="w-[27%] max-md:w-full">
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full px-16 py-8 text-3xl font-semibold bg-[#A7FF83] text-[#071A52] rounded-[100px] hover:bg-[#A7FF83]/90 max-md:px-5"
+          >
+            {isLoading ? "Processing..." : "Join Free"}
+          </button>
+        </div>
       </div>
     </form>
   );
