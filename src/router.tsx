@@ -1,8 +1,10 @@
+
 import { createBrowserRouter } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
@@ -11,6 +13,10 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 export const router = createBrowserRouter([
   {
     path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/dashboard",
     element: (
       <ProtectedRoute>
         <DashboardLayout />
