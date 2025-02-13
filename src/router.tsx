@@ -1,5 +1,5 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
@@ -48,9 +48,10 @@ export const router = createBrowserRouter([
         element: <Settings />,
       },
     ],
+    errorElement: <Navigate to="/dashboard" replace />,
   },
   {
     path: "*",
-    element: <Landing />,
+    element: <Navigate to="/" replace />,
   },
 ]);

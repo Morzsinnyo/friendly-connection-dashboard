@@ -15,12 +15,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    console.log("[ProtectedRoute] Auth state:", { isAuthenticated, isLoading, path: location.pathname });
+    console.log("[ProtectedRoute] Current location:", location.pathname);
+    console.log("[ProtectedRoute] Auth state:", { isAuthenticated, isLoading });
     
     if (!isLoading) {
       if (!isAuthenticated) {
-        console.log("[ProtectedRoute] User not authenticated, redirecting to /auth");
-        navigate("/auth");
+        // Store the attempted URL to redirect back after auth
+        const returnTo = location.pathname + location.search;
+        console.log("[ProtectedRoute] Storing return path:", returnTo);
+        sessionStorage.setItem('returnTo', returnTo);
+        navigate("/auth", { replace: true });
       }
       setIsInitialized(true);
     }

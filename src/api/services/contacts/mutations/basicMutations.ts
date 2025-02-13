@@ -1,3 +1,4 @@
+
 import { Contact, ContactInsert, ContactUpdate } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
@@ -19,18 +20,25 @@ export const basicMutations = {
   },
 
   update: async (id: string, updates: ContactUpdate): Promise<ApiResponse<Contact>> => {
-    console.log('Updating contact:', id, updates);
+    console.log('Updating contact:', { id, updates });
     
-    const query = Promise.resolve(
-      supabase
-        .from('contacts')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
-    );
+    try {
+      const query = Promise.resolve(
+        supabase
+          .from('contacts')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .maybeSingle()
+      );
 
-    return formatApiResponse(query);
+      const response = await formatApiResponse(query);
+      console.log('Update response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      throw error;
+    }
   },
 
   delete: async (id: string): Promise<ApiResponse<null>> => {
