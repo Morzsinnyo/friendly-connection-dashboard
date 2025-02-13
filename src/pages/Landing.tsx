@@ -1,7 +1,7 @@
 
 import { Header } from "@/components/landing/Header";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { ProgressBar } from "@/components/landing/progress/ProgressBar";
+import { ProgressBar } from "@/components/landing/ProgressBar";
 import { EmailCollectionForm } from "@/components/landing/EmailCollectionForm";
 import { Shield } from "lucide-react";
 
@@ -12,9 +12,7 @@ export default function Landing() {
         <div className="max-w-[768px]">
           <Header />
           <HeroSection />
-          <div className="mb-8">
-            <ProgressBar />
-          </div>
+          <ProgressBar />
           <div className="mt-8">
             <EmailCollectionForm />
           </div>

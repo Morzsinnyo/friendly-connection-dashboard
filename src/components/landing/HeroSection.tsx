@@ -8,7 +8,7 @@ export function HeroSection() {
         Your Network is your<br />
         Net worth.
       </h2>
-      <p className="text-2xl text-[#071A52] mb-8">
+      <p className="text-2xl text-[#071A52] mb-6">
         Stay connected effortlessly. Set reminders and{" "}
         <span className="inline-block bg-[#A7FF83] px-4 py-1 rounded-full">
           Never Lose a Connection Again.
