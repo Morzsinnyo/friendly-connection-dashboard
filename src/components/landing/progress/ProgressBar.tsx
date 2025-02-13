@@ -11,11 +11,11 @@ const avatars = [
 export function ProgressBar() {
   return (
     <div className="space-y-3">
-      <div className="relative w-[500px] h-[48px] bg-stone-300 bg-opacity-90 rounded-[35px] p-1.5 border border-white/30 shadow-inner">
+      <div className="relative w-[500px] h-[48px] bg-stone-300 bg-opacity-90 rounded-[35px] border border-white/30 shadow-inner">
         <div 
-          className="absolute inset-0 m-1.5 rounded-[35px] bg-gradient-to-r from-[#A7FF83] to-[#83FFA3] animate-pulse"
+          className="absolute inset-0 rounded-[35px] bg-gradient-to-r from-[#A7FF83] to-[#83FFA3] animate-pulse"
           style={{ 
-            width: 'calc(81% - 12px)',
+            width: '81%',
             boxShadow: 'inset 0 2px 4px rgba(255, 255, 255, 0.25)'
           }}
         >
