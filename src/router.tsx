@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        index: true,
+        path: "",
         element: <Index />,
       },
       {
@@ -48,5 +48,9 @@ export const router = createBrowserRouter([
         element: <Settings />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Landing />,
   },
 ]);
