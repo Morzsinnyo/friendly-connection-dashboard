@@ -3,7 +3,7 @@ import React from 'react';
 
 export function HeroSection() {
   return (
-    <div className="py-12">
+    <div className="py-12 text-left">
       <h2 className="text-6xl font-semibold leading-tight text-[#071A52] mb-8">
         Your Network is your Net worth.
       </h2>
