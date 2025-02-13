@@ -16,7 +16,7 @@ export default function Landing() {
           <div className="mt-8">
             <EmailCollectionForm />
           </div>
-          <div className="flex items-center gap-2 mt-12">
+          <div className="flex items-center gap-2 mt-3">
             <Shield className="w-6 h-6 text-[#071A52]" />
             <span className="text-lg font-semibold text-[#071A52]">
               100% Free for the first 100 Users.
