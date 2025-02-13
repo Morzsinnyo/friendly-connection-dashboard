@@ -1,3 +1,4 @@
+
 import { UserCircle2, Settings, Calendar, LogOut } from "lucide-react";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,17 +8,17 @@ import { cn } from "@/lib/utils";
 const items = [
   {
     title: "Contacts",
-    url: "/",
+    url: "/dashboard",
     icon: UserCircle2,
   },
   {
     title: "Calendar",
-    url: "/calendar",
+    url: "/dashboard/calendar",
     icon: Calendar,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/dashboard/settings",
     icon: Settings,
   },
 ];

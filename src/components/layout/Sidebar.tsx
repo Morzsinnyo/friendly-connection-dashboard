@@ -1,3 +1,4 @@
+
 import { UserCircle2, Settings, Calendar, LogOut } from "lucide-react";
 import {
   Sidebar,
@@ -17,17 +18,17 @@ import { cn } from "@/lib/utils";
 const items = [
   {
     title: "Contacts",
-    url: "/",
+    url: "/dashboard",
     icon: UserCircle2,
   },
   {
     title: "Calendar",
-    url: "/calendar",
+    url: "/dashboard/calendar",
     icon: Calendar,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/dashboard/settings",
     icon: Settings,
   },
 ];
@@ -93,3 +94,4 @@ export function AppSidebar({ className }: { className?: string }) {
     </Sidebar>
   );
 }
+
