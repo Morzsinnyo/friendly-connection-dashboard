@@ -12,7 +12,7 @@ export default function Landing() {
         <div className="max-w-[768px]">
           <Header />
           <HeroSection />
-          <div className="mb-6">
+          <div className="mb-8">
             <ProgressBar />
           </div>
           <div className="mt-8">

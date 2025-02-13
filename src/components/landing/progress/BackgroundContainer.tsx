@@ -8,8 +8,8 @@ interface BackgroundContainerProps {
 
 const BackgroundContainer: React.FC<BackgroundContainerProps> = ({ backgroundColor, children }) => {
   return (
-    <div className="flex overflow-hidden flex-col pr-28 bg-stone-300 max-w-[716px] rounded-[35px] max-md:pr-5">
-      <div className={`flex overflow-hidden flex-col flex-1 justify-center px-10 py-1 w-full ${backgroundColor} rounded-[35px] max-md:px-5 max-md:max-w-full h-16`}>
+    <div className="flex overflow-hidden flex-col px-3 py-3 bg-stone-300 w-full max-w-[716px] rounded-[35px]">
+      <div className={`flex overflow-hidden items-center px-6 py-3 w-full ${backgroundColor} rounded-[35px]`}>
         {children}
       </div>
     </div>
