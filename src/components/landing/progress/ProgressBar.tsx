@@ -11,8 +11,16 @@ const avatars = [
 export function ProgressBar() {
   return (
     <div className="space-y-3">
-      <div className="h-[48px] w-full bg-stone-300 rounded-[35px] p-1.5">
-        <div className="h-full w-[81%] bg-[#A7FF83] rounded-[35px]" />
+      <div className="relative w-[500px] h-[48px] bg-stone-300 bg-opacity-90 rounded-[35px] p-1.5 border border-white/30 shadow-inner">
+        <div 
+          className="absolute inset-0 m-1.5 rounded-[35px] bg-gradient-to-r from-[#A7FF83] to-[#83FFA3] animate-pulse"
+          style={{ 
+            width: 'calc(81% - 12px)',
+            boxShadow: 'inset 0 2px 4px rgba(255, 255, 255, 0.25)'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-[35px]" />
+        </div>
       </div>
       <div className="flex items-center gap-6 mt-3">
         <div className="flex -space-x-3">
