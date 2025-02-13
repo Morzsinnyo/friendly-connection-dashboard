@@ -11,7 +11,10 @@ const avatars = [
 export function ProgressBar() {
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-6">
+      <div className="h-[48px] w-full bg-stone-300 rounded-[35px] p-1.5">
+        <div className="h-full w-[81%] bg-[#A7FF83] rounded-[35px]" />
+      </div>
+      <div className="flex items-center gap-6 mt-3">
         <div className="flex -space-x-3">
           {avatars.map((avatar, i) => (
             <img
@@ -28,9 +31,6 @@ export function ProgressBar() {
           </div>
           <span className="text-xs text-[#071A52]">Spots filled</span>
         </div>
-      </div>
-      <div className="h-[48px] w-full bg-stone-300 rounded-[35px] p-1.5">
-        <div className="h-full w-[81%] bg-[#A7FF83] rounded-[35px]" />
       </div>
     </div>
   );
