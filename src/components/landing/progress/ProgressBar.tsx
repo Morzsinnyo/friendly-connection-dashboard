@@ -11,7 +11,7 @@ const avatars = [
 export function ProgressBar() {
   return (
     <div className="space-y-3">
-      <div className="relative w-[500px] h-[48px] bg-stone-300 bg-opacity-90 rounded-[35px] border border-white/30 shadow-inner">
+      <div className="relative w-[500px] h-[36px] bg-stone-300 bg-opacity-90 rounded-[35px] border border-white/30 shadow-inner">
         <div 
           className="absolute inset-0 rounded-[35px] bg-gradient-to-r from-[#A7FF83] to-[#83FFA3] animate-pulse"
           style={{ 
