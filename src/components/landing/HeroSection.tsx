@@ -5,7 +5,8 @@ export function HeroSection() {
   return (
     <div className="py-12 text-left">
       <h2 className="text-6xl font-semibold leading-tight text-[#071A52] mb-3">
-        Your Network is your Net worth.
+        Your Network is your<br />
+        Net worth.
       </h2>
       <p className="text-2xl text-[#071A52] mb-6">
         Stay connected effortlessly. Set reminders and{" "}

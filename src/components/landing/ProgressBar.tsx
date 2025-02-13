@@ -23,9 +23,9 @@ export function ProgressBar() {
       </div>
       <div className="flex items-center gap-3">
         <div className="bg-[#A7FF83] px-4 py-1 rounded-full">
-          <span className="text-lg font-semibold text-[#071A52]">81/100</span>
+          <span className="text-xs font-semibold text-[#071A52]">81/100</span>
         </div>
-        <span className="text-lg text-[#071A52]">Spots filled</span>
+        <span className="text-xs text-[#071A52]">Spots filled</span>
       </div>
     </div>
   );
