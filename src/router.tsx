@@ -16,6 +16,10 @@ export const router = createBrowserRouter([
     element: <Landing />,
   },
   {
+    path: "/auth",
+    element: <Auth />,
+  },
+  {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
@@ -44,9 +48,5 @@ export const router = createBrowserRouter([
         element: <Settings />,
       },
     ],
-  },
-  {
-    path: "/auth",
-    element: <Auth />,
   },
 ]);
