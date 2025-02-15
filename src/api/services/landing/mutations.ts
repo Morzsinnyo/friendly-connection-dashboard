@@ -16,6 +16,7 @@ export const landingMutations = {
       .insert(subscriber);
 
     if (error) {
+      console.error('Supabase error:', error);
       return { data: null, error };
     }
     
