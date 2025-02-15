@@ -7,6 +7,9 @@ export const landingMutations = {
   subscribeEmail: async (email: string): Promise<ApiResponse<null>> => {
     console.log('Subscribing email:', email);
     
+    // First clear any existing session to ensure we're in anon mode
+    await supabase.auth.signOut();
+    
     const subscriber: LandingSubscriberInsert = {
       email: email.toLowerCase().trim()
     };
