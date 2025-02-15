@@ -12,11 +12,9 @@ export const landingMutations = {
       email: email.toLowerCase().trim()
     };
 
-    const query = Promise.resolve(
-      supabase
-        .from('landing_subscribers')
-        .insert(subscriber)
-    );
+    const query = supabase
+      .from('landing_subscribers')
+      .insert(subscriber);
 
     return formatApiResponse(query);
   }
