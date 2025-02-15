@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +10,7 @@ export function EmailCollectionForm() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +26,19 @@ export function EmailCollectionForm() {
 
     setIsLoading(true);
     try {
-      const { error } = await landingMutations.subscribeEmail(email);
+      const { success, error } = await landingMutations.subscribeEmail(email);
       
-      if (error) throw error;
-      
-      toast({
-        title: "Thank you for subscribing!",
-        description: "You've been successfully added to our mailing list.",
-      });
-      
-      setEmail("");
+      if (success) {
+        toast({
+          title: "Thank you for subscribing!",
+          description: "You've been successfully added to our mailing list.",
+        });
+        setEmail("");
+        // For now, we'll redirect to /dashboard. You can change this route later
+        navigate("/dashboard");
+      } else {
+        throw error;
+      }
     } catch (error) {
       console.error('Error subscribing:', error);
       toast({
