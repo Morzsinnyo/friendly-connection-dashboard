@@ -12,14 +12,11 @@ export const landingMutations = {
       email: email.toLowerCase().trim()
     };
 
-    // Execute the query immediately to get a Promise
-    const query = await supabase
+    // Execute the insert without selecting the result
+    const query = supabase
       .from('landing_subscribers')
-      .insert(subscriber)
-      .select()
-      .single();
+      .insert(subscriber);
 
-    // Since we already awaited the query, wrap it in Promise.resolve
-    return formatApiResponse(Promise.resolve(query));
+    return formatApiResponse(query);
   }
 };
