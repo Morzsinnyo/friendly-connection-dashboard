@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export function CreateContact() {
     mobilePhone: "",
     status: "",
     birthday: null,
-    notes: "",  // Initialize as empty string
+    notes: "",
     jobTitle: "",
     company: "",
     instagramUrl: "",
@@ -213,7 +214,7 @@ export function CreateContact() {
         });
       }
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -233,7 +234,7 @@ export function CreateContact() {
             variant="ghost"
             size="icon"
             className="absolute left-4 top-1/2 -translate-y-1/2"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -264,7 +265,7 @@ export function CreateContact() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="w-full"
               >
                 Cancel
