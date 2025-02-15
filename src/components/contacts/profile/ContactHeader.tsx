@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Edit, Trash, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,7 +85,7 @@ export function ContactHeader({
     },
     onSuccess: () => {
       toast.success('Contact deleted successfully');
-      navigate('/'); // Updated to navigate to index
+      navigate('/dashboard');
     },
     onError: (error) => {
       console.error('Error deleting contact:', error);
@@ -169,7 +170,7 @@ export function ContactHeader({
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => navigate(`/contact/create?edit=${contact.id}`)}>
+          <Button variant="outline" onClick={() => navigate(`/dashboard/contact/create?edit=${contact.id}`)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>

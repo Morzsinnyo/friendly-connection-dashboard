@@ -213,7 +213,7 @@ export function CreateContact() {
         });
       }
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -233,7 +233,7 @@ export function CreateContact() {
             variant="ghost"
             size="icon"
             className="absolute left-4 top-1/2 -translate-y-1/2"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -264,7 +264,7 @@ export function CreateContact() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/dashboard")}
                 className="w-full"
               >
                 Cancel

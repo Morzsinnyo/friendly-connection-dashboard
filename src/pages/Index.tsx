@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ContactsList } from "@/components/contacts/ContactsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +28,7 @@ const Index = () => {
             <CardTitle>Google Calendar Settings</CardTitle>
             <Button 
               variant="outline"
-              onClick={() => navigate("/settings")}
+              onClick={() => navigate("/dashboard/settings")}
             >
               Tutorial
             </Button>
