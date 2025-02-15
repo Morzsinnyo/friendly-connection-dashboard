@@ -5,6 +5,7 @@ import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Landing from "./pages/Landing";
+import ThankYou from "./pages/ThankYou";
 import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
@@ -14,6 +15,10 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <Landing />,
+  },
+  {
+    path: "/thank-you",
+    element: <ThankYou />,
   },
   {
     path: "/auth",

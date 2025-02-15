@@ -26,16 +26,15 @@ export function EmailCollectionForm() {
 
     setIsLoading(true);
     try {
-      const { success, error } = await landingMutations.subscribeEmail(email);
+      const { data, error } = await landingMutations.subscribeEmail(email);
       
-      if (success) {
+      if (!error) {
         toast({
           title: "Thank you for subscribing!",
           description: "You've been successfully added to our mailing list.",
         });
         setEmail("");
-        // For now, we'll redirect to /dashboard. You can change this route later
-        navigate("/dashboard");
+        navigate("/thank-you");
       } else {
         throw error;
       }
