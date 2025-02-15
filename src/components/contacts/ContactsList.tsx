@@ -121,7 +121,8 @@ export function ContactsList() {
   });
 
   const handleContactClick = (contactId: string) => {
-    navigate(`/contact/${contactId}`);
+    console.log("[ContactsList] Navigating to contact profile:", contactId);
+    navigate(`/dashboard/contact/${contactId}`);
   };
 
   return (
@@ -142,7 +143,10 @@ export function ContactsList() {
           <div className="flex items-center space-x-2">
             <Button 
               variant="default"
-              onClick={() => navigate("/contact/create")}
+              onClick={() => {
+                console.log("[ContactsList] Navigating to create contact");
+                navigate("/dashboard/contact/create");
+              }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Plus className="h-4 w-4 mr-2" />

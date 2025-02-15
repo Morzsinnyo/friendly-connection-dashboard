@@ -1,3 +1,4 @@
+
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,12 +46,23 @@ const Auth = () => {
 
   useEffect(() => {
     if (isAuthenticated && isMounted.current) {
-      console.log("[Auth] User authenticated, showing success toast and redirecting...");
+      console.log("[Auth] User authenticated, checking for return path...");
+      const returnTo = sessionStorage.getItem('returnTo');
+      console.log("[Auth] Return path:", returnTo);
+      
       toast({
         title: "Successfully authenticated",
         description: "Welcome back!",
       });
-      navigate("/");
+
+      if (returnTo) {
+        console.log("[Auth] Navigating to stored path:", returnTo);
+        sessionStorage.removeItem('returnTo'); // Clear the stored path
+        navigate(returnTo);
+      } else {
+        console.log("[Auth] No stored path, navigating to dashboard");
+        navigate("/dashboard");
+      }
     }
   }, [isAuthenticated, toast, navigate]);
 
