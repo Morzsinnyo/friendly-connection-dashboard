@@ -14,7 +14,8 @@ export const landingMutations = {
 
     const query = supabase
       .from('landing_subscribers')
-      .insert(subscriber);
+      .insert(subscriber)
+      .select();  // Add select() to get a proper response
 
     return formatApiResponse(query);
   }
