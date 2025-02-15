@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { LandingSubscriberInsert } from "@/api/types/landing";
 import { ApiResponse } from "@/api/types/common";
-import { formatApiResponse } from "@/api/utils/response-formatting";
 
 export const landingMutations = {
   subscribeEmail: async (email: string): Promise<ApiResponse<null>> => {
@@ -12,10 +11,14 @@ export const landingMutations = {
       email: email.toLowerCase().trim()
     };
 
-    const query = supabase
+    const { error } = await supabase
       .from('landing_subscribers')
       .insert(subscriber);
 
-    return formatApiResponse(query);
+    if (error) {
+      return { data: null, error };
+    }
+    
+    return { data: null, error: null };
   }
 };
