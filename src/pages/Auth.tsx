@@ -81,10 +81,10 @@ const Auth = () => {
   console.log("[Auth] Rendering auth UI...");
   return (
     <AuthErrorBoundary>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-[#071A52]">
               Sign in to your account
             </h2>
           </div>
@@ -94,12 +94,31 @@ const Auth = () => {
               theme: ThemeSupa,
               style: {
                 button: {
-                  background: 'rgb(59 130 246)',
-                  color: 'white',
-                  borderRadius: '0.375rem',
+                  background: '#A7FF83',
+                  color: '#071A52',
+                  borderRadius: '9999px',
+                  padding: '24px 32px',
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                },
+                input: {
+                  borderWidth: '2px',
+                  borderColor: '#071A52',
+                  borderRadius: '9999px',
+                  padding: '24px',
+                  fontSize: '1.125rem',
                 },
                 anchor: {
-                  color: 'rgb(59 130 246)',
+                  color: '#071A52',
+                },
+                message: {
+                  color: '#071A52',
+                },
+                container: {
+                  color: '#071A52',
+                },
+                label: {
+                  color: '#071A52',
                 },
               },
             }}
