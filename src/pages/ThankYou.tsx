@@ -11,7 +11,7 @@ export default function ThankYou() {
       <div className="w-full max-w-[1280px]">
         <div className="w-full">
           {/* Logo Section */}
-          <div className="text-[#071A52] font-bold text-2xl md:text-[64px] md:mb-24">
+          <div className="text-[#071A52] font-bold text-2xl md:text-[48px] md:mb-24 mb-6">
             LinkUp
           </div>
           
