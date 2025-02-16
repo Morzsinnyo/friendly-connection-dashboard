@@ -11,13 +11,13 @@ export default function ThankYou() {
       <div className="w-full max-w-[1280px]">
         <div className="w-full">
           {/* Logo Section */}
-          <div className="text-[#071A52] font-bold text-2xl mb-12">
+          <div className="text-[#071A52] font-bold text-2xl md:text-[64px] md:mb-24">
             LinkUp
           </div>
           
           {/* Content Section */}
           <div className="flex flex-col items-center text-center">
-            <CheckCircle className="w-16 h-16 text-[#A7FF83] mb-6" />
+            <CheckCircle className="w-16 h-16 md:w-[80px] md:h-[80px] text-[#A7FF83] mb-6" />
             <h1 className="text-4xl font-bold text-[#071A52] mb-4">
               Thanks for registering for Early Access.
             </h1>
