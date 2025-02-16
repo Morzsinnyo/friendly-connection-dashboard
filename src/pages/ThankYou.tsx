@@ -7,9 +7,9 @@ export default function ThankYou() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-[#FAFAFA] p-6">
-      <div className="w-full max-w-[1280px] mx-auto">
-        <div className="max-w-[768px]">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#FAFAFA] p-6">
+      <div className="w-full max-w-[1280px]">
+        <div className="w-full">
           {/* Logo Section */}
           <div className="text-[#071A52] font-bold text-2xl mb-12">
             LinkUp
