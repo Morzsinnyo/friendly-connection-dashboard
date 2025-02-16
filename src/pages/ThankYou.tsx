@@ -17,7 +17,7 @@ export default function ThankYou() {
           
           {/* Content Section */}
           <div className="flex flex-col items-center text-center">
-            <CheckCircle className="w-16 h-16 md:w-[90px] md:h-[90px] text-[#A7FF83] mb-6 md:mb-6" />
+            <CheckCircle className="w-16 h-16 md:w-[90px] md:h-[90px] text-[#A7FF83] mb-6 md:mb-24" />
             <h1 className="text-4xl font-bold text-[#071A52] mb-4">
               Thanks for registering for Early Access.
             </h1>
