@@ -97,7 +97,7 @@ const Auth = () => {
                   background: '#A7FF83',
                   color: '#071A52',
                   borderRadius: '9999px',
-                  padding: '24px 32px',
+                  padding: '12px 32px',
                   fontSize: '1.125rem',
                   fontWeight: '600',
                 },
@@ -105,7 +105,7 @@ const Auth = () => {
                   borderWidth: '2px',
                   borderColor: '#071A52',
                   borderRadius: '9999px',
-                  padding: '24px',
+                  padding: '12px 24px',
                   fontSize: '1.125rem',
                 },
                 anchor: {
@@ -120,11 +120,19 @@ const Auth = () => {
                 label: {
                   color: '#071A52',
                 },
+                divider: {
+                  background: '#071A52',
+                },
+              },
+              className: {
+                container: 'space-y-4',
+                button: 'w-full',
               },
             }}
             providers={["google"]}
             redirectTo={SITE_URL}
             theme="light"
+            view="sign_in"
           />
         </div>
       </div>
