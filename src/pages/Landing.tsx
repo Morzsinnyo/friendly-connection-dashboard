@@ -9,7 +9,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
       <div className="w-full max-w-[1280px] mx-auto p-6">
-        <div className="max-w-[768px]">
+        <div className="w-full">
           <Header />
           <HeroSection />
           <div className="mb-3">
