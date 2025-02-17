@@ -26,6 +26,10 @@ export const router = createBrowserRouter([
     element: <Auth />,
   },
   {
+    path: "/auth/callback",
+    element: <Auth />,
+  },
+  {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
@@ -56,8 +60,10 @@ export const router = createBrowserRouter([
     ],
     errorElement: <Navigate to="/dashboard" replace />,
   },
+  // Make 404 handling explicit and simple
   {
     path: "*",
-    element: <AuthRedirect />,
+    element: <Navigate to="/" replace />,
   },
 ]);
+

@@ -6,16 +6,15 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://bxvdvwjmybeixtarqwig.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dmR2d2pteWJlaXh0YXJxd2lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2MDQzMzgsImV4cCI6MjA1MjE4MDMzOH0.FauF-c4D_HtIY5w4UkQVM__iMEAskylY27oSVMYeKQY";
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
-
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   db: {
     schema: 'public'
   },
   auth: {
-    persistSession: true, // Enable session persistence
-    autoRefreshToken: true, // Enable auto token refresh
-    detectSessionInUrl: true // Enable auth redirect handling
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 });
+
