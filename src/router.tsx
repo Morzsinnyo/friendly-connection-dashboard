@@ -10,6 +10,7 @@ import { GoogleCalendar } from "./components/calendar/GoogleCalendar";
 import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { AuthRedirect } from "./components/auth/AuthRedirect";
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +58,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <Navigate to="/" replace />,
+    element: <AuthRedirect />,
   },
 ]);
