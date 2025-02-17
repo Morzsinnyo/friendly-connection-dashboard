@@ -14,8 +14,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     schema: 'public'
   },
   auth: {
-    persistSession: false, // Don't persist auth state for landing pages
-    autoRefreshToken: false,
-    detectSessionInUrl: false
+    persistSession: true, // Enable session persistence
+    autoRefreshToken: true, // Enable auto token refresh
+    detectSessionInUrl: true // Enable auth redirect handling
   }
 });

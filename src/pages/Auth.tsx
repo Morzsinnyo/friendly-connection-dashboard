@@ -11,8 +11,6 @@ import { useAuthError } from "@/components/auth/hooks/useAuthError";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-const SITE_URL = "https://friendly-connection-dashboard.lovable.app/auth";
-
 const Auth = () => {
   const { isLoading, isAuthenticated } = useAuthState();
   const { handleRedirectState, checkSession } = useAuthSession();
@@ -130,7 +128,7 @@ const Auth = () => {
               },
             }}
             providers={["google"]}
-            redirectTo={SITE_URL}
+            redirectTo="/dashboard"
             theme="light"
             view="sign_in"
           />
