@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,7 @@ export function RelationshipCard({ friendshipScore, contactId }: RelationshipCar
   };
 
   const navigateToContact = (id: string) => {
-    navigate(`/contact/${id}`);
+    navigate(`/dashboard/contact/${id}`);
   };
 
   return (

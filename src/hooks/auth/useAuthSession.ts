@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -14,8 +15,8 @@ export const useAuthSession = () => {
       console.log("Access token found in URL");
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        console.log("Valid session after redirect, navigating to home");
-        navigate("/");
+        console.log("Valid session after redirect, navigating to dashboard");
+        navigate("/dashboard");
       }
     }
   }, [navigate]);
@@ -24,8 +25,8 @@ export const useAuthSession = () => {
     console.log("Checking existing session");
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      console.log("Existing session found, navigating to home");
-      navigate("/");
+      console.log("Existing session found, navigating to dashboard");
+      navigate("/dashboard");
     }
   }, [navigate]);
 

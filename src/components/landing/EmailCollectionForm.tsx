@@ -58,14 +58,14 @@ export function EmailCollectionForm() {
           placeholder="Your Email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 px-6 py-6 text-lg border-2 border-[#071A52] rounded-full focus:ring-[#A7FF83]"
+          className="flex-1 px-6 py-6 text-lg border-2 border-[#071A52] rounded-full focus:ring-[#A7FF83] bg-white !dark:bg-white !dark:border-[#071A52] !dark:text-[#071A52] !dark:placeholder-[#071A52]/60"
           disabled={isLoading}
           required
         />
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="px-8 py-6 text-lg font-semibold bg-[#A7FF83] text-[#071A52] rounded-full hover:bg-[#A7FF83]/90"
+          className="px-8 py-6 text-lg font-semibold !bg-[#A7FF83] !text-[#071A52] rounded-full hover:!bg-[#A7FF83]/90 !dark:bg-[#A7FF83] !dark:text-[#071A52] !dark:hover:bg-[#A7FF83]/90"
         >
           {isLoading ? "Processing..." : "Join Free"}
         </Button>
