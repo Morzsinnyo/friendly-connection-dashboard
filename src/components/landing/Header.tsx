@@ -11,7 +11,13 @@ export function Header() {
       <h1 className="text-2xl font-semibold text-[#071A52]">LinkUp</h1>
       <Button 
         variant="outline" 
-        className="h-11 px-4 md:px-6 text-sm md:text-base border-[#071A52] text-[#071A52] hover:bg-[#071A52] hover:text-white transition-colors"
+        className="h-11 px-4 md:px-6 text-sm md:text-base 
+          border-[#071A52] text-[#071A52] 
+          hover:bg-[#071A52] hover:text-white 
+          transition-colors
+          !dark:border-[#071A52] !dark:text-[#071A52] 
+          !dark:bg-transparent
+          !dark:hover:bg-[#071A52] !dark:hover:text-white"
         onClick={() => navigate("/auth")}
       >
         Login
