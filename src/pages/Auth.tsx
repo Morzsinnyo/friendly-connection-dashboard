@@ -11,7 +11,7 @@ import { useAuthError } from "@/components/auth/hooks/useAuthError";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-const SITE_URL = "https://friendly-connection-dashboard.lovable.app";
+const SITE_URL = "https://friendly-connection-dashboard.lovable.app/auth";
 
 const Auth = () => {
   const { isLoading, isAuthenticated } = useAuthState();
