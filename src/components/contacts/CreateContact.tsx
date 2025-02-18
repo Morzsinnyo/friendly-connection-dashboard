@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SocialMediaFields } from "./form/SocialMediaFields";
 import { getNoteContent } from "@/api/types/contacts";
 import { notesToJson, createNote } from "@/api/types/notes";
+import { format } from "date-fns";
 
 const statusOptions = [
   "Family Member",
@@ -28,7 +30,7 @@ interface FormData {
   mobilePhone: string;
   status: string;
   birthday: Date | null;
-  notes: string;  // Updated type to string
+  notes: string;
   jobTitle: string;
   company: string;
   instagramUrl: string;
@@ -165,7 +167,7 @@ export function CreateContact() {
       }
 
       const formattedBirthday = formData.birthday
-        ? formData.birthday.toISOString().split('T')[0]
+        ? format(formData.birthday, 'yyyy-MM-dd')
         : null;
 
       const notesJson = formData.notes ? notesToJson([createNote(formData.notes)]) : [];
