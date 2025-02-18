@@ -11,7 +11,7 @@ import {
   isReminderError,
   isTransitionError 
 } from "@/api/types/errors";
-import { Json } from "@/integrations/supabase/types";  // Import Json type
+import { Json } from "@/integrations/supabase/types";
 
 const calculateNextReminder = (frequency: string): Date => {
   const today = new Date();
@@ -215,10 +215,34 @@ export const useContactMutations = (contactId: string) => {
     },
   });
 
+  const updateBirthdayMutation = useMutation({
+    mutationFn: async (birthday: string | null) => {
+      console.log('Updating birthday:', birthday, 'for contact:', contactId);
+      const { error } = await supabase
+        .from('contacts')
+        .update({ birthday })
+        .eq('id', contactId);
+      
+      if (error) {
+        console.error('Error updating birthday:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+      toast.success('Birthday updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error updating birthday:', error);
+      toast.error('Failed to update birthday');
+    },
+  });
+
   return {
     updateFollowupMutation,
     updateReminderMutation,
     updateGiftIdeasMutation,
     updateNotesMutation,
+    updateBirthdayMutation,
   };
 };

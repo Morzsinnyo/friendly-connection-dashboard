@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,9 +29,18 @@ interface ContactFormFieldsProps {
   };
   setFormData: (data: any) => void;
   statusOptions: string[];
+  onBirthdayChange?: (birthday: string | null) => void;
+  isEditMode?: boolean;
 }
 
-export function ContactFormFields({ formData, errors, setFormData, statusOptions }: ContactFormFieldsProps) {
+export function ContactFormFields({ 
+  formData, 
+  errors, 
+  setFormData, 
+  statusOptions,
+  onBirthdayChange,
+  isEditMode 
+}: ContactFormFieldsProps) {
   // Generate years from 1900 to current year
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => (currentYear - i).toString());
@@ -42,19 +52,53 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
 
   const handleYearChange = (year: string) => {
     if (!year) {
-      setFormData({ ...formData, birthday: null });
+      const newBirthday = null;
+      setFormData({ ...formData, birthday: newBirthday });
+      if (isEditMode && onBirthdayChange) {
+        onBirthdayChange(newBirthday);
+      }
       return;
     }
 
-    // If we already have a date selected, update it with the new year
+    let newDate;
     if (parsedDate) {
-      const newDate = new Date(parsedDate);
+      newDate = new Date(parsedDate);
       newDate.setFullYear(parseInt(year));
-      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
     } else {
-      // If no date is selected, set it to January 1st of selected year
-      const newDate = new Date(parseInt(year), 0, 1);
-      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
+      newDate = new Date(parseInt(year), 0, 1);
+    }
+
+    const formattedDate = format(newDate, 'yyyy-MM-dd');
+    setFormData({ ...formData, birthday: formattedDate });
+    if (isEditMode && onBirthdayChange) {
+      onBirthdayChange(formattedDate);
+    }
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) {
+      setFormData({ ...formData, birthday: null });
+      if (isEditMode && onBirthdayChange) {
+        onBirthdayChange(null);
+      }
+      return;
+    }
+
+    // Preserve the selected year if one was chosen
+    if (selectedYear) {
+      const newDate = new Date(date);
+      newDate.setFullYear(parseInt(selectedYear));
+      const formattedDate = format(newDate, 'yyyy-MM-dd');
+      setFormData({ ...formData, birthday: formattedDate });
+      if (isEditMode && onBirthdayChange) {
+        onBirthdayChange(formattedDate);
+      }
+    } else {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      setFormData({ ...formData, birthday: formattedDate });
+      if (isEditMode && onBirthdayChange) {
+        onBirthdayChange(formattedDate);
+      }
     }
   };
 
@@ -215,20 +259,7 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
                 selected={parsedDate}
                 month={selectedMonth}
                 defaultMonth={selectedMonth}
-                onSelect={(date) => {
-                  if (date) {
-                    // Preserve the selected year if one was chosen
-                    if (selectedYear) {
-                      const newDate = new Date(date);
-                      newDate.setFullYear(parseInt(selectedYear));
-                      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
-                    } else {
-                      setFormData({ ...formData, birthday: format(date, 'yyyy-MM-dd') });
-                    }
-                  } else {
-                    setFormData({ ...formData, birthday: null });
-                  }
-                }}
+                onSelect={(date) => handleDateSelect(date || undefined)}
                 initialFocus
               />
             </PopoverContent>

@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SocialMediaFields } from "./form/SocialMediaFields";
 import { getNoteContent } from "@/api/types/contacts";
 import { notesToJson, createNote } from "@/api/types/notes";
+import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 
 const statusOptions = [
   "Family Member",
@@ -28,7 +29,7 @@ interface FormData {
   businessPhone: string;
   mobilePhone: string;
   status: string;
-  birthday: string | null;  // Changed to string | null
+  birthday: string | null;
   notes: string;
   jobTitle: string;
   company: string;
@@ -64,6 +65,7 @@ export function CreateContact() {
   });
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { updateBirthdayMutation } = useContactMutations(editId || '');
 
   // Fetch contact data if in edit mode
   const { data: contactData } = useQuery({
@@ -92,7 +94,7 @@ export function CreateContact() {
         businessPhone: contactData.business_phone || '',
         mobilePhone: contactData.mobile_phone || '',
         status: contactData.status || '',
-        birthday: contactData.birthday || null,  // Already in YYYY-MM-DD format from DB
+        birthday: contactData.birthday || null,
         notes: notes.length > 0 ? notes[0].content : '',
         jobTitle: contactData.job_title || '',
         company: contactData.company || '',
@@ -128,6 +130,12 @@ export function CreateContact() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAvatar(e.target.files[0]);
+    }
+  };
+
+  const handleBirthdayChange = (birthday: string | null) => {
+    if (editId) {
+      updateBirthdayMutation.mutate(birthday);
     }
   };
 
@@ -174,7 +182,7 @@ export function CreateContact() {
         business_phone: formData.businessPhone,
         mobile_phone: formData.mobilePhone,
         status: formData.status,
-        birthday: formData.birthday,  // Already in YYYY-MM-DD format
+        birthday: formData.birthday,
         notes: notesJson,
         job_title: formData.jobTitle,
         company: formData.company,
@@ -250,6 +258,8 @@ export function CreateContact() {
               errors={errors}
               setFormData={setFormData}
               statusOptions={statusOptions}
+              onBirthdayChange={handleBirthdayChange}
+              isEditMode={!!editId}
             />
 
             <SocialMediaFields
