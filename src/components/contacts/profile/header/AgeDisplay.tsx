@@ -1,4 +1,5 @@
-import { differenceInYears } from "date-fns";
+
+import { differenceInYears, parseISO, format } from "date-fns";
 
 interface AgeDisplayProps {
   birthday: string;
@@ -20,7 +21,7 @@ export function AgeDisplay({ birthday }: AgeDisplayProps) {
   return (
     <div className="flex flex-col">
       <span className="text-sm text-gray-600">
-        🎂 {new Date(birthday).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
+        🎂 {format(parseISO(birthday), 'MMMM d')}
       </span>
       <span className="text-xs text-gray-500">
         Turns {calculateNextBirthday(birthday)} this year
