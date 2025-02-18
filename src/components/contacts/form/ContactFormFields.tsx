@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface ContactFormFieldsProps {
@@ -17,7 +18,7 @@ interface ContactFormFieldsProps {
     businessPhone: string;
     mobilePhone: string;
     status: string;
-    birthday: Date | null;
+    birthday: string | null;
     notes: string;
     jobTitle: string;
     company: string;
@@ -31,16 +32,6 @@ interface ContactFormFieldsProps {
 }
 
 export function ContactFormFields({ formData, errors, setFormData, statusOptions }: ContactFormFieldsProps) {
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
-
-  const handleYearSelect = (year: string) => {
-    const currentDate = formData.birthday || new Date();
-    const newDate = new Date(currentDate);
-    newDate.setFullYear(parseInt(year));
-    setFormData({ ...formData, birthday: newDate });
-  };
-
   return (
     <div className="space-y-4">
       <div>
@@ -159,49 +150,38 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           <CalendarIcon className="w-4 h-4 inline mr-2" />
           Birthday
         </Label>
-        <div className="flex gap-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !formData.birthday && "text-muted-foreground"
-                )}
-              >
-                {formData.birthday ? (
-                  format(formData.birthday, "MMM d")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={formData.birthday || undefined}
-                onSelect={(date) => setFormData({ ...formData, birthday: date })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Select
-            value={formData.birthday ? formData.birthday.getFullYear().toString() : ""}
-            onValueChange={handleYearSelect}
-          >
-            <SelectTrigger className="bg-background border-border text-foreground w-32">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent className="bg-background border-border max-h-[200px]">
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()} className="text-foreground">
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !formData.birthday && "text-muted-foreground"
+              )}
+            >
+              {formData.birthday ? (
+                format(parseISO(formData.birthday), "MMM d, yyyy")
+              ) : (
+                <span>Pick a date</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={formData.birthday ? parseISO(formData.birthday) : undefined}
+              onSelect={(date) => {
+                if (date) {
+                  const dateStr = format(date, 'yyyy-MM-dd');
+                  setFormData({ ...formData, birthday: dateStr });
+                } else {
+                  setFormData({ ...formData, birthday: null });
+                }
+              }}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div>
