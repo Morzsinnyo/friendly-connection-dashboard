@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +31,33 @@ interface ContactFormFieldsProps {
 }
 
 export function ContactFormFields({ formData, errors, setFormData, statusOptions }: ContactFormFieldsProps) {
+  // Generate years from 1900 to current year
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => (currentYear - i).toString());
+  
+  // Parse the current birthday if it exists
+  const parsedDate = formData.birthday ? parseISO(formData.birthday) : null;
+  const selectedYear = parsedDate ? format(parsedDate, 'yyyy') : null;
+  const selectedMonth = parsedDate ? parseISO(formData.birthday) : new Date();
+
+  const handleYearChange = (year: string) => {
+    if (!year) {
+      setFormData({ ...formData, birthday: null });
+      return;
+    }
+
+    // If we already have a date selected, update it with the new year
+    if (parsedDate) {
+      const newDate = new Date(parsedDate);
+      newDate.setFullYear(parseInt(year));
+      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
+    } else {
+      // If no date is selected, set it to January 1st of selected year
+      const newDate = new Date(parseInt(year), 0, 1);
+      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -150,38 +176,70 @@ export function ContactFormFields({ formData, errors, setFormData, statusOptions
           <CalendarIcon className="w-4 h-4 inline mr-2" />
           Birthday
         </Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.birthday && "text-muted-foreground"
-              )}
-            >
-              {formData.birthday ? (
-                format(parseISO(formData.birthday), "MMM d, yyyy")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.birthday ? parseISO(formData.birthday) : undefined}
-              onSelect={(date) => {
-                if (date) {
-                  const dateStr = format(date, 'yyyy-MM-dd');
-                  setFormData({ ...formData, birthday: dateStr });
-                } else {
-                  setFormData({ ...formData, birthday: null });
-                }
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <div className="flex flex-col space-y-2">
+          <Select
+            value={selectedYear || ""}
+            onValueChange={handleYearChange}
+          >
+            <SelectTrigger className="bg-background border-border text-foreground">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent className="bg-background border-border max-h-[300px]">
+              {years.map((year) => (
+                <SelectItem key={year} value={year} className="text-foreground">
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !formData.birthday && "text-muted-foreground"
+                )}
+              >
+                {formData.birthday ? (
+                  format(parseISO(formData.birthday), "MMMM d")
+                ) : (
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={parsedDate}
+                month={selectedMonth}
+                defaultMonth={selectedMonth}
+                onSelect={(date) => {
+                  if (date) {
+                    // Preserve the selected year if one was chosen
+                    if (selectedYear) {
+                      const newDate = new Date(date);
+                      newDate.setFullYear(parseInt(selectedYear));
+                      setFormData({ ...formData, birthday: format(newDate, 'yyyy-MM-dd') });
+                    } else {
+                      setFormData({ ...formData, birthday: format(date, 'yyyy-MM-dd') });
+                    }
+                  } else {
+                    setFormData({ ...formData, birthday: null });
+                  }
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {formData.birthday && (
+            <div className="text-sm text-muted-foreground">
+              Selected: {format(parseISO(formData.birthday), "MMM d, yyyy")}
+            </div>
+          )}
+        </div>
       </div>
 
       <div>
