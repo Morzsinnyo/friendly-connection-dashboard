@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,8 +58,61 @@ export const useContactMutations = (contactId: string) => {
           throw error;
         }
 
+        // Handle reminder removal case
+        if (reminderFrequency === null) {
+          console.log('Removing reminder for contact:', contactId);
+          
+          // First, attempt to remove calendar events
+          try {
+            console.log('Attempting to remove calendar events');
+            const response = await supabase.functions.invoke('google-calendar', {
+              body: {
+                action: 'deleteExistingReminders',
+                calendarId,
+                contactName
+              }
+            });
+
+            if (response.error) {
+              console.error('Failed to delete calendar events:', response.error);
+              const error = new Error('Failed to delete calendar events') as ReminderError;
+              error.type = 'deletion';
+              error.originalError = response.error;
+              throw error;
+            }
+
+            console.log('Successfully removed calendar events');
+          } catch (error) {
+            console.error('Error during calendar event deletion:', error);
+            throw error;
+          }
+
+          // Then, update the database to remove all reminder-related data
+          const { error: dbError } = await supabase
+            .from('contacts')
+            .update({ 
+              reminder_frequency: null,
+              next_reminder: null,
+              preferred_reminder_day: null,
+              reminder_status: 'pending'
+            })
+            .eq('id', contactId);
+          
+          if (dbError) {
+            console.error('Database update error:', dbError);
+            const error = new Error('Failed to update reminder in database') as TransitionError;
+            error.state = 'current';
+            error.targetState = 'updated';
+            error.reason = dbError.message;
+            throw error;
+          }
+
+          console.log('Successfully removed reminder from database');
+          return;
+        }
+
         // Calculate next reminder time based on frequency and preferred day
-        const nextReminder = reminderFrequency ? calculateNextReminder(reminderFrequency, preferredDay) : null;
+        const nextReminder = calculateNextReminder(reminderFrequency, preferredDay);
 
         // Update database
         const { error: dbError } = await supabase
