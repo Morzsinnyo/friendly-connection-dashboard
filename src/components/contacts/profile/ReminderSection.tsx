@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Bell, Calendar, Check, X } from "lucide-react";
+import { Bell, Check, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,11 +38,6 @@ export function ReminderSection({
 }: ReminderSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = (frequency: ReminderFrequency, day?: DayOfWeek) => {
-    onReminderSelect(frequency, day);
-    setIsOpen(false);
-  };
-
   const getDayLabel = (day?: DayOfWeek) => {
     if (typeof day !== 'number') return '';
     return DAYS_OF_WEEK.find(d => d.value === day)?.label || '';
@@ -70,53 +65,47 @@ export function ReminderSection({
       {isLoading && <LoadingOverlay message="Updating reminder..." />}
       
       <div className="flex items-center gap-4">
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4 mr-2" />
               {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[240px]">
-            <DropdownMenuLabel>Frequency</DropdownMenuLabel>
+          <DropdownMenuContent align="start" className="w-[320px] bg-popover">
+            <DropdownMenuLabel className="font-semibold">Set Check-in Schedule</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
             {REMINDER_FREQUENCIES.map((frequency) => (
-              <DropdownMenuItem
-                key={frequency}
-                onClick={() => handleSelect(frequency, preferredDay)}
-                className="flex justify-between items-center"
-              >
-                <span>{frequency}</span>
-                {selectedReminder === frequency && (
-                  <Check className="h-4 w-4 ml-2" />
-                )}
-              </DropdownMenuItem>
+              <div key={frequency} className="px-2 py-1.5 hover:bg-accent rounded-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium">{frequency}</span>
+                  {selectedReminder === frequency && preferredDay !== undefined && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
+                </div>
+                <div className="flex gap-1 flex-wrap">
+                  {DAYS_OF_WEEK.map(({ value, label }) => (
+                    <Button
+                      key={`${frequency}-${value}`}
+                      variant={selectedReminder === frequency && preferredDay === value ? "default" : "outline"}
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => onReminderSelect(frequency, value)}
+                    >
+                      {label.slice(0, 3)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             ))}
-
-            {selectedReminder && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Preferred Day</DropdownMenuLabel>
-                {DAYS_OF_WEEK.map(({ value, label }) => (
-                  <DropdownMenuItem
-                    key={value}
-                    onClick={() => handleSelect(selectedReminder, value)}
-                    className="flex justify-between items-center"
-                  >
-                    <span>{label}</span>
-                    {preferredDay === value && (
-                      <Calendar className="h-4 w-4 ml-2" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </>
-            )}
 
             {selectedReminder && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                  onClick={() => handleSelect(null)}
+                  onClick={() => onReminderSelect(null)}
                 >
                   <X className="h-4 w-4 mr-2" />
                   Remove Reminder
