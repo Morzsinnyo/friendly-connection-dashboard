@@ -15,9 +15,7 @@ import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useContactMutations } from "@/hooks/contacts/useContactMutations";
 import { Contact, ReminderStatus } from "@/api/types/contacts";
 import { getNoteContent } from "@/api/types/contacts";
-
-type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
-type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+import { ReminderFrequency, DayOfWeek } from "@/api/types/reminders";
 
 interface EditedContact {
   full_name: string;
@@ -35,7 +33,7 @@ export function ContactProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedReminder, setSelectedReminder] = useState<ReminderFrequency>(null);
-  const [preferredDay, setPreferredDay] = useState<DayOfWeek | undefined>();
+  const [preferredDay, setPreferredDay] = useState<DayOfWeek>();
   const [editedContact, setEditedContact] = useState<EditedContact>({
     full_name: '',
     title: '',
@@ -52,7 +50,7 @@ export function ContactProfile() {
   useEffect(() => {
     if (contact?.reminder_frequency) {
       setSelectedReminder(contact.reminder_frequency as ReminderFrequency);
-      setPreferredDay(contact.preferred_reminder_day as DayOfWeek | undefined);
+      setPreferredDay(contact.preferred_reminder_day as DayOfWeek);
     }
   }, [contact?.reminder_frequency, contact?.preferred_reminder_day]);
 

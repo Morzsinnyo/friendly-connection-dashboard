@@ -1,19 +1,19 @@
 
-import { Button } from "@/components/ui/button";
-import { Bell, Calendar, X } from "lucide-react";
+import { useState } from "react";
+import { Bell, Calendar, Check, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LoadingOverlay } from "./LoadingOverlay";
+import { Button } from "@/components/ui/button";
 import { ReminderStatusControl } from "./ReminderStatusControl";
+import { LoadingOverlay } from "./LoadingOverlay";
 import { format } from "date-fns";
-
-type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
-
-type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+import { DayOfWeek, DAYS_OF_WEEK, ReminderFrequency, REMINDER_FREQUENCIES } from "@/api/types/reminders";
 
 interface ReminderSectionProps {
   selectedReminder: ReminderFrequency;
@@ -26,29 +26,6 @@ interface ReminderSectionProps {
   preferredDay?: DayOfWeek;
 }
 
-const REMINDER_OPTIONS: ReminderFrequency[] = [
-  'Every week',
-  'Every 2 weeks',
-  'Monthly',
-  'Every 2 months',
-  'Every 3 months'
-];
-
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' }
-];
-
-const getDayLabel = (day?: DayOfWeek) => {
-  if (day === undefined) return '';
-  return DAYS_OF_WEEK.find(d => d.value === day)?.label || '';
-};
-
 export function ReminderSection({ 
   selectedReminder, 
   onReminderSelect, 
@@ -59,18 +36,16 @@ export function ReminderSection({
   contactId,
   preferredDay,
 }: ReminderSectionProps) {
-  const handleFrequencySelect = (frequency: ReminderFrequency) => {
-    if (!frequency) {
-      onReminderSelect(null);
-      return;
-    }
-    onReminderSelect(frequency, preferredDay);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelect = (frequency: ReminderFrequency, day?: DayOfWeek) => {
+    onReminderSelect(frequency, day);
+    setIsOpen(false);
   };
 
-  const handleDaySelect = (day: DayOfWeek) => {
-    if (selectedReminder) {
-      onReminderSelect(selectedReminder, day);
-    }
+  const getDayLabel = (day?: DayOfWeek) => {
+    if (typeof day !== 'number') return '';
+    return DAYS_OF_WEEK.find(d => d.value === day)?.label || '';
   };
 
   const formatReminderText = () => {
@@ -95,69 +70,61 @@ export function ReminderSection({
       {isLoading && <LoadingOverlay message="Updating reminder..." />}
       
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Bell className="h-4 w-4 mr-2" />
-                {selectedReminder || 'Set Frequency'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px]">
-              {REMINDER_OPTIONS.map((frequency) => (
-                <DropdownMenuItem
-                  key={frequency}
-                  onClick={() => handleFrequencySelect(frequency)}
-                  className="flex justify-between items-center"
-                >
-                  <span>{frequency}</span>
-                  {selectedReminder === frequency && (
-                    <Bell className="h-4 w-4 ml-2" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                disabled={!selectedReminder}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                {getDayLabel(preferredDay) || 'Set Day'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px]">
-              {DAYS_OF_WEEK.map(({ value, label }) => (
-                <DropdownMenuItem
-                  key={value}
-                  onClick={() => handleDaySelect(value as DayOfWeek)}
-                  className="flex justify-between items-center"
-                >
-                  <span>{label}</span>
-                  {preferredDay === value && (
-                    <Calendar className="h-4 w-4 ml-2" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {selectedReminder && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={() => onReminderSelect(null)}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Remove
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
             </Button>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[240px]">
+            <DropdownMenuLabel>Frequency</DropdownMenuLabel>
+            {REMINDER_FREQUENCIES.map((frequency) => (
+              <DropdownMenuItem
+                key={frequency}
+                onClick={() => handleSelect(frequency, preferredDay)}
+                className="flex justify-between items-center"
+              >
+                <span>{frequency}</span>
+                {selectedReminder === frequency && (
+                  <Check className="h-4 w-4 ml-2" />
+                )}
+              </DropdownMenuItem>
+            ))}
+
+            {selectedReminder && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Preferred Day</DropdownMenuLabel>
+                {DAYS_OF_WEEK.map(({ value, label }) => (
+                  <DropdownMenuItem
+                    key={value}
+                    onClick={() => handleSelect(selectedReminder, value)}
+                    className="flex justify-between items-center"
+                  >
+                    <span>{label}</span>
+                    {preferredDay === value && (
+                      <Calendar className="h-4 w-4 ml-2" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+
+            {selectedReminder && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  onClick={() => handleSelect(null)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Remove Reminder
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {selectedReminder && (
           <>
