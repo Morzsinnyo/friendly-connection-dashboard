@@ -37,6 +37,7 @@ export type Database = {
           next_reminder: string | null
           note_version: number | null
           notes: Json[] | null
+          preferred_reminder_day: number | null
           related_contacts: string[] | null
           reminder_frequency: string | null
           reminder_status: string | null
@@ -74,6 +75,7 @@ export type Database = {
           next_reminder?: string | null
           note_version?: number | null
           notes?: Json[] | null
+          preferred_reminder_day?: number | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
           reminder_status?: string | null
@@ -111,6 +113,7 @@ export type Database = {
           next_reminder?: string | null
           note_version?: number | null
           notes?: Json[] | null
+          preferred_reminder_day?: number | null
           related_contacts?: string[] | null
           reminder_frequency?: string | null
           reminder_status?: string | null

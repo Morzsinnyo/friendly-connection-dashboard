@@ -12,22 +12,7 @@ import {
   isTransitionError 
 } from "@/api/types/errors";
 import { Json } from "@/integrations/supabase/types";
-
-const calculateNextReminder = (frequency: string): Date => {
-  const today = new Date();
-  const lunchTime = setMinutes(setHours(today, 12), 0);
-  
-  switch (frequency) {
-    case 'Every week':
-      return addWeeks(lunchTime, 1);
-    case 'Every 2 weeks':
-      return addWeeks(lunchTime, 2);
-    case 'Monthly':
-      return addMonths(lunchTime, 1);
-    default:
-      return lunchTime;
-  }
-};
+import { calculateNextReminder } from "@/api/services/contacts/mutations/reminderMutations";
 
 export const useContactMutations = (contactId: string) => {
   const queryClient = useQueryClient();
@@ -52,14 +37,16 @@ export const useContactMutations = (contactId: string) => {
   });
 
   const updateReminderMutation = useMutation({
-    mutationFn: async ({ reminderFrequency, calendarId, contactName }: { 
+    mutationFn: async ({ reminderFrequency, calendarId, contactName, preferredDay }: { 
       reminderFrequency: string; 
       calendarId: string;
       contactName: string;
+      preferredDay?: number;
     }) => {
       try {
         console.log('Setting reminder frequency:', reminderFrequency);
         console.log('Contact name:', contactName);
+        console.log('Preferred day:', preferredDay);
         
         if (!calendarId) {
           const error = new Error('Please set up your calendar ID in the calendar settings first') as CalendarError;
@@ -90,8 +77,8 @@ export const useContactMutations = (contactId: string) => {
           throw error;
         }
 
-        // Calculate next reminder time
-        const nextReminder = calculateNextReminder(reminderFrequency);
+        // Calculate next reminder time based on frequency and preferred day
+        const nextReminder = calculateNextReminder(reminderFrequency, preferredDay);
         const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000);
 
         // Update database
@@ -99,7 +86,8 @@ export const useContactMutations = (contactId: string) => {
           .from('contacts')
           .update({ 
             reminder_frequency: reminderFrequency,
-            next_reminder: nextReminder.toISOString()
+            next_reminder: nextReminder.toISOString(),
+            preferred_reminder_day: preferredDay
           })
           .eq('id', contactId);
         
@@ -124,6 +112,7 @@ export const useContactMutations = (contactId: string) => {
             timeZone: 'UTC'
           },
           frequency: reminderFrequency,
+          preferredDay,
           reminders: {
             useDefault: false,
             overrides: [

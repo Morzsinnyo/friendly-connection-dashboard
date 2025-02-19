@@ -1,16 +1,29 @@
+
 import { Contact } from "@/api/types/contacts";
 import { ApiResponse } from "@/api/types/common";
 import { formatApiResponse } from "@/api/utils/response-formatting";
 import { supabase } from "@/integrations/supabase/client";
-import { addWeeks, addMonths, setHours, setMinutes, format } from "date-fns";
+import { addWeeks, addMonths, setHours, setMinutes, format, setDay } from "date-fns";
 
-export const calculateNextReminder = (frequency: string, currentDate: Date = new Date()): Date => {
+export const calculateNextReminder = (frequency: string, preferredDay?: number, currentDate: Date = new Date()): Date => {
   // First set the time to 12:00 PM
   let nextDate = setHours(setMinutes(currentDate, 0), 12);
   
+  // If a preferred day is set, adjust to the next occurrence of that day
+  if (typeof preferredDay === 'number') {
+    const currentDay = nextDate.getDay();
+    if (currentDay !== preferredDay) {
+      // Calculate days to add to reach the preferred day
+      let daysToAdd = preferredDay - currentDay;
+      if (daysToAdd <= 0) daysToAdd += 7; // If we've passed the preferred day this week, go to next week
+      nextDate = addWeeks(nextDate, 0); // Create a new date object
+      nextDate = setDay(nextDate, preferredDay);
+    }
+  }
+
   switch (frequency) {
     case 'Every week':
-      return addWeeks(nextDate, 1);
+      return nextDate;
     case 'Every 2 weeks':
       return addWeeks(nextDate, 2);
     case 'Monthly':
@@ -51,9 +64,10 @@ export const reminderMutations = {
     frequency: string | null, 
     nextReminder: Date | null,
     calendarId?: string,
-    contactName?: string
+    contactName?: string,
+    preferredDay?: number
   ): Promise<ApiResponse<Contact>> => {
-    console.log('Updating reminder for contact:', { id, frequency, nextReminder, calendarId, contactName });
+    console.log('Updating reminder for contact:', { id, frequency, nextReminder, calendarId, contactName, preferredDay });
     
     if (!frequency || !nextReminder) {
       console.log('Removing reminder for contact:', id);
@@ -80,7 +94,8 @@ export const reminderMutations = {
           .update({
             reminder_frequency: null,
             next_reminder: null,
-            reminder_status: 'pending'
+            reminder_status: 'pending',
+            preferred_reminder_day: null
           })
           .eq('id', id)
           .select()
@@ -90,7 +105,7 @@ export const reminderMutations = {
       return formatApiResponse(query);
     }
 
-    console.log('Setting new reminder:', { frequency, nextReminder });
+    console.log('Setting new reminder:', { frequency, nextReminder, preferredDay });
     
     // Fetch contact details including notes
     const { data: contact, error: fetchError } = await supabase
@@ -112,7 +127,8 @@ export const reminderMutations = {
         .update({
           reminder_frequency: frequency,
           next_reminder: nextReminder.toISOString(),
-          reminder_status: 'pending'
+          reminder_status: 'pending',
+          preferred_reminder_day: preferredDay
         })
         .eq('id', id)
         .select()
@@ -148,6 +164,7 @@ export const reminderMutations = {
             timeZone: 'UTC'
           },
           frequency,
+          preferredDay,
           reminders: {
             useDefault: false,
             overrides: [
@@ -183,7 +200,7 @@ export const reminderMutations = {
     
     const { data: contact, error: fetchError } = await supabase
       .from('contacts')
-      .select('reminder_frequency, next_reminder')
+      .select('reminder_frequency, next_reminder, preferred_reminder_day')
       .eq('id', id)
       .single();
     
@@ -192,7 +209,6 @@ export const reminderMutations = {
       throw fetchError;
     }
 
-    // Define the type for the updates object
     type ContactUpdates = {
       reminder_status: 'pending' | 'completed' | 'skipped';
       next_reminder?: string;
@@ -206,6 +222,7 @@ export const reminderMutations = {
     if (status === 'completed' && contact.reminder_frequency) {
       const nextReminder = calculateNextReminder(
         contact.reminder_frequency,
+        contact.preferred_reminder_day,
         contact.next_reminder ? new Date(contact.next_reminder) : new Date()
       );
       updates.next_reminder = nextReminder.toISOString();
