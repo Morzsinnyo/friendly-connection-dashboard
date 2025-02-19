@@ -257,7 +257,6 @@ export function ContactFormFields({
               <Calendar
                 mode="single"
                 selected={parsedDate}
-                month={selectedMonth}
                 defaultMonth={selectedMonth}
                 onSelect={(date) => handleDateSelect(date || undefined)}
                 initialFocus
@@ -285,3 +284,4 @@ export function ContactFormFields({
     </div>
   );
 }
+
