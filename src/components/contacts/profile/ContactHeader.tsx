@@ -22,6 +22,7 @@ import { ReminderStatus } from "@/api/types/contacts";
 import { contactMutations } from "@/api/services/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
+type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 interface ContactHeaderProps {
   contact: any;
@@ -32,7 +33,7 @@ interface ContactHeaderProps {
   giftIdeas: string[];
   onAddGiftIdea: (idea: string) => void;
   selectedReminder: ReminderFrequency;
-  onReminderSelect: (frequency: ReminderFrequency) => void;
+  onReminderSelect: (frequency: ReminderFrequency, preferredDay?: DayOfWeek) => void;
   isReminderLoading?: boolean;
   nextReminder?: Date | null;
   reminderStatus?: ReminderStatus;
@@ -201,6 +202,7 @@ export function ContactHeader({
           nextReminder={nextReminder}
           reminderStatus={reminderStatus}
           contactId={contactId}
+          preferredDay={contact.preferred_reminder_day}
         />
       </div>
     </div>

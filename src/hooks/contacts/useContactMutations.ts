@@ -14,6 +14,16 @@ import {
 import { Json } from "@/integrations/supabase/types";
 import { calculateNextReminder } from "@/api/services/contacts/mutations/reminderMutations";
 
+type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
+type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+type ReminderMutationParams = {
+  reminderFrequency: ReminderFrequency;
+  calendarId: string;
+  contactName: string;
+  preferredDay?: DayOfWeek;
+};
+
 export const useContactMutations = (contactId: string) => {
   const queryClient = useQueryClient();
 
@@ -37,16 +47,9 @@ export const useContactMutations = (contactId: string) => {
   });
 
   const updateReminderMutation = useMutation({
-    mutationFn: async ({ reminderFrequency, calendarId, contactName, preferredDay }: { 
-      reminderFrequency: string; 
-      calendarId: string;
-      contactName: string;
-      preferredDay?: number;
-    }) => {
+    mutationFn: async ({ reminderFrequency, calendarId, contactName, preferredDay }: ReminderMutationParams) => {
       try {
-        console.log('Setting reminder frequency:', reminderFrequency);
-        console.log('Contact name:', contactName);
-        console.log('Preferred day:', preferredDay);
+        console.log('Setting reminder:', { reminderFrequency, calendarId, contactName, preferredDay });
         
         if (!calendarId) {
           const error = new Error('Please set up your calendar ID in the calendar settings first') as CalendarError;
@@ -54,39 +57,15 @@ export const useContactMutations = (contactId: string) => {
           throw error;
         }
 
-        // First try to remove existing reminders
-        try {
-          const deleteResponse = await supabase.functions.invoke('google-calendar', {
-            body: {
-              action: 'deleteExistingReminders',
-              calendarId,
-              contactName
-            }
-          });
-
-          if (deleteResponse.error) {
-            const error = new Error('Failed to remove existing reminders') as ReminderError;
-            error.type = 'deletion';
-            error.originalError = deleteResponse.error;
-            throw error;
-          }
-
-          console.log('Successfully removed existing reminders');
-        } catch (error) {
-          handleReminderError(error as ReminderError);
-          throw error;
-        }
-
         // Calculate next reminder time based on frequency and preferred day
-        const nextReminder = calculateNextReminder(reminderFrequency, preferredDay);
-        const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000);
+        const nextReminder = reminderFrequency ? calculateNextReminder(reminderFrequency, preferredDay) : null;
 
         // Update database
         const { error: dbError } = await supabase
           .from('contacts')
           .update({ 
             reminder_frequency: reminderFrequency,
-            next_reminder: nextReminder.toISOString(),
+            next_reminder: nextReminder?.toISOString() || null,
             preferred_reminder_day: preferredDay
           })
           .eq('id', contactId);
@@ -99,47 +78,50 @@ export const useContactMutations = (contactId: string) => {
           throw error;
         }
 
-        // Create new calendar event
-        const eventData = {
-          summary: `${contactName} - It's time to contact`,
-          description: `Recurring reminder to keep in touch with ${contactName}`,
-          start: {
-            dateTime: nextReminder.toISOString(),
-            timeZone: 'UTC'
-          },
-          end: {
-            dateTime: endTime.toISOString(),
-            timeZone: 'UTC'
-          },
-          frequency: reminderFrequency,
-          preferredDay,
-          reminders: {
-            useDefault: false,
-            overrides: [
-              { method: 'popup', minutes: 1440 },
-              { method: 'email', minutes: 1440 }
-            ]
+        if (reminderFrequency && nextReminder) {
+          // Create new calendar event
+          const endTime = new Date(nextReminder.getTime() + 60 * 60 * 1000);
+          const eventData = {
+            summary: `${contactName} - It's time to contact`,
+            description: `Recurring reminder to keep in touch with ${contactName}`,
+            start: {
+              dateTime: nextReminder.toISOString(),
+              timeZone: 'UTC'
+            },
+            end: {
+              dateTime: endTime.toISOString(),
+              timeZone: 'UTC'
+            },
+            frequency: reminderFrequency,
+            preferredDay,
+            reminders: {
+              useDefault: false,
+              overrides: [
+                { method: 'popup', minutes: 1440 },
+                { method: 'email', minutes: 1440 }
+              ]
+            }
+          };
+
+          console.log('Creating calendar event with data:', eventData);
+
+          const response = await supabase.functions.invoke('google-calendar', {
+            body: {
+              action: 'createEvent',
+              eventData,
+              calendarId
+            }
+          });
+
+          if (response.error) {
+            const error = new Error('Failed to create calendar event') as ReminderError;
+            error.type = 'creation';
+            error.originalError = response.error;
+            throw error;
           }
-        };
 
-        console.log('Creating calendar event with data:', eventData);
-
-        const response = await supabase.functions.invoke('google-calendar', {
-          body: {
-            action: 'createEvent',
-            eventData,
-            calendarId
-          }
-        });
-
-        if (response.error) {
-          const error = new Error('Failed to create calendar event') as ReminderError;
-          error.type = 'creation';
-          error.originalError = response.error;
-          throw error;
+          console.log('Calendar event created successfully:', response.data);
         }
-
-        console.log('Calendar event created successfully:', response.data);
       } catch (error) {
         if (isCalendarError(error)) {
           handleCalendarError(error);
@@ -156,10 +138,10 @@ export const useContactMutations = (contactId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
-      toast.success('Reminder frequency updated and calendar event created');
+      toast.success('Reminder updated successfully');
     },
     onError: (error) => {
-      console.error('Error updating reminder frequency:', error);
+      console.error('Error updating reminder:', error);
     },
   });
 

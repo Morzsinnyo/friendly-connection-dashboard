@@ -17,6 +17,7 @@ import { Contact, ReminderStatus } from "@/api/types/contacts";
 import { getNoteContent } from "@/api/types/contacts";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | null;
+type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
 interface EditedContact {
   full_name: string;
@@ -34,6 +35,7 @@ export function ContactProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedReminder, setSelectedReminder] = useState<ReminderFrequency>(null);
+  const [preferredDay, setPreferredDay] = useState<DayOfWeek | undefined>();
   const [editedContact, setEditedContact] = useState<EditedContact>({
     full_name: '',
     title: '',
@@ -45,13 +47,14 @@ export function ContactProfile() {
 
   const { data: userProfile } = useUserProfile();
   const { data: contact, isLoading, error } = useContactProfile(id);
-  const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation, updateNotesMutation } = useContactMutations(id || '');
+  const { updateFollowupMutation, updateReminderMutation, updateGiftIdeasMutation } = useContactMutations(id || '');
 
   useEffect(() => {
     if (contact?.reminder_frequency) {
       setSelectedReminder(contact.reminder_frequency as ReminderFrequency);
+      setPreferredDay(contact.preferred_reminder_day as DayOfWeek | undefined);
     }
-  }, [contact?.reminder_frequency]);
+  }, [contact?.reminder_frequency, contact?.preferred_reminder_day]);
 
   const handleScheduleFollowup = (date: Date) => {
     updateFollowupMutation.mutate(date);
@@ -59,17 +62,21 @@ export function ContactProfile() {
     navigate(`/activities/create?participant=${encodeURIComponent(contact.full_name)}&date=${encodeURIComponent(date.toISOString())}`);
   };
 
-  const handleReminderSelect = (frequency: ReminderFrequency) => {
-    console.log('Selected reminder frequency:', frequency);
+  const handleReminderSelect = (frequency: ReminderFrequency, day?: DayOfWeek) => {
+    console.log('Selected reminder:', { frequency, day });
     setSelectedReminder(frequency);
+    setPreferredDay(day);
+    
     if (!userProfile?.calendar_id) {
       toast.error('Please set up your calendar ID in the calendar settings first');
       return;
     }
+    
     updateReminderMutation.mutate({ 
       reminderFrequency: frequency,
       calendarId: userProfile.calendar_id,
-      contactName: contact.full_name
+      contactName: contact.full_name,
+      preferredDay: day
     });
   };
 
