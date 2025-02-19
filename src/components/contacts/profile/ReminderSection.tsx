@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Bell, Check, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -8,6 +8,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ReminderStatusControl } from "./ReminderStatusControl";
@@ -37,6 +38,7 @@ export function ReminderSection({
   preferredDay,
 }: ReminderSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [processingDay, setProcessingDay] = useState<number | null>(null);
 
   const getDayLabel = (day?: DayOfWeek) => {
     if (typeof day !== 'number') return '';
@@ -60,59 +62,91 @@ export function ReminderSection({
     }
   };
 
+  const handleDaySelect = useCallback((frequency: ReminderFrequency, day: DayOfWeek) => {
+    // Prevent duplicate selections
+    if (selectedReminder === frequency && preferredDay === day) {
+      return;
+    }
+
+    // Prevent multiple rapid clicks
+    if (processingDay !== null) {
+      return;
+    }
+
+    setProcessingDay(day);
+    onReminderSelect(frequency, day);
+    
+    // Reset processing state after a short delay
+    setTimeout(() => {
+      setProcessingDay(null);
+    }, 1000);
+  }, [selectedReminder, preferredDay, processingDay, onReminderSelect]);
+
+  const handleRemoveReminder = useCallback(() => {
+    setIsOpen(false);
+    onReminderSelect(null);
+  }, [onReminderSelect]);
+
   return (
     <div className="relative">
       {isLoading && <LoadingOverlay message="Updating reminder..." />}
       
       <div className="flex items-center gap-4">
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4 mr-2" />
               {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[320px] bg-popover">
-            <DropdownMenuLabel className="font-semibold">Set Check-in Schedule</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            
-            {REMINDER_FREQUENCIES.map((frequency) => (
-              <div key={frequency} className="px-2 py-1.5 hover:bg-accent rounded-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">{frequency}</span>
-                  {selectedReminder === frequency && preferredDay !== undefined && (
-                    <Check className="h-4 w-4 text-primary" />
-                  )}
+          <DropdownMenuPortal>
+            <DropdownMenuContent
+              align="start"
+              className="w-[320px] bg-popover overflow-y-auto max-h-[400px]"
+              style={{ position: 'absolute' }}
+            >
+              <DropdownMenuLabel className="font-semibold">Set Check-in Schedule</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {REMINDER_FREQUENCIES.map((frequency) => (
+                <div key={frequency} className="px-2 py-1.5 hover:bg-accent rounded-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">{frequency}</span>
+                    {selectedReminder === frequency && preferredDay !== undefined && (
+                      <Check className="h-4 w-4 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex gap-1 flex-wrap">
+                    {DAYS_OF_WEEK.map(({ value, label }) => (
+                      <Button
+                        key={`${frequency}-${value}`}
+                        variant={selectedReminder === frequency && preferredDay === value ? "default" : "outline"}
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => handleDaySelect(frequency, value)}
+                        disabled={isLoading || processingDay === value}
+                      >
+                        {label.slice(0, 3)}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-1 flex-wrap">
-                  {DAYS_OF_WEEK.map(({ value, label }) => (
-                    <Button
-                      key={`${frequency}-${value}`}
-                      variant={selectedReminder === frequency && preferredDay === value ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => onReminderSelect(frequency, value)}
-                    >
-                      {label.slice(0, 3)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
 
-            {selectedReminder && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                  onClick={() => onReminderSelect(null)}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Remove Reminder
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
+              {selectedReminder && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    onClick={handleRemoveReminder}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Remove Reminder
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
         </DropdownMenu>
 
         {selectedReminder && (
