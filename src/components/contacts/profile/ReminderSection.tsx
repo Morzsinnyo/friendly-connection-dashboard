@@ -1,12 +1,11 @@
+
 import { Button } from "@/components/ui/button";
-import { Bell, X } from "lucide-react";
+import { Bell, Calendar, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ReminderStatusControl } from "./ReminderStatusControl";
@@ -65,8 +64,6 @@ export function ReminderSection({
       onReminderSelect(null);
       return;
     }
-    
-    // If selecting a new frequency, keep the existing preferred day if any
     onReminderSelect(frequency, preferredDay);
   };
 
@@ -103,11 +100,10 @@ export function ReminderSection({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Bell className="h-4 w-4 mr-2" />
-                {selectedReminder ? 'Change Reminder' : 'Set Reminder'}
+                {selectedReminder || 'Set Frequency'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              <DropdownMenuLabel>Frequency</DropdownMenuLabel>
               {REMINDER_OPTIONS.map((frequency) => (
                 <DropdownMenuItem
                   key={frequency}
@@ -120,18 +116,30 @@ export function ReminderSection({
                   )}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Preferred Day</DropdownMenuLabel>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={!selectedReminder}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {getDayLabel(preferredDay) || 'Set Day'}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px]">
               {DAYS_OF_WEEK.map(({ value, label }) => (
                 <DropdownMenuItem
                   key={value}
                   onClick={() => handleDaySelect(value as DayOfWeek)}
                   className="flex justify-between items-center"
-                  disabled={!selectedReminder}
                 >
                   <span>{label}</span>
                   {preferredDay === value && (
-                    <Bell className="h-4 w-4 ml-2" />
+                    <Calendar className="h-4 w-4 ml-2" />
                   )}
                 </DropdownMenuItem>
               ))}
