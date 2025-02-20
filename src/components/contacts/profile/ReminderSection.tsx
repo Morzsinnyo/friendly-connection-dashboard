@@ -63,12 +63,10 @@ export function ReminderSection({
   };
 
   const handleDaySelect = useCallback((frequency: ReminderFrequency, day: DayOfWeek) => {
-    // Prevent duplicate selections
     if (selectedReminder === frequency && preferredDay === day) {
       return;
     }
 
-    // Prevent multiple rapid clicks
     if (processingDay !== null) {
       return;
     }
@@ -76,7 +74,6 @@ export function ReminderSection({
     setProcessingDay(day);
     onReminderSelect(frequency, day);
     
-    // Reset processing state after a short delay
     setTimeout(() => {
       setProcessingDay(null);
     }, 1000);
@@ -102,8 +99,7 @@ export function ReminderSection({
           <DropdownMenuPortal>
             <DropdownMenuContent
               align="start"
-              className="w-[320px] bg-popover overflow-y-auto max-h-[400px]"
-              style={{ position: 'absolute' }}
+              className="w-[280px] md:w-[320px] bg-popover overflow-y-auto max-h-[400px] relative md:absolute"
             >
               <DropdownMenuLabel className="font-semibold">Set Check-in Schedule</DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -116,13 +112,13 @@ export function ReminderSection({
                       <Check className="h-4 w-4 text-primary" />
                     )}
                   </div>
-                  <div className="flex gap-1 flex-wrap">
+                  <div className="grid grid-cols-2 md:flex md:gap-1 gap-0.5 md:flex-wrap">
                     {DAYS_OF_WEEK.map(({ value, label }) => (
                       <Button
                         key={`${frequency}-${value}`}
                         variant={selectedReminder === frequency && preferredDay === value ? "default" : "outline"}
                         size="sm"
-                        className="h-7 text-xs"
+                        className="h-7 text-xs md:px-3 px-2"
                         onClick={() => handleDaySelect(frequency, value)}
                         disabled={isLoading || processingDay === value}
                       >
@@ -173,3 +169,4 @@ export function ReminderSection({
     </div>
   );
 }
+
