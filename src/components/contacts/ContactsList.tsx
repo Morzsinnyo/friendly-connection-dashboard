@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useContactStatus } from "@/hooks/contacts/useContactStatus";
 import { toast } from "sonner";
 import { Contact } from "@/api/types/contacts";
+import { ImportContactsButton } from './import/ImportContactsButton';
 
 export function ContactsList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -141,6 +142,7 @@ export function ContactsList() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <ImportContactsButton />
             <Button 
               variant="default"
               onClick={() => {
