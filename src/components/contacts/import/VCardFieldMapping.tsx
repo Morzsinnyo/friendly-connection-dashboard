@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Contact } from "@/api/types/contacts";
+import { Contact, ContactInsert } from "@/api/types/contacts";
 import {
   Select,
   SelectContent,
@@ -47,14 +47,28 @@ export function VCardFieldMapping({ contacts }: VCardFieldMappingProps) {
         throw new Error('User not authenticated');
       }
 
-      // Prepare contacts for insert
-      const contactsToInsert = contacts.map(contact => ({
-        ...contact,
-        id: undefined, // Remove temporary ID
-        user_id: user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
+      // Prepare contacts for insert - ensure they match ContactInsert type
+      const contactsToInsert: ContactInsert[] = contacts.map(contact => {
+        // Ensure full_name is present and valid
+        if (!contact.full_name) {
+          throw new Error('Contact is missing required full_name field');
+        }
+
+        // Create a properly typed contact object
+        const newContact: ContactInsert = {
+          full_name: contact.full_name,
+          user_id: user.id,
+          email: contact.email || null,
+          business_phone: contact.business_phone || null,
+          mobile_phone: contact.mobile_phone || null,
+          company: contact.company || null,
+          job_title: contact.job_title || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        return newContact;
+      });
 
       // Insert contacts
       const { data, error } = await supabase
