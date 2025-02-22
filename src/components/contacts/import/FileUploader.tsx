@@ -5,6 +5,8 @@ import { Contact } from "@/api/types/contacts";
 import { FileUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { processVCFFile } from "@/api/services/contacts/import/vcfParser";
+import { LoadingState } from "@/components/common/LoadingState";
 
 interface FileUploaderProps {
   onFileProcessed: (contacts: Partial<Contact>[]) => void;
@@ -12,30 +14,25 @@ interface FileUploaderProps {
 
 export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const processVCFFile = async (file: File) => {
+  const handleVCFFile = async (file: File) => {
     try {
-      // TODO: Implement actual VCF parsing
-      // This is a placeholder to demonstrate the UI flow
-      const dummyContacts: Partial<Contact>[] = [
-        {
-          id: '1',
-          full_name: 'John Doe',
-          email: 'john@example.com',
-          mobile_phone: '+1234567890'
-        },
-        {
-          id: '2',
-          full_name: 'Jane Smith',
-          email: 'jane@example.com',
-          business_phone: '+0987654321'
-        }
-      ];
+      setIsProcessing(true);
+      const contacts = await processVCFFile(file);
       
-      onFileProcessed(dummyContacts);
+      if (contacts.length === 0) {
+        toast.error('No valid contacts found in the file');
+        return;
+      }
+      
+      toast.success(`Found ${contacts.length} contacts`);
+      onFileProcessed(contacts);
     } catch (error) {
       console.error('Error processing VCF file:', error);
       toast.error('Error processing contact file');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -45,7 +42,7 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
     
     const file = e.dataTransfer.files[0];
     if (file && file.name.endsWith('.vcf')) {
-      processVCFFile(file);
+      handleVCFFile(file);
     } else {
       toast.error('Please upload a valid VCF file');
     }
@@ -54,11 +51,15 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.name.endsWith('.vcf')) {
-      processVCFFile(file);
+      handleVCFFile(file);
     } else {
       toast.error('Please upload a valid VCF file');
     }
   };
+
+  if (isProcessing) {
+    return <LoadingState message="Processing contacts..." />;
+  }
 
   return (
     <div
