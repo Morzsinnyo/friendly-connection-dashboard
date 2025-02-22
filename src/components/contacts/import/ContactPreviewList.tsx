@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Contact } from "@/api/types/contacts";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ContactPreviewListProps {
   contacts: Partial<Contact>[];
@@ -49,26 +50,28 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
         </p>
       </div>
 
-      <div className="space-y-2">
-        {contacts.map((contact) => (
-          <div
-            key={contact.id}
-            className="flex items-center space-x-4 rounded-lg border p-4"
-          >
-            <Checkbox
-              id={contact.id}
-              checked={selectedIds.includes(contact.id!)}
-              onCheckedChange={() => toggleContact(contact.id!)}
-            />
-            <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium">{contact.full_name}</p>
-              <p className="text-sm text-muted-foreground">
-                {contact.email || contact.mobile_phone || contact.business_phone}
-              </p>
+      <ScrollArea className="h-[400px] rounded-md border">
+        <div className="space-y-2 p-4">
+          {contacts.map((contact) => (
+            <div
+              key={contact.id}
+              className="flex items-center space-x-4 rounded-lg border p-4"
+            >
+              <Checkbox
+                id={contact.id}
+                checked={selectedIds.includes(contact.id!)}
+                onCheckedChange={() => toggleContact(contact.id!)}
+              />
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-medium">{contact.full_name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {contact.email || contact.mobile_phone || contact.business_phone}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button
