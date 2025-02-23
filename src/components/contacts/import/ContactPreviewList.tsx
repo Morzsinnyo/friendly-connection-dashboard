@@ -4,6 +4,8 @@ import { Contact } from "@/api/types/contacts";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface ContactPreviewListProps {
   contacts: Partial<Contact>[];
@@ -12,6 +14,7 @@ interface ContactPreviewListProps {
 
 export function ContactPreviewList({ contacts, onContactsSelected }: ContactPreviewListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleContact = (id: string) => {
     setSelectedIds(prev => 
@@ -23,19 +26,42 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
 
   const toggleAll = () => {
     setSelectedIds(prev => 
-      prev.length === contacts.length 
+      prev.length === filteredContacts.length 
         ? [] 
-        : contacts.map(c => c.id!).filter(Boolean)
+        : filteredContacts.map(c => c.id!).filter(Boolean)
     );
   };
 
+  // Filter contacts based on search query
+  const filteredContacts = contacts.filter(contact => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      contact.full_name?.toLowerCase().includes(searchLower) ||
+      contact.email?.toLowerCase().includes(searchLower) ||
+      contact.mobile_phone?.includes(searchQuery) ||
+      contact.business_phone?.includes(searchQuery) ||
+      contact.company?.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search contacts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       <div className="flex items-center justify-between py-2">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="select-all"
-            checked={selectedIds.length === contacts.length}
+            checked={selectedIds.length === filteredContacts.length && filteredContacts.length > 0}
             onCheckedChange={toggleAll}
           />
           <label
@@ -46,13 +72,13 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
           </label>
         </div>
         <p className="text-sm text-muted-foreground">
-          {selectedIds.length} of {contacts.length} selected
+          {selectedIds.length} of {filteredContacts.length} selected
         </p>
       </div>
 
       <ScrollArea className="h-[400px] rounded-md border">
         <div className="space-y-2 p-4">
-          {contacts.map((contact) => (
+          {filteredContacts.map((contact) => (
             <div
               key={contact.id}
               className="flex items-center space-x-4 rounded-lg border p-4"
@@ -70,6 +96,11 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
               </div>
             </div>
           ))}
+          {filteredContacts.length === 0 && (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              No contacts found
+            </div>
+          )}
         </div>
       </ScrollArea>
 
