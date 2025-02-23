@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useState } from "react";
 import { FileUploader } from "./FileUploader";
 import { ContactPreviewList } from "./ContactPreviewList";
-import { VCardFieldMapping } from "./VCardFieldMapping";
 import { Contact } from "@/api/types/contacts";
 
 interface ImportModalProps {
@@ -11,21 +10,15 @@ interface ImportModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type ImportStep = 'upload' | 'preview' | 'mapping';
+type ImportStep = 'upload' | 'preview';
 
 export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [parsedContacts, setParsedContacts] = useState<Partial<Contact>[]>([]);
-  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
 
   const handleFileProcessed = (contacts: Partial<Contact>[]) => {
     setParsedContacts(contacts);
     setCurrentStep('preview');
-  };
-
-  const handleContactsSelected = (selectedIds: string[]) => {
-    setSelectedContacts(selectedIds);
-    setCurrentStep('mapping');
   };
 
   const renderStep = () => {
@@ -36,15 +29,16 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         return (
           <ContactPreviewList
             contacts={parsedContacts}
-            onContactsSelected={handleContactsSelected}
-          />
-        );
-      case 'mapping':
-        return (
-          <VCardFieldMapping
-            contacts={parsedContacts.filter(c => 
-              selectedContacts.includes(c.id || '')
-            )}
+            onContactsSelected={async (selectedIds) => {
+              const selectedContacts = parsedContacts.filter(c => 
+                selectedIds.includes(c.id || '')
+              );
+              // Close modal after selection
+              onOpenChange(false);
+              // Reset state
+              setCurrentStep('upload');
+              setParsedContacts([]);
+            }}
           />
         );
       default:
@@ -59,7 +53,6 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
           <DialogTitle>
             {currentStep === 'upload' && "Import Contacts"}
             {currentStep === 'preview' && "Select Contacts"}
-            {currentStep === 'mapping' && "Review Fields"}
           </DialogTitle>
         </DialogHeader>
         {renderStep()}

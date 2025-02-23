@@ -35,8 +35,8 @@ export async function processVCFFile(file: File): Promise<Partial<Contact>[]> {
       const parsedCard = parseVCard(card);
       const contact = mapVCardToContact(parsedCard);
       
-      // Only include contacts that have a name and at least one phone number
-      if (contact.full_name && (contact.business_phone || contact.mobile_phone)) {
+      // Only include contacts that have a name
+      if (contact.full_name) {
         contacts.push(contact);
       }
     } catch (error) {
@@ -91,9 +91,10 @@ function mapVCardToContact(parsedCard: ParsedVCard): Partial<Contact> {
         break;
       case "TEL":
         if (field.params?.TYPE) {
-          if (field.params.TYPE.includes("WORK")) {
+          const type = field.params.TYPE.toLowerCase();
+          if (type.includes("work")) {
             contact.business_phone = field.value;
-          } else if (field.params.TYPE.includes("CELL")) {
+          } else if (type.includes("cell") || type.includes("mobile")) {
             contact.mobile_phone = field.value;
           }
         } else {
