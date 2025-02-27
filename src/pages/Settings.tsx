@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { CalendarSettings } from "@/components/calendar/CalendarSettings";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Settings() {
   const { toast } = useToast();
   const { data: profile, refetch } = useUserProfile();
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
+  const [activeLanguage, setActiveLanguage] = useState<string>("english");
   const serviceAccountEmail = "calendar-integration@aesthetic-genre-447912-m8.iam.gserviceaccount.com";
 
   const handleCopy = () => {
@@ -48,18 +51,39 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>Tutorial</CardTitle>
           <CardDescription>
-            Watch this video to learn how to use the application effectively.
+            Watch these videos to learn how to use the application effectively.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
-            <iframe 
-              src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=8f424735-4701-405a-9e20-9b9dc52ec960" 
-              frameBorder="0" 
-              allowFullScreen 
-              className="absolute top-0 left-0 w-full h-full rounded-lg"
-            />
-          </div>
+          <Tabs value={activeLanguage} onValueChange={setActiveLanguage} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="english">English</TabsTrigger>
+              <TabsTrigger value="hungarian">Hungarian</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="english" className="mt-0">
+              <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
+                <iframe 
+                  src="https://www.loom.com/embed/your-english-video-id-here" 
+                  frameBorder="0" 
+                  allowFullScreen 
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="hungarian" className="mt-0">
+              <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
+                <iframe 
+                  src="https://www.loom.com/embed/7113f12571e14d33b5616615c391dae9?sid=8f424735-4701-405a-9e20-9b9dc52ec960" 
+                  frameBorder="0" 
+                  allowFullScreen 
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+          
           <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <p className="text-sm text-muted-foreground break-all flex-1">{serviceAccountEmail}</p>
             <Button variant="outline" size="sm" onClick={handleCopy} className="w-full sm:w-auto">
