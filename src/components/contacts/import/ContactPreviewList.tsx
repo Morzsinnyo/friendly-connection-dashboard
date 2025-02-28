@@ -15,6 +15,7 @@ interface ContactPreviewListProps {
 export function ContactPreviewList({ contacts, onContactsSelected }: ContactPreviewListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleContact = (id: string) => {
     setSelectedIds(prev => 
@@ -43,6 +44,15 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
       contact.company?.toLowerCase().includes(searchLower)
     );
   });
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      await onContactsSelected(selectedIds);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -93,6 +103,11 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
                 <p className="text-sm text-muted-foreground">
                   {contact.email || contact.mobile_phone || contact.business_phone}
                 </p>
+                {contact.company && (
+                  <p className="text-xs text-muted-foreground">
+                    {contact.company} {contact.job_title ? `• ${contact.job_title}` : ''}
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -106,10 +121,17 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button
-          disabled={selectedIds.length === 0}
-          onClick={() => onContactsSelected(selectedIds)}
+          variant="outline"
+          onClick={() => onContactsSelected([])}
+          disabled={isSubmitting}
         >
-          Continue with Selected ({selectedIds.length})
+          Cancel
+        </Button>
+        <Button
+          disabled={selectedIds.length === 0 || isSubmitting}
+          onClick={handleSubmit}
+        >
+          {isSubmitting ? 'Importing...' : `Import Selected (${selectedIds.length})`}
         </Button>
       </div>
     </div>
