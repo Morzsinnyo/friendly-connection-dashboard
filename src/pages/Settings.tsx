@@ -2,18 +2,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Copy, Calendar } from "lucide-react";
+import { Copy, Calendar, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { CalendarSettings } from "@/components/calendar/CalendarSettings";
 import { useUserProfile } from "@/hooks/contacts/useUserProfile";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 
 export default function Settings() {
   const { toast } = useToast();
   const { data: profile, refetch } = useUserProfile();
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const [activeLanguage, setActiveLanguage] = useState<string>("english");
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const serviceAccountEmail = "calendar-integration@aesthetic-genre-447912-m8.iam.gserviceaccount.com";
 
   const handleCopy = () => {
@@ -44,6 +46,37 @@ export default function Settings() {
             </div>
             <ThemeToggle />
           </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Feedback</CardTitle>
+          <CardDescription>
+            Share your thoughts and help us improve the application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <h3 className="font-medium">Have suggestions?</h3>
+              <p className="text-sm text-muted-foreground">
+                We'd love to hear your thoughts on how we can make the app better.
+              </p>
+            </div>
+            <Button 
+              onClick={() => setIsFeedbackOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Give Feedback
+            </Button>
+          </div>
+          
+          <FeedbackModal 
+            open={isFeedbackOpen} 
+            onOpenChange={setIsFeedbackOpen} 
+          />
         </CardContent>
       </Card>
 

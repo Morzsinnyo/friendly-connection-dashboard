@@ -1,3 +1,4 @@
+
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./Sidebar";
 import { MobileSidebar } from "./MobileSidebar";
@@ -6,6 +7,8 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { RandomFeedbackPrompt } from "@/components/feedback/RandomFeedbackPrompt";
 
 export function DashboardLayout() {
   console.log("[DashboardLayout] Rendering dashboard layout");
@@ -124,6 +127,10 @@ export function DashboardLayout() {
             </div>
           </div>
         </main>
+
+        {/* Feedback Components */}
+        <FeedbackButton />
+        <RandomFeedbackPrompt />
       </div>
     </SidebarProvider>
   );
