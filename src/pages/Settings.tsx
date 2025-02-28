@@ -64,7 +64,7 @@ export default function Settings() {
             <TabsContent value="english" className="mt-0">
               <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
                 <iframe 
-                  src="https://www.loom.com/embed/your-english-video-id-here" 
+                  src="https://www.loom.com/embed/703b30411d7a4aa39ea288f3e8fea4cf?sid=93caee69-39e1-4e02-9f91-565068eb5290" 
                   frameBorder="0" 
                   allowFullScreen 
                   className="absolute top-0 left-0 w-full h-full rounded-lg"
