@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { FileUploader } from "./FileUploader";
@@ -45,21 +44,32 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         selectedIds.includes(c.id || '')
       );
       
-      // Format contacts for insertion with user_id
-      const contactsToInsert: ContactInsert[] = selectedContacts.map(contact => ({
-        ...contact,
-        user_id: user.id,
-        // Exclude the temporary id as Supabase will generate one
-        id: undefined
-      }));
-      
       // Use a counter to track progress
       let successCount = 0;
       let errorCount = 0;
       
       // Insert contacts one by one to handle errors better
-      for (const contact of contactsToInsert) {
-        const result = await contactMutations.create(contact);
+      for (const contact of selectedContacts) {
+        // Skip contacts without a full name (required field)
+        if (!contact.full_name) {
+          console.error("Skipping contact without full name:", contact);
+          errorCount++;
+          continue;
+        }
+        
+        // Create a properly typed ContactInsert object
+        const contactToInsert: ContactInsert = {
+          full_name: contact.full_name,
+          user_id: user.id,
+          email: contact.email || null,
+          mobile_phone: contact.mobile_phone || null,
+          business_phone: contact.business_phone || null,
+          company: contact.company || null,
+          job_title: contact.job_title || null
+          // Other fields will use their default values from the database
+        };
+        
+        const result = await contactMutations.create(contactToInsert);
         if (result.data) {
           successCount++;
         } else {
