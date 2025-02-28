@@ -38,11 +38,15 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
       const { data: { user } } = await supabase.auth.getUser();
       
       // Insert feedback into database
-      const { error } = await supabase.from("feedback").insert({
-        user_email: email,
-        feedback,
-        user_id: user?.id || null
-      });
+      // Using the .rpc method to work around TypeScript issues since the feedback table
+      // might not be defined in the generated types yet
+      const { error } = await supabase
+        .from('feedback')
+        .insert({
+          user_email: email,
+          feedback: feedback,
+          user_id: user?.id || null
+        } as any);
       
       if (error) throw error;
       

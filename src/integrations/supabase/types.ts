@@ -187,6 +187,30 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          created_at: string
+          feedback: string
+          id: string
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback: string
+          id?: string
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string
+          id?: string
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       landing_subscribers: {
         Row: {
           created_at: string
