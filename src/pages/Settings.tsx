@@ -95,12 +95,12 @@ export default function Settings() {
             </TabsList>
             
             <TabsContent value="english" className="mt-0">
-              <div className="relative w-full" style={{ paddingBottom: "62.5%" }}>
+              <div style={{ position: "relative", paddingBottom: "62.5%", height: 0 }}>
                 <iframe 
-                  src="https://www.loom.com/embed/703b30411d7a4aa39ea288f3e8fea4cf?sid=93caee69-39e1-4e02-9f91-565068eb5290" 
+                  src="https://www.loom.com/embed/703b30411d7a4aa39ea288f3e8fea4cf?sid=fde605dd-2f67-45f9-83e8-a923aa0969b6" 
                   frameBorder="0" 
                   allowFullScreen 
-                  className="absolute top-0 left-0 w-full h-full rounded-lg"
+                  style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
                 />
               </div>
             </TabsContent>
