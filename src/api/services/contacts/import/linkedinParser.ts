@@ -16,7 +16,7 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
   // Look for the header row - LinkedIn exports might have metadata at the top
   // so the header row might not be the first row
   let headerRowIndex = -1;
-  const linkedInHeaderMarkers = ["First Name", "Last Name", "Email Address", "Company", "Position", "Profile URL"];
+  const linkedInHeaderMarkers = ["First Name", "Last Name", "Email Address", "Company", "Position", "Profile URL", "URL"];
   
   // Scan the first 10 rows (or fewer if the file is smaller) for LinkedIn header markers
   const maxRowsToScan = Math.min(10, lines.length);
@@ -57,7 +57,17 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
   const emailIndex = header.findIndex(col => col === "Email Address");
   const companyIndex = header.findIndex(col => col === "Company");
   const positionIndex = header.findIndex(col => col === "Position");
-  const profileUrlIndex = header.findIndex(col => col === "Profile URL");
+  
+  // Profile URL might be called 'URL' or 'Profile URL' in LinkedIn exports
+  let profileUrlIndex = header.findIndex(col => col === "Profile URL");
+  if (profileUrlIndex === -1) {
+    profileUrlIndex = header.findIndex(col => col === "URL");
+    if (profileUrlIndex !== -1) {
+      console.log("Found LinkedIn URL column as 'URL'");
+    }
+  } else {
+    console.log("Found LinkedIn URL column as 'Profile URL'");
+  }
   
   // If we don't have the minimum required fields, return empty array with an error
   if (firstNameIndex === -1 || lastNameIndex === -1) {
@@ -98,6 +108,11 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
       job_title: positionIndex !== -1 && positionIndex < values.length ? values[positionIndex]?.trim() || null : null,
       linkedin_url: profileUrlIndex !== -1 && profileUrlIndex < values.length ? values[profileUrlIndex]?.trim() || null : null
     };
+    
+    // Log each contact's LinkedIn URL for debugging
+    if (profileUrlIndex !== -1 && profileUrlIndex < values.length) {
+      console.log(`Row ${i+1} LinkedIn URL: ${values[profileUrlIndex]}`);
+    }
     
     contacts.push(contact);
   }

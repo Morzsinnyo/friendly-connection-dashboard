@@ -43,7 +43,8 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         "Company",
         "Position",
         "Connected On",
-        "Profile URL"
+        "Profile URL",
+        "URL"  // Adding "URL" as an alternative for profile URL
       ];
       
       // Look for LinkedIn headers in any of the first 10 lines
