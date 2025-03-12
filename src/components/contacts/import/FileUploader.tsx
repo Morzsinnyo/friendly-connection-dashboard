@@ -24,16 +24,16 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   // Check if a CSV file is likely a LinkedIn export
   const isLikelyLinkedInCSV = async (file: File): Promise<boolean> => {
     try {
-      // Read the first line (header) of the file
+      // Read the first few lines of the file
       const reader = new FileReader();
       const firstChunk = await new Promise<string>((resolve) => {
         reader.onload = (e) => resolve(e.target?.result as string || "");
-        // Read just the beginning of the file to get the header
-        const blob = file.slice(0, 1000);
+        // Read just the beginning of the file to search for headers
+        const blob = file.slice(0, 3000); // Increased to capture more potential rows
         reader.readAsText(blob);
       });
       
-      const firstLine = firstChunk.split('\n')[0];
+      const firstLines = firstChunk.split('\n').slice(0, 10); // Check first 10 lines
       
       // LinkedIn exports typically have these headers
       const linkedInMarkers = [
@@ -45,14 +45,24 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         "Connected On"
       ];
       
-      // Count how many LinkedIn markers are present
-      let markerCount = 0;
-      linkedInMarkers.forEach(marker => {
-        if (firstLine.includes(marker)) markerCount++;
-      });
+      // Look for LinkedIn headers in any of the first 10 lines
+      for (const line of firstLines) {
+        if (!line.trim()) continue;
+        
+        // Count how many LinkedIn markers are present in this line
+        let markerCount = 0;
+        for (const marker of linkedInMarkers) {
+          if (line.includes(marker)) markerCount++;
+        }
+        
+        // If we have at least 4 of the markers, it's likely a LinkedIn export
+        if (markerCount >= 3) {
+          console.log("Detected LinkedIn CSV format headers");
+          return true;
+        }
+      }
       
-      // If we have at least 4 of the markers, it's likely a LinkedIn export
-      return markerCount >= 4;
+      return false;
     } catch (error) {
       console.error("Error checking for LinkedIn CSV:", error);
       return false;
@@ -74,7 +84,7 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         const isLinkedIn = await isLikelyLinkedInCSV(file);
         
         if (isLinkedIn) {
-          console.log("Detected LinkedIn CSV format");
+          console.log("Using LinkedIn CSV parser");
           contacts = await processLinkedInCSV(file);
         } else {
           console.log("Using generic CSV parser");
@@ -94,6 +104,7 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
 For LinkedIn exports, please make sure:
 - The file contains "First Name" and "Last Name" columns
 - These columns have data for at least some rows
+- Note that the parser now scans the first 10 rows for headers
 
 For other CSV files:
 - Make sure the file has clear column headers
