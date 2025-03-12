@@ -20,6 +20,7 @@ import { AgeDisplay } from "./header/AgeDisplay";
 import { ReminderSection } from "./ReminderSection";
 import { ReminderStatus } from "@/api/types/contacts";
 import { contactMutations } from "@/api/services/contacts";
+import { CONTACTS_QUERY_KEY } from "@/components/contacts/ContactsList";
 
 type ReminderFrequency = 'Every week' | 'Every 2 weeks' | 'Monthly' | 'Every 2 months' | 'Every 3 months' | null;
 type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -86,11 +87,19 @@ export function ContactHeader({
     },
     onSuccess: () => {
       toast.success('Contact deleted successfully');
-      navigate('/dashboard');
+      // Invalidate both the specific contact query and the contacts list query
+      queryClient.invalidateQueries({ queryKey: ['contact', contactId] });
+      queryClient.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
+      
+      // Wait for the query invalidation to be processed before navigating
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
     },
     onError: (error) => {
       console.error('Error deleting contact:', error);
       toast.error('Failed to delete contact');
+      setIsDeleting(false);
     },
   });
 
@@ -133,8 +142,9 @@ export function ContactHeader({
       setIsDeleting(true);
       try {
         await deleteMutation.mutateAsync();
-      } finally {
-        setIsDeleting(false);
+      } catch (error) {
+        // Error is handled in onError callback
+        console.error("Delete mutation failed:", error);
       }
     }
   };
