@@ -16,6 +16,9 @@ export async function processCSVFile(file: File): Promise<Partial<Contact>[]> {
   // Extract header row and parse columns
   const header = parseCSVLine(lines[0]);
   
+  // Debug information
+  console.log("CSV Header:", header);
+  
   const contacts: Partial<Contact>[] = [];
   
   // Process each data row (skip header)
@@ -26,14 +29,23 @@ export async function processCSVFile(file: File): Promise<Partial<Contact>[]> {
     const values = parseCSVLine(line);
     const contact = mapCSVToContact(header, values);
     
+    // Debug information for first few contacts
+    if (i < 3) {
+      console.log(`Contact data row ${i}:`, values);
+      console.log(`Mapped contact ${i}:`, contact);
+    }
+    
     // Only include contacts that have a name
     if (contact.full_name) {
       // Generate a temporary ID for selection purposes
       contact.id = crypto.randomUUID();
       contacts.push(contact);
+    } else {
+      console.log(`Skipping row ${i} - no name found:`, values);
     }
   }
   
+  console.log(`Found ${contacts.length} valid contacts out of ${lines.length - 1} rows`);
   return contacts;
 }
 
@@ -51,9 +63,10 @@ function parseCSVLine(line: string): string[] {
     if (char === '"') {
       // Toggle quote state
       inQuotes = !inQuotes;
+      // Don't add the quotes to the result
     } else if (char === ',' && !inQuotes) {
       // End of field
-      result.push(current.trim());
+      result.push(cleanField(current));
       current = '';
     } else {
       // Add character to current field
@@ -61,10 +74,22 @@ function parseCSVLine(line: string): string[] {
     }
   }
   
-  // Add the last field
-  result.push(current.trim());
+  // Add the last field - make sure we don't forget it
+  result.push(cleanField(current));
   
   return result;
+}
+
+/**
+ * Clean a field value by trimming whitespace and removing quotes
+ */
+function cleanField(field: string): string {
+  // Trim whitespace and remove any surrounding quotes
+  field = field.trim();
+  if (field.startsWith('"') && field.endsWith('"')) {
+    field = field.substring(1, field.length - 1);
+  }
+  return field;
 }
 
 /**
@@ -77,12 +102,16 @@ function mapCSVToContact(header: string[], values: string[]): Partial<Contact> {
   const record: Record<string, string> = {};
   header.forEach((col, index) => {
     if (index < values.length) {
+      const cleanCol = col.trim();
       // Store both the original column name and the lowercase version
       // to support case-insensitive matching
-      record[col.toLowerCase()] = values[index];
-      record[col] = values[index]; // Keep original for exact matching too
+      record[cleanCol.toLowerCase()] = values[index];
+      record[cleanCol] = values[index]; // Keep original for exact matching too
     }
   });
+  
+  // Debug the record to see what field mappings we have
+  console.log("CSV field mappings:", record);
   
   // Map field names, supporting both standard and LinkedIn export formats
   
