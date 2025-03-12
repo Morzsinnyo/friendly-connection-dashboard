@@ -13,11 +13,13 @@ export async function processCSVFile(file: File): Promise<Partial<Contact>[]> {
     return [];
   }
   
+  console.log("Raw header line:", lines[0]);
+  
   // Extract header row and parse columns
   const header = parseCSVLine(lines[0]);
   
   // Debug information
-  console.log("CSV Header:", header);
+  console.log("CSV Header after parsing:", header);
   
   const contacts: Partial<Contact>[] = [];
   
@@ -93,6 +95,13 @@ function cleanField(field: string): string {
 }
 
 /**
+ * Normalizes a field name for case-insensitive comparison
+ */
+function normalizeFieldName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
  * Map CSV data to Contact object based on identified columns
  */
 function mapCSVToContact(header: string[], values: string[]): Partial<Contact> {
@@ -100,73 +109,144 @@ function mapCSVToContact(header: string[], values: string[]): Partial<Contact> {
   
   // Create a record of column name to value
   const record: Record<string, string> = {};
+  const normalizedRecord: Record<string, string> = {};
+  
   header.forEach((col, index) => {
     if (index < values.length) {
       const cleanCol = col.trim();
-      // Store both the original column name and the lowercase version
-      // to support case-insensitive matching
+      // Store the original column name to value mapping
+      record[cleanCol] = values[index];
+      
+      // Also store normalized versions for fuzzy matching
+      const normalizedCol = normalizeFieldName(cleanCol);
+      normalizedRecord[normalizedCol] = values[index];
+      
+      // Add lowercase version for backwards compatibility
       record[cleanCol.toLowerCase()] = values[index];
-      record[cleanCol] = values[index]; // Keep original for exact matching too
     }
   });
   
   // Debug the record to see what field mappings we have
-  console.log("CSV field mappings:", record);
+  console.log("CSV field mappings (original):", record);
+  console.log("CSV field mappings (normalized):", normalizedRecord);
   
-  // Map field names, supporting both standard and LinkedIn export formats
+  // Try to extract first name and last name with various field naming patterns
+  let firstName = '';
+  let lastName = '';
   
-  // Handle various name field combinations with case-insensitive matching
-  if (record['first name'] && record['last name']) {
-    contact.full_name = `${record['first name']} ${record['last name']}`.trim();
-  } else if (record['First Name'] && record['Last Name']) {
-    contact.full_name = `${record['First Name']} ${record['Last Name']}`.trim();
-  } else if (record['firstname'] && record['lastname']) {
-    contact.full_name = `${record['firstname']} ${record['lastname']}`.trim();
-  } else if (record['name']) {
-    contact.full_name = record['name'];
-  } else if (record['Name']) {
-    contact.full_name = record['Name'];
+  // Check all possible variations of first name
+  if (normalizedRecord['firstname']) {
+    firstName = normalizedRecord['firstname'];
+  } else if (normalizedRecord['givenname']) {
+    firstName = normalizedRecord['givenname'];
+  } else if (record['First Name']) {
+    firstName = record['First Name'];
+  } else if (record['Given Name']) {
+    firstName = record['Given Name'];
   }
   
-  // Handle various email field names with case-insensitive matching
-  if (record['email']) {
-    contact.email = record['email'];
-  } else if (record['Email']) {
-    contact.email = record['Email'];
-  } else if (record['email address']) {
-    contact.email = record['email address'];
-  } else if (record['Email Address']) {
-    contact.email = record['Email Address'];
+  // Check all possible variations of last name
+  if (normalizedRecord['lastname']) {
+    lastName = normalizedRecord['lastname'];
+  } else if (normalizedRecord['familyname']) {
+    lastName = normalizedRecord['familyname'];
+  } else if (normalizedRecord['surname']) {
+    lastName = normalizedRecord['surname'];
+  } else if (record['Last Name']) {
+    lastName = record['Last Name'];
+  } else if (record['Family Name']) {
+    lastName = record['Family Name'];
+  } else if (record['Surname']) {
+    lastName = record['Surname'];
+  }
+  
+  // Try to build full name from first and last name
+  if (firstName && lastName) {
+    contact.full_name = `${firstName} ${lastName}`.trim();
+    console.log(`Created full name: "${contact.full_name}" from firstName="${firstName}" lastName="${lastName}"`);
+  } 
+  // Try to get full name directly if first/last name approach didn't work
+  else if (normalizedRecord['name'] || normalizedRecord['fullname']) {
+    contact.full_name = normalizedRecord['name'] || normalizedRecord['fullname'];
+    console.log(`Using direct full name: "${contact.full_name}"`);
+  }
+  // Handle LinkedIn exports which might have first name and last name but not match our patterns
+  else {
+    // Find any header containing "first" and "name"
+    const firstNameKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('first') && k.toLowerCase().includes('name')
+    );
+    
+    // Find any header containing "last" and "name"
+    const lastNameKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('last') && k.toLowerCase().includes('name')
+    );
+    
+    if (firstNameKey && lastNameKey) {
+      firstName = record[firstNameKey];
+      lastName = record[lastNameKey];
+      contact.full_name = `${firstName} ${lastName}`.trim();
+      console.log(`Found name using pattern matching - first="${firstNameKey}", last="${lastNameKey}", full="${contact.full_name}"`);
+    }
+  }
+  
+  // Handle various email field names with case-insensitive and fuzzy matching
+  if (normalizedRecord['email'] || normalizedRecord['emailaddress']) {
+    contact.email = normalizedRecord['email'] || normalizedRecord['emailaddress'];
+  } else {
+    // Find any header containing "email"
+    const emailKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('email')
+    );
+    
+    if (emailKey) {
+      contact.email = record[emailKey];
+    }
   }
   
   // Handle various phone field names
-  if (record['phone'] || record['Phone']) {
-    contact.mobile_phone = record['phone'] || record['Phone'];
-  } else if (record['phone number'] || record['Phone Number']) {
-    contact.mobile_phone = record['phone number'] || record['Phone Number'];
-  } else if (record['mobile'] || record['Mobile']) {
-    contact.mobile_phone = record['mobile'] || record['Mobile'];
+  if (normalizedRecord['phone'] || normalizedRecord['phonenumber'] || normalizedRecord['mobile']) {
+    contact.mobile_phone = normalizedRecord['phone'] || normalizedRecord['phonenumber'] || normalizedRecord['mobile'];
+  } else {
+    // Find any header containing "phone" or "mobile"
+    const phoneKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('phone') || k.toLowerCase().includes('mobile')
+    );
+    
+    if (phoneKey) {
+      contact.mobile_phone = record[phoneKey];
+    }
   }
   
   // Handle company name fields
-  if (record['company']) {
-    contact.company = record['company'];
-  } else if (record['Company']) {
-    contact.company = record['Company'];
-  } else if (record['organization'] || record['Organization']) {
-    contact.company = record['organization'] || record['Organization'];
+  if (normalizedRecord['company'] || normalizedRecord['organization']) {
+    contact.company = normalizedRecord['company'] || normalizedRecord['organization'];
+  } else {
+    // Find any header containing "company" or "organization"
+    const companyKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('company') || k.toLowerCase().includes('organization') || k.toLowerCase().includes('employer')
+    );
+    
+    if (companyKey) {
+      contact.company = record[companyKey];
+    }
   }
   
   // Handle job title fields
-  if (record['position']) {
-    contact.job_title = record['position'];
-  } else if (record['Position']) {
-    contact.job_title = record['Position'];
-  } else if (record['title'] || record['Title']) {
-    contact.job_title = record['title'] || record['Title'];
-  } else if (record['job title'] || record['Job Title']) {
-    contact.job_title = record['job title'] || record['Job Title'];
+  if (normalizedRecord['position'] || normalizedRecord['title'] || normalizedRecord['jobtitle']) {
+    contact.job_title = normalizedRecord['position'] || normalizedRecord['title'] || normalizedRecord['jobtitle'];
+  } else {
+    // Find any header containing "title", "position", or "job"
+    const titleKey = Object.keys(record).find(k => 
+      k.toLowerCase().includes('title') || k.toLowerCase().includes('position') || 
+      (k.toLowerCase().includes('job') && k.toLowerCase().includes('title'))
+    );
+    
+    if (titleKey) {
+      contact.job_title = record[titleKey];
+    }
   }
   
+  console.log("Final mapped contact:", contact);
   return contact;
 }
