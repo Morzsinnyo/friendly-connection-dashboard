@@ -16,7 +16,7 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
   // Look for the header row - LinkedIn exports might have metadata at the top
   // so the header row might not be the first row
   let headerRowIndex = -1;
-  const linkedInHeaderMarkers = ["First Name", "Last Name", "Email Address", "Company", "Position"];
+  const linkedInHeaderMarkers = ["First Name", "Last Name", "Email Address", "Company", "Position", "Profile URL"];
   
   // Scan the first 10 rows (or fewer if the file is smaller) for LinkedIn header markers
   const maxRowsToScan = Math.min(10, lines.length);
@@ -57,6 +57,7 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
   const emailIndex = header.findIndex(col => col === "Email Address");
   const companyIndex = header.findIndex(col => col === "Company");
   const positionIndex = header.findIndex(col => col === "Position");
+  const profileUrlIndex = header.findIndex(col => col === "Profile URL");
   
   // If we don't have the minimum required fields, return empty array with an error
   if (firstNameIndex === -1 || lastNameIndex === -1) {
@@ -94,7 +95,8 @@ export async function processLinkedInCSV(file: File): Promise<Partial<Contact>[]
       full_name: `${firstName} ${lastName}`.trim(),
       email: emailIndex !== -1 && emailIndex < values.length ? values[emailIndex]?.trim() || null : null,
       company: companyIndex !== -1 && companyIndex < values.length ? values[companyIndex]?.trim() || null : null,
-      job_title: positionIndex !== -1 && positionIndex < values.length ? values[positionIndex]?.trim() || null : null
+      job_title: positionIndex !== -1 && positionIndex < values.length ? values[positionIndex]?.trim() || null : null,
+      linkedin_url: profileUrlIndex !== -1 && profileUrlIndex < values.length ? values[profileUrlIndex]?.trim() || null : null
     };
     
     contacts.push(contact);

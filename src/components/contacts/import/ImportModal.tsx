@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { FileUploader } from "./FileUploader";
@@ -77,7 +76,8 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
           mobile_phone: contact.mobile_phone || null,
           business_phone: contact.business_phone || null,
           company: contact.company || null,
-          job_title: contact.job_title || null
+          job_title: contact.job_title || null,
+          linkedin_url: contact.linkedin_url || null
           // Other fields will use their default values from the database
         };
         

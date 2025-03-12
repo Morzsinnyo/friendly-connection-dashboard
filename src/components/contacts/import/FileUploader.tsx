@@ -42,7 +42,8 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         "Email Address",
         "Company",
         "Position",
-        "Connected On"
+        "Connected On",
+        "Profile URL"
       ];
       
       // Look for LinkedIn headers in any of the first 10 lines
@@ -55,7 +56,7 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
           if (line.includes(marker)) markerCount++;
         }
         
-        // If we have at least 4 of the markers, it's likely a LinkedIn export
+        // If we have at least 3 of the markers, it's likely a LinkedIn export
         if (markerCount >= 3) {
           console.log("Detected LinkedIn CSV format headers");
           return true;
