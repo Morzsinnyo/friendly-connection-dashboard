@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { FileUploader } from "./FileUploader";
@@ -7,6 +8,8 @@ import { contactMutations } from "@/api/services/contacts";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/common/LoadingState";
+import { useQueryClient } from "@tanstack/react-query";
+import { CONTACTS_QUERY_KEY } from "../ContactsList";
 
 interface ImportModalProps {
   open: boolean;
@@ -20,6 +23,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [parsedContacts, setParsedContacts] = useState<Partial<Contact>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   const [importSource, setImportSource] = useState<'vcf' | 'csv' | 'linkedin' | ''>('');
+  const queryClient = useQueryClient();
 
   const handleFileProcessed = (contacts: Partial<Contact>[], fileName: string) => {
     setParsedContacts(contacts);
@@ -93,6 +97,9 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
       // Show success or error message
       if (successCount > 0) {
         toast.success(`Successfully imported ${successCount} contacts`);
+        
+        // Invalidate the contacts query to trigger a refetch
+        queryClient.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
       }
       
       if (errorCount > 0) {

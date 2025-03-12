@@ -26,11 +26,14 @@ import { useContactStatus } from "@/hooks/contacts/useContactStatus";
 import { toast } from "sonner";
 import { Contact } from "@/api/types/contacts";
 import { ImportContactsButton } from './import/ImportContactsButton';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { contactQueries } from "@/api/services/contacts/queries";
+
+export const CONTACTS_QUERY_KEY = ["contacts"];
 
 export function ContactsList() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [searchQuery, setSearchQuery] = useState("");
-  const [contacts, setContacts] = useState<Contact[]>([]);
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
   const [filterCompany, setFilterCompany] = useState<string[]>([]);
   const [filterTags, setFilterTags] = useState<string[]>([]);
@@ -38,23 +41,21 @@ export function ContactsList() {
   const [availableCompanies, setAvailableCompanies] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: CONTACTS_QUERY_KEY,
+    queryFn: async () => {
+      const result = await contactQueries.getAll();
+      if (result.error) {
+        throw result.error;
+      }
+      return result.data || [];
+    }
+  });
 
   useEffect(() => {
-    const fetchContacts = async () => {
-      const { data, error } = await supabase
-        .from("contacts")
-        .select("*")
-        .order("full_name");
-
-      if (error) {
-        console.error("Error fetching contacts:", error);
-        toast.error("Failed to fetch contacts");
-        return;
-      }
-
-      setContacts(data as Contact[]);
-
-      // Extract unique statuses, companies and tags
+    if (data) {
       const statuses = [...new Set(data?.map(contact => contact.status).filter(Boolean))];
       const companies = [...new Set(data?.map(contact => contact.company).filter(Boolean))];
       const tags = [...new Set(data?.flatMap(contact => contact.tags || []).filter(Boolean))];
@@ -62,10 +63,15 @@ export function ContactsList() {
       setAvailableStatuses(statuses);
       setAvailableCompanies(companies);
       setAvailableTags(tags);
-    };
+    }
+  }, [data]);
 
-    fetchContacts();
-  }, []);
+  useEffect(() => {
+    if (error) {
+      console.error("Error fetching contacts:", error);
+      toast.error("Failed to fetch contacts");
+    }
+  }, [error]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -104,7 +110,7 @@ export function ContactsList() {
     }
   };
 
-  const filteredContacts = contacts.filter(contact => {
+  const filteredContacts = (data || []).filter(contact => {
     const matchesSearch = 
       contact.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -274,95 +280,115 @@ export function ContactsList() {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-md border border-border">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-4 text-muted-foreground font-medium">Profile</th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">Contact Information</th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">Reminder Status</th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">Last Contact</th>
-                  <th className="text-left p-4 text-muted-foreground font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredContacts.map((contact) => (
-                  <tr 
-                    key={contact.id} 
-                    className="border-b border-border last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => handleContactClick(contact.id)}
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                        {contact.avatar_url ? (
-                          <img
-                            src={`${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}`}
-                            alt={contact.full_name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                            {contact.full_name.charAt(0)}
-                          </div>
-                        )}
-                        <span className="font-medium text-foreground">{contact.full_name}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">
-                          {contact.email}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {contact.business_phone || contact.mobile_phone}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge 
-                        variant="secondary" 
-                        className={getStatusColor(contact.status)}
-                      >
-                        {contact.status}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        {getReminderStatusIcon(contact.reminder_status)}
-                        <Badge 
-                          variant="secondary" 
-                          className={getReminderStatusColor(contact.reminder_status)}
-                        >
-                          {contact.reminder_status.charAt(0).toUpperCase() + contact.reminder_status.slice(1)}
-                        </Badge>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-sm text-muted-foreground">
-                        {contact.last_contact}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleContactClick(contact.id);
-                        }}
-                        className="hover:bg-muted"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center space-y-2">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              <p className="text-sm text-muted-foreground">Loading contacts...</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-card rounded-lg shadow-md border border-border">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 text-muted-foreground font-medium">Profile</th>
+                    <th className="text-left p-4 text-muted-foreground font-medium">Contact Information</th>
+                    <th className="text-left p-4 text-muted-foreground font-medium">Status</th>
+                    <th className="text-left p-4 text-muted-foreground font-medium">Reminder Status</th>
+                    <th className="text-left p-4 text-muted-foreground font-medium">Last Contact</th>
+                    <th className="text-left p-4 text-muted-foreground font-medium">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredContacts.length > 0 ? (
+                    filteredContacts.map((contact) => (
+                      <tr 
+                        key={contact.id} 
+                        className="border-b border-border last:border-b-0 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => handleContactClick(contact.id)}
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center space-x-3">
+                            {contact.avatar_url ? (
+                              <img
+                                src={`${supabase.storage.from('avatars').getPublicUrl(contact.avatar_url).data.publicUrl}`}
+                                alt={contact.full_name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                                {contact.full_name.charAt(0)}
+                              </div>
+                            )}
+                            <span className="font-medium text-foreground">{contact.full_name}</span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col">
+                            <span className="text-sm text-muted-foreground">
+                              {contact.email}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {contact.business_phone || contact.mobile_phone}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge 
+                            variant="secondary" 
+                            className={getStatusColor(contact.status)}
+                          >
+                            {contact.status}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center space-x-2">
+                            {getReminderStatusIcon(contact.reminder_status)}
+                            <Badge 
+                              variant="secondary" 
+                              className={getReminderStatusColor(contact.reminder_status)}
+                            >
+                              {contact.reminder_status.charAt(0).toUpperCase() + contact.reminder_status.slice(1)}
+                            </Badge>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-muted-foreground">
+                            {contact.last_contact}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactClick(contact.id);
+                            }}
+                            className="hover:bg-muted"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="text-center p-8 text-muted-foreground">
+                        {searchQuery || filterStatus.length > 0 || filterCompany.length > 0 || filterTags.length > 0 ? 
+                          "No contacts match your search or filters" : 
+                          "No contacts found. Import or create a new contact to get started."
+                        }
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
