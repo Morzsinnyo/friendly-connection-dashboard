@@ -10,9 +10,10 @@ import { Search } from "lucide-react";
 interface ContactPreviewListProps {
   contacts: Partial<Contact>[];
   onContactsSelected: (selectedIds: string[]) => void;
+  importSource?: 'csv' | 'vcf' | '';
 }
 
-export function ContactPreviewList({ contacts, onContactsSelected }: ContactPreviewListProps) {
+export function ContactPreviewList({ contacts, onContactsSelected, importSource = '' }: ContactPreviewListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +57,15 @@ export function ContactPreviewList({ contacts, onContactsSelected }: ContactPrev
 
   return (
     <div className="space-y-4">
+      {importSource === 'csv' && (
+        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md text-sm">
+          <p className="font-medium text-blue-800 dark:text-blue-300">LinkedIn Import</p>
+          <p className="text-blue-700 dark:text-blue-400">
+            Importing contacts from LinkedIn CSV export. Select the contacts you want to import.
+          </p>
+        </div>
+      )}
+      
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input

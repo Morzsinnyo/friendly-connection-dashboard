@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { FileUploader } from "./FileUploader";
@@ -19,9 +20,11 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [parsedContacts, setParsedContacts] = useState<Partial<Contact>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+  const [importSource, setImportSource] = useState<'vcf' | 'csv' | ''>('');
 
-  const handleFileProcessed = (contacts: Partial<Contact>[]) => {
+  const handleFileProcessed = (contacts: Partial<Contact>[], fileName: string) => {
     setParsedContacts(contacts);
+    setImportSource(fileName.endsWith('.csv') ? 'csv' : 'vcf');
     setCurrentStep('preview');
   };
 
@@ -91,6 +94,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
       onOpenChange(false);
       setCurrentStep('upload');
       setParsedContacts([]);
+      setImportSource('');
       
     } catch (error) {
       console.error("Error during import:", error);
@@ -103,12 +107,13 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const renderStep = () => {
     switch (currentStep) {
       case 'upload':
-        return <FileUploader onFileProcessed={handleFileProcessed} />;
+        return <FileUploader onFileProcessed={(contacts, fileName) => handleFileProcessed(contacts, fileName)} />;
       case 'preview':
         return (
           <ContactPreviewList
             contacts={parsedContacts}
             onContactsSelected={importContacts}
+            importSource={importSource}
           />
         );
       case 'importing':
@@ -130,7 +135,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         <DialogHeader>
           <DialogTitle>
             {currentStep === 'upload' && "Import Contacts"}
-            {currentStep === 'preview' && "Select Contacts"}
+            {currentStep === 'preview' && `Select ${importSource === 'csv' ? 'LinkedIn ' : ''}Contacts`}
             {currentStep === 'importing' && "Importing Contacts"}
           </DialogTitle>
         </DialogHeader>

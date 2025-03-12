@@ -6,20 +6,31 @@ import { FileUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { processVCFFile } from "@/api/services/contacts/import/vcfParser";
+import { processCSVFile } from "@/api/services/contacts/import/csvParser";
 import { LoadingState } from "@/components/common/LoadingState";
 
 interface FileUploaderProps {
-  onFileProcessed: (contacts: Partial<Contact>[]) => void;
+  onFileProcessed: (contacts: Partial<Contact>[], fileName: string) => void;
 }
 
 export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleVCFFile = async (file: File) => {
+  const handleFile = async (file: File) => {
     try {
       setIsProcessing(true);
-      const contacts = await processVCFFile(file);
+      
+      let contacts: Partial<Contact>[] = [];
+      
+      // Process the file based on its extension
+      if (file.name.endsWith('.vcf')) {
+        contacts = await processVCFFile(file);
+      } else if (file.name.endsWith('.csv')) {
+        contacts = await processCSVFile(file);
+      } else {
+        throw new Error('Unsupported file format');
+      }
       
       if (contacts.length === 0) {
         toast.error('No valid contacts found in the file');
@@ -27,10 +38,10 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
       }
       
       toast.success(`Found ${contacts.length} contacts`);
-      onFileProcessed(contacts);
+      onFileProcessed(contacts, file.name);
     } catch (error) {
-      console.error('Error processing VCF file:', error);
-      toast.error('Error processing contact file');
+      console.error('Error processing file:', error);
+      toast.error(`Error processing ${file.name.endsWith('.csv') ? 'CSV' : 'VCF'} file`);
     } finally {
       setIsProcessing(false);
     }
@@ -41,19 +52,19 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
     setIsDragging(false);
     
     const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.vcf')) {
-      handleVCFFile(file);
+    if (file && (file.name.endsWith('.vcf') || file.name.endsWith('.csv'))) {
+      handleFile(file);
     } else {
-      toast.error('Please upload a valid VCF file');
+      toast.error('Please upload a valid VCF or CSV file');
     }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.name.endsWith('.vcf')) {
-      handleVCFFile(file);
+    if (file && (file.name.endsWith('.vcf') || file.name.endsWith('.csv'))) {
+      handleFile(file);
     } else {
-      toast.error('Please upload a valid VCF file');
+      toast.error('Please upload a valid VCF or CSV file');
     }
   };
 
@@ -79,15 +90,15 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         <FileUp className="h-12 w-12 text-muted-foreground" />
         <div>
           <p className="text-sm font-medium">
-            Drag and drop your VCF file here, or click to select
+            Drag and drop your contact file here, or click to select
           </p>
           <p className="text-sm text-muted-foreground">
-            Supports .vcf files exported from Apple Contacts or other services
+            Supports LinkedIn exports (.csv) and VCF files (.vcf) from Apple Contacts or other services
           </p>
         </div>
         <Input
           type="file"
-          accept=".vcf"
+          accept=".vcf,.csv"
           onChange={handleFileInput}
           className="hidden"
           id="file-upload"
