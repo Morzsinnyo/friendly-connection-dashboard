@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { processVCFFile } from "@/api/services/contacts/import/vcfParser";
 import { processCSVFile } from "@/api/services/contacts/import/csvParser";
+import { processLinkedInCSV } from "@/api/services/contacts/import/linkedinParser";
 import { LoadingState } from "@/components/common/LoadingState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -20,6 +21,44 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if a CSV file is likely a LinkedIn export
+  const isLikelyLinkedInCSV = async (file: File): Promise<boolean> => {
+    try {
+      // Read the first line (header) of the file
+      const reader = new FileReader();
+      const firstChunk = await new Promise<string>((resolve) => {
+        reader.onload = (e) => resolve(e.target?.result as string || "");
+        // Read just the beginning of the file to get the header
+        const blob = file.slice(0, 1000);
+        reader.readAsText(blob);
+      });
+      
+      const firstLine = firstChunk.split('\n')[0];
+      
+      // LinkedIn exports typically have these headers
+      const linkedInMarkers = [
+        "First Name",
+        "Last Name",
+        "Email Address",
+        "Company",
+        "Position",
+        "Connected On"
+      ];
+      
+      // Count how many LinkedIn markers are present
+      let markerCount = 0;
+      linkedInMarkers.forEach(marker => {
+        if (firstLine.includes(marker)) markerCount++;
+      });
+      
+      // If we have at least 4 of the markers, it's likely a LinkedIn export
+      return markerCount >= 4;
+    } catch (error) {
+      console.error("Error checking for LinkedIn CSV:", error);
+      return false;
+    }
+  };
+
   const handleFile = async (file: File) => {
     try {
       setIsProcessing(true);
@@ -31,7 +70,16 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
       if (file.name.endsWith('.vcf')) {
         contacts = await processVCFFile(file);
       } else if (file.name.endsWith('.csv')) {
-        contacts = await processCSVFile(file);
+        // Check if this is a LinkedIn export
+        const isLinkedIn = await isLikelyLinkedInCSV(file);
+        
+        if (isLinkedIn) {
+          console.log("Detected LinkedIn CSV format");
+          contacts = await processLinkedInCSV(file);
+        } else {
+          console.log("Using generic CSV parser");
+          contacts = await processCSVFile(file);
+        }
       } else {
         throw new Error('Unsupported file format');
       }
@@ -41,12 +89,15 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         
         // Set a more specific error message based on file type
         if (file.name.endsWith('.csv')) {
-          setError(`No valid contacts found in the CSV file. This might be because:
-          - The file format doesn't match our expected format
-          - Required fields (like names) are missing
-          - Column headers don't match expected patterns
-          
-          Please check your CSV file and try again. LinkedIn exports and standard CSV formats with name fields should work.`);
+          setError(`No valid contacts found in the CSV file. 
+
+For LinkedIn exports, please make sure:
+- The file contains "First Name" and "Last Name" columns
+- These columns have data for at least some rows
+
+For other CSV files:
+- Make sure the file has clear column headers
+- Columns for name information are present`);
         } else {
           setError('No valid contacts found in the file. Please make sure your VCF file contains valid contact information.');
         }

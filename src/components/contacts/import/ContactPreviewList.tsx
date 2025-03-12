@@ -10,7 +10,7 @@ import { Search } from "lucide-react";
 interface ContactPreviewListProps {
   contacts: Partial<Contact>[];
   onContactsSelected: (selectedIds: string[]) => void;
-  importSource?: 'csv' | 'vcf' | '';
+  importSource?: 'csv' | 'vcf' | 'linkedin' | '';
 }
 
 export function ContactPreviewList({ contacts, onContactsSelected, importSource = '' }: ContactPreviewListProps) {
@@ -42,7 +42,8 @@ export function ContactPreviewList({ contacts, onContactsSelected, importSource 
       contact.email?.toLowerCase().includes(searchLower) ||
       contact.mobile_phone?.includes(searchQuery) ||
       contact.business_phone?.includes(searchQuery) ||
-      contact.company?.toLowerCase().includes(searchLower)
+      contact.company?.toLowerCase().includes(searchLower) ||
+      contact.job_title?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -57,11 +58,20 @@ export function ContactPreviewList({ contacts, onContactsSelected, importSource 
 
   return (
     <div className="space-y-4">
-      {importSource === 'csv' && (
+      {importSource === 'linkedin' && (
         <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md text-sm">
           <p className="font-medium text-blue-800 dark:text-blue-300">LinkedIn Import</p>
           <p className="text-blue-700 dark:text-blue-400">
-            Importing contacts from LinkedIn CSV export. Select the contacts you want to import.
+            Importing contacts from LinkedIn. Select the connections you want to add.
+          </p>
+        </div>
+      )}
+      
+      {importSource === 'csv' && (
+        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md text-sm">
+          <p className="font-medium text-blue-800 dark:text-blue-300">CSV Import</p>
+          <p className="text-blue-700 dark:text-blue-400">
+            Importing contacts from CSV file. Select the contacts you want to add.
           </p>
         </div>
       )}
@@ -111,9 +121,9 @@ export function ContactPreviewList({ contacts, onContactsSelected, importSource 
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium">{contact.full_name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {contact.email || contact.mobile_phone || contact.business_phone}
+                  {contact.email || contact.mobile_phone || contact.business_phone || 'No contact details'}
                 </p>
-                {contact.company && (
+                {(contact.company || contact.job_title) && (
                   <p className="text-xs text-muted-foreground">
                     {contact.company} {contact.job_title ? `• ${contact.job_title}` : ''}
                   </p>

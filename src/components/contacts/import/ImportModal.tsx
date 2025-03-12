@@ -20,11 +20,20 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [parsedContacts, setParsedContacts] = useState<Partial<Contact>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
-  const [importSource, setImportSource] = useState<'vcf' | 'csv' | ''>('');
+  const [importSource, setImportSource] = useState<'vcf' | 'csv' | 'linkedin' | ''>('');
 
   const handleFileProcessed = (contacts: Partial<Contact>[], fileName: string) => {
     setParsedContacts(contacts);
-    setImportSource(fileName.endsWith('.csv') ? 'csv' : 'vcf');
+    
+    // Detect file type
+    if (fileName.endsWith('.vcf')) {
+      setImportSource('vcf');
+    } else if (fileName.endsWith('.csv')) {
+      // Try to determine if it's a LinkedIn export based on the data
+      const hasLinkedInFields = contacts.some(c => c.company || c.job_title);
+      setImportSource(hasLinkedInFields ? 'linkedin' : 'csv');
+    }
+    
     setCurrentStep('preview');
   };
 
@@ -135,7 +144,9 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         <DialogHeader>
           <DialogTitle>
             {currentStep === 'upload' && "Import Contacts"}
-            {currentStep === 'preview' && `Select ${importSource === 'csv' ? 'LinkedIn ' : ''}Contacts`}
+            {currentStep === 'preview' && importSource === 'linkedin' && "Select LinkedIn Contacts"}
+            {currentStep === 'preview' && importSource === 'csv' && "Select CSV Contacts"}
+            {currentStep === 'preview' && importSource === 'vcf' && "Select Contacts"}
             {currentStep === 'importing' && "Importing Contacts"}
           </DialogTitle>
         </DialogHeader>
