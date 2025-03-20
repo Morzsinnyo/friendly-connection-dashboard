@@ -1,9 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Contact } from "@/api/types/contacts";
 import { FileUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { processVCFFile } from "@/api/services/contacts/import/vcfParser";
 import { processCSVFile } from "@/api/services/contacts/import/csvParser";
@@ -20,6 +19,7 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check if a CSV file is likely a LinkedIn export
   const isLikelyLinkedInCSV = async (file: File): Promise<boolean> => {
@@ -155,6 +155,10 @@ For other CSV files:
     }
   };
 
+  const handleSelectFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
   if (isProcessing) {
     return <LoadingState message="Processing contacts..." />;
   }
@@ -200,11 +204,10 @@ For other CSV files:
             onChange={handleFileInput}
             className="hidden"
             id="file-upload"
+            ref={fileInputRef}
           />
-          <Button variant="outline" asChild>
-            <label htmlFor="file-upload" className="cursor-pointer">
-              Select File
-            </label>
+          <Button variant="outline" onClick={handleSelectFileClick}>
+            Select File
           </Button>
         </div>
       </div>
