@@ -78,29 +78,38 @@ export function OnboardingCalendar({ onNext, onBack }: OnboardingCalendarProps) 
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-4 bg-muted p-6 rounded-lg">
         <div className="space-y-2">
-          <Label htmlFor="calendarId">Google Calendar ID</Label>
-          <Input
-            id="calendarId"
-            placeholder="example@gmail.com"
-            value={calendarId}
-            onChange={(e) => setCalendarId(e.target.value)}
-          />
-          <p className="text-sm text-muted-foreground">
-            Enter your Google Calendar ID. Typically, this is your Gmail address.
-          </p>
-        </div>
-        
-        <div className="space-y-2">
-          <Label>Service Account Email (Grant access to this email in your Google Calendar)</Label>
-          <div className="flex items-center gap-2 bg-muted p-2 rounded-md">
-            <p className="text-sm break-all flex-1">{serviceAccountEmail}</p>
+          <Label htmlFor="serviceEmail">Service Account Email (Grant access to this email in your Google Calendar)</Label>
+          <div className="flex items-center gap-2 bg-white p-3 rounded-md">
+            <p className="text-sm break-all flex-1 font-mono">{serviceAccountEmail}</p>
             <Button variant="outline" size="sm" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-2" />
               Copy
             </Button>
           </div>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="calendarId">Google Calendar ID</Label>
+          <div className="flex gap-2">
+            <Input
+              id="calendarId"
+              placeholder="example@gmail.com"
+              value={calendarId}
+              onChange={(e) => setCalendarId(e.target.value)}
+              className="bg-white"
+            />
+            <Button 
+              onClick={updateCalendarId} 
+              disabled={isUpdating || !calendarId}
+            >
+              {isUpdating ? "Saving..." : "Save"}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Enter your Google Calendar ID. Typically, this is your Gmail address.
+          </p>
         </div>
         
         <Button 
@@ -110,10 +119,10 @@ export function OnboardingCalendar({ onNext, onBack }: OnboardingCalendarProps) 
           onClick={() => window.open('https://calendar.google.com/', '_blank')}
         >
           <Calendar className="h-4 w-4 mr-2" />
-          Google Calendar
+          Open Google Calendar
         </Button>
         
-        <div className="bg-muted p-4 rounded-md text-sm space-y-2">
+        <div className="bg-white p-4 rounded-md text-sm space-y-2 mt-4">
           <p className="font-medium">How to connect your Google Calendar:</p>
           <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
             <li>Open Google Calendar using the button above</li>
@@ -123,6 +132,7 @@ export function OnboardingCalendar({ onNext, onBack }: OnboardingCalendarProps) 
             <li>Click "Share with specific people"</li>
             <li>Add the service account email and grant "Make changes to events" permission</li>
             <li>Enter your Calendar ID (usually your Gmail) in the input above</li>
+            <li>Click Save button to save your calendar ID</li>
           </ol>
         </div>
       </div>
@@ -132,10 +142,10 @@ export function OnboardingCalendar({ onNext, onBack }: OnboardingCalendarProps) 
           Back
         </Button>
         <Button 
-          onClick={updateCalendarId} 
-          disabled={isUpdating || !calendarId}
+          onClick={onNext} 
+          disabled={!calendarId}
         >
-          {isUpdating ? "Updating..." : "Continue"}
+          Continue
         </Button>
       </div>
     </div>

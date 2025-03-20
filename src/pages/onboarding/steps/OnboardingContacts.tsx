@@ -17,9 +17,7 @@ export function OnboardingContacts({ onNext, onBack }: OnboardingContactsProps) 
   const navigate = useNavigate();
   
   const handleCreateContact = () => {
-    // Store the fact that we're in onboarding flow to return back here
-    sessionStorage.setItem('returnToOnboarding', 'true');
-    navigate('/dashboard/contact/create');
+    navigate('/onboarding/contact/create');
   };
   
   return (

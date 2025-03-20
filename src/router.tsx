@@ -13,6 +13,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRedirect } from "./components/auth/AuthRedirect";
 import { OnboardingGuard } from "./components/auth/OnboardingGuard";
 import Onboarding from "./pages/onboarding/Onboarding";
+import { OnboardingContactCreate } from "./pages/onboarding/steps/OnboardingContactCreate";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +37,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Onboarding />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/onboarding/contact/create",
+    element: (
+      <ProtectedRoute>
+        <OnboardingContactCreate />
       </ProtectedRoute>
     ),
   },
