@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -65,27 +66,20 @@ export function CreateContact() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { updateBirthdayMutation } = useContactMutations(editId || '');
+  const [isFromOnboarding, setIsFromOnboarding] = useState(false);
 
   useEffect(() => {
     // Check if we're coming from onboarding flow
     const returnToOnboarding = sessionStorage.getItem('returnToOnboarding');
     
+    if (returnToOnboarding) {
+      setIsFromOnboarding(true);
+    }
+    
     // Clean up the session storage
     if (returnToOnboarding) {
       sessionStorage.removeItem('returnToOnboarding');
     }
-    
-    // Listen for form submission success
-    const handleFormSuccess = () => {
-      if (returnToOnboarding) {
-        // If we came from onboarding, go back there after successful submission
-        navigate('/onboarding');
-      }
-    };
-    
-    return () => {
-      // Clean up
-    };
   }, [navigate]);
 
   // Fetch contact data if in edit mode
@@ -239,7 +233,12 @@ export function CreateContact() {
         });
       }
 
-      navigate("/dashboard");
+      // Check if we need to return to the onboarding flow
+      if (isFromOnboarding) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -259,7 +258,7 @@ export function CreateContact() {
             variant="ghost"
             size="icon"
             className="absolute left-4 top-1/2 -translate-y-1/2"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => isFromOnboarding ? navigate("/onboarding") : navigate("/dashboard")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -292,7 +291,7 @@ export function CreateContact() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => isFromOnboarding ? navigate("/onboarding") : navigate("/dashboard")}
                 className="w-full"
               >
                 Cancel
