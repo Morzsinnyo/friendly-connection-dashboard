@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -66,6 +65,28 @@ export function CreateContact() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { updateBirthdayMutation } = useContactMutations(editId || '');
+
+  useEffect(() => {
+    // Check if we're coming from onboarding flow
+    const returnToOnboarding = sessionStorage.getItem('returnToOnboarding');
+    
+    // Clean up the session storage
+    if (returnToOnboarding) {
+      sessionStorage.removeItem('returnToOnboarding');
+    }
+    
+    // Listen for form submission success
+    const handleFormSuccess = () => {
+      if (returnToOnboarding) {
+        // If we came from onboarding, go back there after successful submission
+        navigate('/onboarding');
+      }
+    };
+    
+    return () => {
+      // Clean up
+    };
+  }, [navigate]);
 
   // Fetch contact data if in edit mode
   const { data: contactData } = useQuery({

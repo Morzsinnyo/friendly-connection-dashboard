@@ -237,6 +237,7 @@ export type Database = {
           full_name: string | null
           google_refresh_token: string | null
           id: string
+          onboarded: boolean
           updated_at: string
         }
         Insert: {
@@ -246,6 +247,7 @@ export type Database = {
           full_name?: string | null
           google_refresh_token?: string | null
           id: string
+          onboarded?: boolean
           updated_at?: string
         }
         Update: {
@@ -255,6 +257,7 @@ export type Database = {
           full_name?: string | null
           google_refresh_token?: string | null
           id?: string
+          onboarded?: boolean
           updated_at?: string
         }
         Relationships: []

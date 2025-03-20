@@ -11,6 +11,8 @@ import { ContactProfile } from "./components/contacts/ContactProfile";
 import { CreateContact } from "./components/contacts/CreateContact";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRedirect } from "./components/auth/AuthRedirect";
+import { OnboardingGuard } from "./components/auth/OnboardingGuard";
+import Onboarding from "./pages/onboarding/Onboarding";
 
 export const router = createBrowserRouter([
   {
@@ -30,10 +32,20 @@ export const router = createBrowserRouter([
     element: <Auth />,
   },
   {
+    path: "/onboarding",
+    element: (
+      <ProtectedRoute>
+        <Onboarding />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <DashboardLayout />
+        <OnboardingGuard>
+          <DashboardLayout />
+        </OnboardingGuard>
       </ProtectedRoute>
     ),
     children: [
@@ -66,4 +78,3 @@ export const router = createBrowserRouter([
     element: <Navigate to="/" replace />,
   },
 ]);
-
