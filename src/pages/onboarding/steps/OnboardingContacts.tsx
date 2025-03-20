@@ -17,6 +17,8 @@ export function OnboardingContacts({ onNext, onBack }: OnboardingContactsProps) 
   const navigate = useNavigate();
   
   const handleCreateContact = () => {
+    // Save current step in sessionStorage before navigating
+    sessionStorage.setItem('onboardingStep', 'contacts');
     navigate('/onboarding/contact/create');
   };
   

@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 export type OnboardingStep = "welcome" | "contacts" | "calendar" | "reminders" | "complete";
 
 export default function Onboarding() {
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("welcome");
   const [isCompleting, setIsCompleting] = useState(false);
   const navigate = useNavigate();
@@ -21,6 +22,25 @@ export default function Onboarding() {
   const steps: OnboardingStep[] = ["welcome", "contacts", "calendar", "reminders", "complete"];
   const currentStepIndex = steps.indexOf(currentStep);
   const progress = ((currentStepIndex) / (steps.length - 1)) * 100;
+  
+  // Check location state for step information when component mounts or location changes
+  useEffect(() => {
+    const locationState = location.state as { currentStep?: OnboardingStep } | null;
+    if (locationState && locationState.currentStep) {
+      setCurrentStep(locationState.currentStep);
+    } else {
+      // Also check sessionStorage as a fallback
+      const savedStep = sessionStorage.getItem('onboardingStep') as OnboardingStep | null;
+      if (savedStep && steps.includes(savedStep)) {
+        setCurrentStep(savedStep);
+      }
+    }
+  }, [location]);
+  
+  // Save current step to sessionStorage whenever it changes
+  useEffect(() => {
+    sessionStorage.setItem('onboardingStep', currentStep);
+  }, [currentStep]);
   
   const handleNext = () => {
     const nextIndex = currentStepIndex + 1;
