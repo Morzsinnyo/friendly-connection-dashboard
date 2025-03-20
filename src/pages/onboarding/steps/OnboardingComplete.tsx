@@ -19,18 +19,8 @@ export function OnboardingComplete({ onComplete, isCompleting }: OnboardingCompl
       <h2 className="text-2xl font-bold">You're all set!</h2>
       
       <p className="text-muted-foreground text-lg">
-        You've successfully completed the onboarding process. You're now ready to start using Friendly Connection to strengthen your relationships.
+        You've successfully completed the onboarding process. You're now ready to start using LinkUp to strengthen your relationships.
       </p>
-      
-      <div className="bg-muted p-4 rounded-md text-left">
-        <h3 className="font-medium">What you can do now:</h3>
-        <ul className="list-disc list-inside mt-2 text-muted-foreground">
-          <li>Add more contacts or import from other sources</li>
-          <li>Set up reminders for specific contacts</li>
-          <li>Record notes from your conversations</li>
-          <li>Track your relationship progress</li>
-        </ul>
-      </div>
       
       <Button 
         onClick={onComplete} 

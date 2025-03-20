@@ -128,7 +128,7 @@ const Auth = () => {
               },
             }}
             providers={["google"]}
-            redirectTo="https://friendly-connection-dashboard.lovable.app/dashboard"
+            redirectTo="https://friendly-connection-dashboard.lovable.app/auth/callback"
             theme="light"
             view="sign_in"
           />

@@ -15,7 +15,7 @@ export function OnboardingWelcome({ onNext }: OnboardingWelcomeProps) {
         </div>
       </div>
       
-      <h2 className="text-2xl font-bold">Welcome to Friendly Connection!</h2>
+      <h2 className="text-2xl font-bold">Welcome to LinkUp!</h2>
       
       <p className="text-muted-foreground text-lg">
         Let's get you set up with everything you need to stay connected with the people who matter most to you.

@@ -109,7 +109,7 @@ export default function Onboarding() {
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
       <header className="border-b bg-white shadow-sm p-4">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Friendly Connection</h1>
+          <h1 className="text-xl font-semibold text-[#071A52]">LinkUp</h1>
           <Button 
             variant="link"
             onClick={completeOnboarding}
