@@ -10,6 +10,8 @@ import { processLinkedInCSV } from "@/api/services/contacts/import/linkedinParse
 import { LoadingState } from "@/components/common/LoadingState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface FileUploaderProps {
   onFileProcessed: (contacts: Partial<Contact>[], fileName: string) => void;
@@ -21,21 +23,17 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check if a CSV file is likely a LinkedIn export
   const isLikelyLinkedInCSV = async (file: File): Promise<boolean> => {
     try {
-      // Read the first few lines of the file
       const reader = new FileReader();
       const firstChunk = await new Promise<string>((resolve) => {
         reader.onload = (e) => resolve(e.target?.result as string || "");
-        // Read just the beginning of the file to search for headers
-        const blob = file.slice(0, 3000); // Increased to capture more potential rows
+        const blob = file.slice(0, 3000);
         reader.readAsText(blob);
       });
       
-      const firstLines = firstChunk.split('\n').slice(0, 10); // Check first 10 lines
+      const firstLines = firstChunk.split('\n').slice(0, 10);
       
-      // LinkedIn exports typically have these headers
       const linkedInMarkers = [
         "First Name",
         "Last Name",
@@ -44,20 +42,17 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
         "Position",
         "Connected On",
         "Profile URL",
-        "URL"  // Adding "URL" as an alternative for profile URL
+        "URL"
       ];
       
-      // Look for LinkedIn headers in any of the first 10 lines
       for (const line of firstLines) {
         if (!line.trim()) continue;
         
-        // Count how many LinkedIn markers are present in this line
         let markerCount = 0;
         for (const marker of linkedInMarkers) {
           if (line.includes(marker)) markerCount++;
         }
         
-        // If we have at least 3 of the markers, it's likely a LinkedIn export
         if (markerCount >= 3) {
           console.log("Detected LinkedIn CSV format headers");
           return true;
@@ -78,11 +73,9 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
       
       let contacts: Partial<Contact>[] = [];
       
-      // Process the file based on its extension
       if (file.name.endsWith('.vcf')) {
         contacts = await processVCFFile(file);
       } else if (file.name.endsWith('.csv')) {
-        // Check if this is a LinkedIn export
         const isLinkedIn = await isLikelyLinkedInCSV(file);
         
         if (isLinkedIn) {
@@ -99,7 +92,6 @@ export function FileUploader({ onFileProcessed }: FileUploaderProps) {
       if (contacts.length === 0) {
         console.error('No valid contacts found in the file');
         
-        // Set a more specific error message based on file type
         if (file.name.endsWith('.csv')) {
           setError(`No valid contacts found in the CSV file. 
 
@@ -150,7 +142,6 @@ For other CSV files:
         toast.error('Please upload a valid VCF or CSV file');
       }
       
-      // Reset the input value so the same file can be selected again
       e.target.value = '';
     }
   };
@@ -206,9 +197,15 @@ For other CSV files:
             id="file-upload"
             ref={fileInputRef}
           />
-          <Button variant="outline" onClick={handleSelectFileClick}>
+          <label 
+            htmlFor="file-upload" 
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "cursor-pointer"
+            )}
+          >
             Select File
-          </Button>
+          </label>
         </div>
       </div>
     </div>
