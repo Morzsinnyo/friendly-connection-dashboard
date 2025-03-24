@@ -79,7 +79,7 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-background border-r transition-transform duration-300 ease-in-out",
+              "fixed inset-y-0 left-0 w-[280px] bg-white border-r transition-transform duration-300 ease-in-out",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
@@ -87,7 +87,7 @@ export function DashboardLayout() {
             <div className="flex h-full flex-col overflow-hidden">
               {/* Mobile Header */}
               <div className="flex h-14 items-center justify-between px-4 border-b">
-                <span className="font-semibold text-lg text-primary">LinkUp</span>
+                <span className="font-semibold text-lg text-[#071A52]">LinkUp</span>
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -109,7 +109,7 @@ export function DashboardLayout() {
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           {/* Top Bar with Brand and Mobile Menu Trigger */}
-          <div className="p-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+          <div className="p-4 flex items-center justify-between border-b bg-white sticky top-0 z-10">
             <div className="flex items-center gap-2">
               <Button 
                 variant="ghost" 
@@ -120,7 +120,7 @@ export function DashboardLayout() {
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
-              <h1 className="text-xl font-semibold text-primary hidden md:block">LinkUp</h1>
+              <h1 className="text-xl font-semibold text-[#071A52]">LinkUp</h1>
             </div>
           </div>
 

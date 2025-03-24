@@ -54,11 +54,11 @@ export function AppSidebar({ className }: { className?: string }) {
   return (
     <Sidebar className={cn("h-full", className)}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <h1 className="text-xl font-semibold text-sidebar-foreground">LinkUp</h1>
+        <h1 className="text-xl font-semibold text-[#071A52]">LinkUp</h1>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 text-lg font-semibold">
+          <SidebarGroupLabel className="px-2 text-lg font-semibold text-[#071A52]">
             Dashboard
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -70,8 +70,8 @@ export function AppSidebar({ className }: { className?: string }) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-lg p-3 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                        isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""
+                      className={`w-full rounded-lg p-3 transition-colors hover:bg-[#A7FF83]/20 hover:text-[#071A52] ${
+                        isActive ? "bg-[#A7FF83] text-[#071A52]" : "text-[#071A52]"
                       }`}
                     >
                       <RouterLink to={item.url}>
