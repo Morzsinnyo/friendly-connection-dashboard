@@ -54,7 +54,7 @@ export function AppSidebar({ className }: { className?: string }) {
   return (
     <Sidebar className={cn("h-full", className)}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <h1 className="text-xl font-semibold text-[#071A52]">LinkUp</h1>
+        <h1 className="text-xl font-semibold text-[#071A52] px-2">LinkUp</h1>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
