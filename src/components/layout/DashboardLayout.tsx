@@ -108,7 +108,7 @@ export function DashboardLayout() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {/* Top Bar with Brand and Mobile Menu Trigger */}
+          {/* Top Bar with Mobile Menu Trigger - Removed "LinkUp" text */}
           <div className="p-4 flex items-center justify-between border-b bg-white sticky top-0 z-10">
             <div className="flex items-center gap-2">
               <Button 
@@ -120,7 +120,7 @@ export function DashboardLayout() {
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
-              <h1 className="text-xl font-semibold text-[#071A52]">LinkUp</h1>
+              {/* Removed the LinkUp text from here */}
             </div>
           </div>
 
