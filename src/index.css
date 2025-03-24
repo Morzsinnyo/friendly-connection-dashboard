@@ -13,18 +13,26 @@
     --popover-foreground: 222.2 84% 4.9%;
     --primary: 142.1 76.2% 36.3%;
     --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 210 40% 98%;
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --accent: 142.1 76.2% 36.3%;
+    --accent-foreground: 355.7 100% 97.3%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 142.1 76.2% 36.3%;
     --radius: 0.5rem;
+    --sidebar-background: 215 25% 27%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 142.1 76.2% 36.3%;
+    --sidebar-primary-foreground: 355.7 100% 97.3%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 32%;
+    --sidebar-ring: 142.1 76.2% 36.3%;
   }
  
   .dark {
@@ -36,17 +44,25 @@
     --popover-foreground: 210 40% 98%;
     --primary: 142.1 70.6% 45.3%;
     --primary-foreground: 144.9 80.4% 10%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 215 25% 27%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 142.1 70.6% 45.3%;
+    --accent-foreground: 144.9 80.4% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 142.1 76.2% 36.3%;
+    --sidebar-background: 215 25% 27%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 142.1 70.6% 45.3%;
+    --sidebar-primary-foreground: 144.9 80.4% 10%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 214.3 31.8% 32%;
+    --sidebar-ring: 142.1 76.2% 36.3%;
   }
 }
 

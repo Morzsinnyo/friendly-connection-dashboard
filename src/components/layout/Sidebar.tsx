@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useLocation, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +53,9 @@ export function AppSidebar({ className }: { className?: string }) {
 
   return (
     <Sidebar className={cn("h-full", className)}>
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <h1 className="text-xl font-semibold text-sidebar-foreground">LinkUp</h1>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 text-lg font-semibold">
@@ -66,8 +70,8 @@ export function AppSidebar({ className }: { className?: string }) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className={`w-full rounded-lg p-3 transition-colors hover:bg-accent ${
-                        isActive ? "bg-primary text-primary-foreground" : ""
+                      className={`w-full rounded-lg p-3 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                        isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : ""
                       }`}
                     >
                       <RouterLink to={item.url}>
@@ -94,4 +98,3 @@ export function AppSidebar({ className }: { className?: string }) {
     </Sidebar>
   );
 }
-

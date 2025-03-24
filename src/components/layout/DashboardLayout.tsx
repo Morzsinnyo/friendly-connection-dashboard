@@ -87,7 +87,7 @@ export function DashboardLayout() {
             <div className="flex h-full flex-col overflow-hidden">
               {/* Mobile Header */}
               <div className="flex h-14 items-center justify-between px-4 border-b">
-                <span className="font-semibold">Menu</span>
+                <span className="font-semibold text-lg text-primary">LinkUp</span>
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -108,20 +108,23 @@ export function DashboardLayout() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {/* Mobile Menu Trigger */}
-          <div className="p-4 md:hidden fixed top-0 left-0">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent"
-              onClick={toggleMobileMenu}
-            >
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle navigation menu</span>
-            </Button>
+          {/* Top Bar with Brand and Mobile Menu Trigger */}
+          <div className="p-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden hover:bg-accent"
+                onClick={toggleMobileMenu}
+              >
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+              <h1 className="text-xl font-semibold text-primary hidden md:block">LinkUp</h1>
+            </div>
           </div>
 
-          <div className="p-4 md:p-6 pt-16 md:pt-6">
+          <div className="p-4 md:p-6">
             <div className="mx-auto max-w-7xl">
               <Outlet />
             </div>
