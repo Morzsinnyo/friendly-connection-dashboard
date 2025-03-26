@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -9,7 +8,6 @@ export default defineConfig(({ mode }) => ({
     react({
       // Using basic React config for maximum compatibility
       jsxImportSource: "react",
-      fastRefresh: true
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
@@ -56,13 +54,11 @@ export default defineConfig(({ mode }) => ({
     include: ['react', 'react-dom'],
     exclude: ['@supabase/supabase-js']
   },
-  // Simplified define values for better compatibility
   define: {
     __DEV__: mode === 'development' ? 'true' : 'false',
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
     __IN_IFRAME__: 'window !== window.parent'
   },
-  // Basic esbuild config for maximum compatibility
   esbuild: {
     logLevel: 'info',
     logLimit: 0,

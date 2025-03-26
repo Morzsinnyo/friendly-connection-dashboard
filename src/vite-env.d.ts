@@ -9,6 +9,7 @@ declare global {
     __REACT_INITIALIZED: boolean;
     __REACT_INIT_TIME: number;
     __JS_CHECK: boolean;
+    __MANUAL_REACT_INIT: () => void; // Add this property
     posthog?: any;
     __DEBUG_UTILS?: {
       checkEnvironment: () => { issues: string[], hasCriticalIssues: boolean };
@@ -20,6 +21,7 @@ declare global {
     // Add Vite-specific properties
     $RefreshReg$?: () => void;
     $RefreshSig$?: () => (type: any) => any;
+    __IS_IFRAME?: boolean; // Add the property for iframe detection
   }
 }
 
