@@ -33,13 +33,22 @@ export const SupabaseTest = () => {
       console.log('Supabase connection successful:', data);
       setStatus('success');
       
-      // Get service status
-      const healthCheck = await supabase.rpc('get_service_status').catch(e => {
-        console.log('RPC not available, but connection works');
-        return { data: { message: 'RPC not available, but connection works' } };
-      });
-      
-      setServiceStatus(healthCheck.data || { message: 'Connected to Supabase' });
+      // Try to get service status using a safer approach
+      try {
+        // Instead of using RPC which may not exist, perform a simple query
+        const healthCheck = await supabase.from('profiles').select('created_at').limit(1);
+        setServiceStatus({ 
+          message: 'Connected to Supabase', 
+          timestamp: new Date().toISOString(),
+          data: healthCheck.data
+        });
+      } catch (e) {
+        console.error('Error getting additional status info:', e);
+        setServiceStatus({ 
+          message: 'Connected but could not get additional status info',
+          timestamp: new Date().toISOString()
+        });
+      }
     } catch (e) {
       console.error('Unexpected error testing Supabase:', e);
       setStatus('error');
