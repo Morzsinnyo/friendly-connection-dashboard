@@ -24,7 +24,7 @@ const queryClient = new QueryClient({
 function App() {
   const [mounted, setMounted] = useState(false)
   const [envCheck, setEnvCheck] = useState<{issues: string[], hasCriticalIssues: boolean} | null>(null)
-  const [debugMode, setDebugMode] = useState(false) // Set default to false
+  const [debugMode, setDebugMode] = useState(false) // Always off by default
   const isInIframe = window !== window.parent
 
   useEffect(() => {
@@ -66,24 +66,26 @@ function App() {
     
     setMounted(true)
     
+    // Always force debug mode off, especially in iframe mode
+    if (debugMode) {
+      setDebugMode(false)
+      console.log('[APP] Forcing debug mode off')
+    }
+    
     // Exit debug mode automatically in iframes after a short delay
     if (isInIframe) {
-      console.log('[APP] In iframe, will exit debug mode automatically after 1 second')
-      setTimeout(() => {
-        setDebugMode(false)
-        console.log('[APP] Auto-exiting debug mode in iframe')
-        document.documentElement.dataset.frameStatus = 'app-running';
-        
-        // Notify parent frame that app is fully running
-        try {
-          window.parent.postMessage({ 
-            type: 'APP_RUNNING', 
-            timestamp: Date.now()
-          }, '*');
-        } catch (err) {
-          console.warn('[APP] Could not notify parent that app is running:', err);
-        }
-      }, 1000)
+      console.log('[APP] In iframe, debug mode will remain off')
+      document.documentElement.dataset.frameStatus = 'app-running';
+      
+      // Notify parent frame that app is fully running
+      try {
+        window.parent.postMessage({ 
+          type: 'APP_RUNNING', 
+          timestamp: Date.now()
+        }, '*');
+      } catch (err) {
+        console.warn('[APP] Could not notify parent that app is running:', err);
+      }
     }
     
     // Setup listener for iframe-specific messages
@@ -104,7 +106,7 @@ function App() {
     return () => {
       console.log('[APP] App component unmounting')
     }
-  }, [isInIframe])
+  }, [isInIframe, debugMode])
 
   // Show diagnostic message while app is initializing
   if (!mounted) {
@@ -156,46 +158,7 @@ function App() {
     )
   }
 
-  // Show debug component in debug mode
-  if (debugMode) {
-    return (
-      <div className="app-debug-mode">
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          padding: '8px',
-          backgroundColor: '#111827',
-          color: 'white',
-          textAlign: 'center',
-          fontSize: '14px',
-          zIndex: 1000
-        }}>
-          React is running in debug mode {isInIframe ? '(inside iframe)' : ''}
-        </div>
-        
-        <TestComponent />
-        
-        <button 
-          onClick={() => setDebugMode(false)}
-          style={{
-            padding: '8px 16px',
-            margin: '20px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Continue to Full App
-        </button>
-      </div>
-    );
-  }
-
-  // Wrap the entire app in an error boundary
+  // Debug mode is completely bypassed - we always return the main app
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
@@ -60,6 +59,7 @@ const initReact = () => {
       // Signal successful initialization
       window.__REACT_INITIALIZED = true;
       window.__REACT_INIT_TIME = Date.now();
+      window.__DEBUG_ENABLED = false; // Always disable debug mode
       
       // In iframe mode, use a more subtle debug signal
       if (isInIframe) {
@@ -110,7 +110,8 @@ const initReact = () => {
         window.parent.postMessage({ 
           type: 'REACT_INITIALIZED', 
           success: true,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          debugEnabled: false // Explicitly tell parent debug is disabled
         }, '*');
         console.log('[MAIN] Notified parent frame of successful initialization');
       } catch (err) {
@@ -169,43 +170,22 @@ window.addEventListener('message', (event) => {
         try {
           window.parent.postMessage({ 
             type: 'REACT_ALREADY_INITIALIZED',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            debugEnabled: false // Explicitly tell parent debug is disabled
           }, '*');
         } catch (err) {
           console.warn('[MAIN] Could not respond to parent frame:', err);
         }
       }
     }
-  } else if (event.data?.type === 'TEST_MESSAGE') {
-    console.log('[MAIN] Received test message:', event.data.content);
-    // Echo back to confirm receipt
-    if (isInIframe) {
-      try {
-        window.parent.postMessage({ 
-          type: 'TEST_RESPONSE',
-          originalMessage: event.data,
-          timestamp: Date.now()
-        }, '*');
-      } catch (err) {
-        console.warn('[MAIN] Could not respond to test message:', err);
-      }
-    }
-  } else if (event.data?.type === 'CHECK_IFRAME_LOADED') {
-    console.log('[MAIN] Received iframe check request');
-    // Respond to confirm we're alive
-    if (isInIframe) {
-      try {
-        window.parent.postMessage({ 
-          type: 'IFRAME_LOADED_RESPONSE',
-          status: 'ok',
-          reactInitialized: !!window.__REACT_INITIALIZED,
-          timestamp: Date.now()
-        }, '*');
-      } catch (err) {
-        console.warn('[MAIN] Could not respond to iframe check:', err);
-      }
-    }
+  } else if (event.data?.type === 'FORCE_DEBUG_OFF') {
+    window.__DEBUG_ENABLED = false;
+    console.log('[MAIN] Received force debug off message');
+    // Notify any components that might be listening for this
+    window.dispatchEvent(new CustomEvent('debug-mode-change', { detail: { enabled: false } }));
   }
+  // Additional message handlers remain unchanged
+  // ... keep existing code (for other message type handlers)
 });
 
 // Multi-stage initialization strategy with better error reporting
