@@ -16,6 +16,9 @@ interface Window {
   };
   // Add React to window for debugging purposes
   React?: any;
+  // Add Vite-specific properties
+  $RefreshReg$?: () => void;
+  $RefreshSig$?: () => (type: any) => any;
 }
 
 // Make sure React is available globally
