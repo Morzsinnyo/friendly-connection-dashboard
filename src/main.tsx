@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Signal successful initialization
     window.__REACT_INITIALIZED = true;
+    window.__REACT_INIT_TIME = Date.now();
     
   } catch (error) {
     console.error('Error initializing React app:', error);
@@ -52,4 +53,3 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 });
-
