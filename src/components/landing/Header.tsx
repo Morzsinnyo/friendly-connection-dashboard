@@ -8,7 +8,7 @@ export function Header() {
   
   return (
     <div className="py-4 px-4 md:px-6 flex justify-between items-center">
-      <h1 className="text-2xl font-semibold text-[#071A52]">LinkUp</h1>
+      <h1 className="text-2xl font-semibold text-[#071A52]" onClick={() => navigate("/")}>LinkUp</h1>
       <Button 
         variant="outline" 
         className="h-11 px-4 md:px-6 text-sm md:text-base 

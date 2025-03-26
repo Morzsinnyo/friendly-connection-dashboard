@@ -24,7 +24,7 @@ const queryClient = new QueryClient({
 function App() {
   const [mounted, setMounted] = useState(false)
   const [envCheck, setEnvCheck] = useState<{issues: string[], hasCriticalIssues: boolean} | null>(null)
-  const [debugMode, setDebugMode] = useState(true)
+  const [debugMode, setDebugMode] = useState(false) // Set default to false
   const isInIframe = window !== window.parent
 
   useEffect(() => {
