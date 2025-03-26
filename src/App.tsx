@@ -6,6 +6,7 @@ import { ThemeProvider } from "./components/theme/ThemeProvider"
 import { Toaster } from "sonner"
 import { initPostHog } from "./lib/posthog"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ErrorBoundary } from "./components/common/ErrorBoundary"
 import "./App.css"
 
 // Create a client
@@ -23,7 +24,13 @@ function App() {
 
   useEffect(() => {
     // Initialize PostHog
-    initPostHog()
+    try {
+      initPostHog()
+      console.log('PostHog initialized successfully')
+    } catch (error) {
+      console.error('PostHog initialization error:', error)
+      // Continue even if PostHog fails, it's not critical
+    }
     
     // Add diagnostic log to confirm mounting
     console.log('App component mounted')
@@ -50,13 +57,16 @@ function App() {
     return <div id="mounting-diagnostic">React App is initializing...</div>
   }
 
+  // Wrap the entire app in an error boundary
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-        <Toaster position="top-right" />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-right" />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
