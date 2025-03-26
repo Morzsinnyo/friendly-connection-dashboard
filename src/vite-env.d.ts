@@ -7,6 +7,7 @@ interface Window {
   __REACT_DEVTOOLS_GLOBAL_HOOK__: any;
   __REACT_INITIALIZED: boolean;
   __REACT_INIT_TIME: number;
+  __JS_CHECK: boolean;
   posthog?: any;
   __DEBUG_UTILS?: {
     checkEnvironment: () => { issues: string[], hasCriticalIssues: boolean };
