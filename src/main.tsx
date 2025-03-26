@@ -4,6 +4,10 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+// Explicitly expose React to window for debugging
+// @ts-ignore - Explicitly setting React to window for debug purposes
+window.React = React;
+
 // Global error handler to catch unhandled exceptions
 window.addEventListener('error', (event) => {
   console.error('Global error caught:', event.error || event.message)
@@ -36,12 +40,12 @@ if (React && React.version) {
 
 // Function to initialize the React application
 function initializeReact() {
+  console.log('Starting React initialization at', new Date().toISOString())
+  
   // Detect if we're in an iframe, which might cause issues
   if (window.top !== window.self) {
     console.warn('Application running in an iframe - this may cause issues with certain features')
   }
-  
-  console.log('Starting React initialization...')
   
   try {
     const rootElement = document.getElementById('root')
@@ -66,7 +70,11 @@ function initializeReact() {
     window.__REACT_INIT_TIME = Date.now()
     
     // Render the application
-    root.render(<App />)
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    )
     
     console.log('App rendered successfully at', new Date().toISOString())
     

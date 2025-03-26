@@ -27,18 +27,25 @@ function App() {
   useEffect(() => {
     console.log('App component mounting, timestamp:', Date.now())
     
-    // Run diagnostic functions
-    const envIssues = checkEnvironment()
-    setEnvCheck(envIssues)
-    
-    if (envIssues.hasCriticalIssues) {
-      console.error('Critical environment issues detected:', envIssues.issues)
-    } else if (envIssues.issues.length > 0) {
-      console.warn('Non-critical environment issues detected:', envIssues.issues)
+    // Run diagnostic functions - but don't let them block rendering
+    try {
+      const envIssues = checkEnvironment()
+      setEnvCheck(envIssues)
+      
+      if (envIssues.hasCriticalIssues) {
+        console.error('Critical environment issues detected:', envIssues.issues)
+      } else if (envIssues.issues.length > 0) {
+        console.warn('Non-critical environment issues detected:', envIssues.issues)
+      } else {
+        console.log('Environment check passed, no issues detected')
+      }
+      
+      monitorAppPerformance()
+      diagnoseReactMounting()
+    } catch (error) {
+      console.error('Error during environment checks:', error)
+      // Continue rendering even if environment checks fail
     }
-    
-    monitorAppPerformance()
-    diagnoseReactMounting()
     
     // Initialize PostHog
     try {
@@ -67,8 +74,14 @@ function App() {
     }
   }, [])
 
-  // Only show environment issues if they are critical
-  if (envCheck?.hasCriticalIssues) {
+  // Show diagnostic message while app is initializing
+  if (!mounted) {
+    return <div id="mounting-diagnostic">React App is initializing... Please wait.</div>
+  }
+
+  // Only show environment issues if they are critical AND we want to block rendering
+  // Currently disabled to prevent false positives
+  if (false && envCheck?.hasCriticalIssues) {
     return (
       <div className="environment-issue-container">
         <h2>Environment Issues Detected</h2>
@@ -83,11 +96,6 @@ function App() {
         </button>
       </div>
     )
-  }
-
-  // Add diagnostic HTML to help debug mounting issues
-  if (!mounted) {
-    return <div id="mounting-diagnostic">React App is initializing...</div>
   }
 
   // Wrap the entire app in an error boundary

@@ -6,6 +6,7 @@ interface Window {
   __REACT_DEVTOOLS_GLOBAL_HOOK__?: any;
   __REACT_INITIALIZED?: boolean;
   __REACT_INIT_TIME?: number;
+  posthog?: any; // Added for PostHog
   __DEBUG_UTILS?: {
     checkEnvironment: () => { issues: string[], hasCriticalIssues: boolean };
     monitorAppPerformance: () => void;
@@ -13,8 +14,16 @@ interface Window {
   };
 }
 
-// Add global React variable check
-declare var React: {
-  version: string;
-  [key: string]: any;
-};
+// Declare global React variable for browser context
+declare global {
+  // For React global detection
+  const React: {
+    version: string;
+    createElement: Function;
+    Fragment: any;
+    [key: string]: any;
+  };
+}
+
+// This export is needed to make this a module
+export {};

@@ -6,7 +6,11 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    react(),
+    react({
+      // Improve React refresh and error handling
+      fastRefresh: true,
+      jsxImportSource: "react"
+    }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -47,11 +51,19 @@ export default defineConfig(({ mode }) => ({
     middlewareMode: false
   },
   optimizeDeps: {
+    include: ['react', 'react-dom'],
     exclude: ['@supabase/supabase-js']
+  },
+  // Add debugging options
+  define: {
+    __DEV__: mode === 'development',
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
   },
   // Add some diagnostic flags to help troubleshoot rendering issues
   esbuild: {
     logLevel: 'info',
     logLimit: 0,
+    jsxFactory: 'React.createElement',
+    jsxFragment: 'React.Fragment'
   }
 }));
