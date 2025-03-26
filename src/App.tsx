@@ -7,6 +7,7 @@ import { Toaster } from "sonner"
 import { initPostHog } from "./lib/posthog"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ErrorBoundary } from "./components/common/ErrorBoundary"
+import { checkEnvironment, diagnoseReactMounting, monitorAppPerformance } from "./lib/debugUtils"
 import "./App.css"
 
 // Create a client
@@ -21,8 +22,22 @@ const queryClient = new QueryClient({
 
 function App() {
   const [mounted, setMounted] = useState(false)
+  const [envCheck, setEnvCheck] = useState<{issues: string[], hasCriticalIssues: boolean} | null>(null)
 
   useEffect(() => {
+    console.log('App component mounting, timestamp:', Date.now())
+    
+    // Run diagnostic functions
+    const envIssues = checkEnvironment()
+    setEnvCheck(envIssues)
+    
+    if (envIssues.hasCriticalIssues) {
+      console.error('Critical environment issues detected:', envIssues.issues)
+    }
+    
+    monitorAppPerformance()
+    diagnoseReactMounting()
+    
     // Initialize PostHog
     try {
       initPostHog()
@@ -32,8 +47,6 @@ function App() {
       // Continue even if PostHog fails, it's not critical
     }
     
-    // Add diagnostic log to confirm mounting
-    console.log('App component mounted')
     setMounted(true)
     
     // Add global error handler to catch React errors
@@ -51,6 +64,23 @@ function App() {
       console.error = originalError
     }
   }, [])
+
+  // Show environment issues if any were detected
+  if (envCheck?.hasCriticalIssues) {
+    return (
+      <div className="environment-issue-container">
+        <h2>Environment Issues Detected</h2>
+        <ul>
+          {envCheck.issues.map((issue, i) => (
+            <li key={i}>{issue}</li>
+          ))}
+        </ul>
+        <button onClick={() => window.location.reload()}>
+          Reload Application
+        </button>
+      </div>
+    )
+  }
 
   // Add diagnostic HTML to help debug mounting issues
   if (!mounted) {

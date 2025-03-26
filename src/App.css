@@ -15,6 +15,39 @@
   margin: 20px;
 }
 
+.environment-issue-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff0f0;
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.environment-issue-container h2 {
+  color: #e11d48;
+  margin-top: 0;
+}
+
+.environment-issue-container ul {
+  margin-bottom: 20px;
+}
+
+.environment-issue-container button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.environment-issue-container button:hover {
+  background-color: #2563eb;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

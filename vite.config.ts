@@ -29,6 +29,8 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     hmr: {
       overlay: true, // Show errors as overlay
+      clientPort: 8080, // Ensure correct port for HMR
+      timeout: 120000, // Increase timeout
     },
     headers: {
       'Access-Control-Allow-Origin': '*',
