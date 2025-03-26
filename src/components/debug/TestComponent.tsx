@@ -1,82 +1,117 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { SupabaseTest } from "./SupabaseTest";
 
 export function TestComponent() {
-  const [renderTime, setRenderTime] = useState(new Date());
-  const [renderCount, setRenderCount] = useState(1);
-  const isInIframe = window !== window.parent;
+  const [data, setData] = useState({
+    userAgent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+    inIframe: window !== window.parent,
+    location: window.location.href,
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    devicePixelRatio: window.devicePixelRatio
+  });
   
   useEffect(() => {
-    console.log('TestComponent mounted successfully at', renderTime);
-    
-    // Update time every second to show component is alive
-    const timer = setInterval(() => {
-      setRenderTime(new Date());
-      setRenderCount(prev => prev + 1);
+    const interval = setInterval(() => {
+      setData(prev => ({
+        ...prev,
+        timestamp: new Date().toISOString()
+      }));
     }, 1000);
     
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
   }, []);
   
+  const handleRefresh = () => {
+    setData({
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+      inIframe: window !== window.parent,
+      location: window.location.href,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio
+    });
+  };
+  
+  const handleTestIframe = () => {
+    if (window.parent && window !== window.parent) {
+      try {
+        window.parent.postMessage({ type: 'TEST_FROM_IFRAME', data: { timestamp: new Date().toISOString() } }, '*');
+        console.log('[TEST] Sent test message to parent frame');
+      } catch (e) {
+        console.error('[TEST] Error sending message to parent:', e);
+      }
+    } else {
+      console.log('[TEST] Not in iframe, opening test page');
+      window.open('/iframe-test.html', '_blank');
+    }
+  };
+  
   return (
-    <div className="test-component" style={{ 
-      padding: '20px', 
-      margin: '20px',
-      border: '2px solid green',
-      borderRadius: '8px',
-      backgroundColor: '#f0fff0',
-      textAlign: 'center',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-      maxWidth: '800px',
-      marginLeft: 'auto',
-      marginRight: 'auto'
-    }}>
-      <div style={{
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        backgroundColor: '#22c55e',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: '0 auto 16px auto',
-        color: 'white',
-        fontSize: '24px',
-        fontWeight: 'bold'
-      }}>
-        ✓
+    <div className="p-4 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Debug & Test Panel</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Environment Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p><strong>Timestamp:</strong> {data.timestamp}</p>
+              <p><strong>In iframe:</strong> {data.inIframe ? 'Yes' : 'No'}</p>
+              <p><strong>Location:</strong> {data.location}</p>
+              <p><strong>Window size:</strong> {data.innerWidth}x{data.innerHeight}</p>
+              <p><strong>Pixel ratio:</strong> {data.devicePixelRatio}</p>
+              <div className="mt-4">
+                <Button onClick={handleRefresh} size="sm">Refresh Data</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Iframe Communication</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <p className="mb-2">Test iframe communication:</p>
+                <Button onClick={handleTestIframe} size="sm">
+                  {data.inIframe ? 'Send Message to Parent' : 'Open Iframe Test'}
+                </Button>
+              </div>
+              <div>
+                <p className="mb-2">Open test pages:</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.open('/iframe-test.html', '_blank')}
+                  >
+                    Iframe Test
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.open('/embed-dashboard.html', '_blank')}
+                  >
+                    Embed Test
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <h2 style={{ color: '#166534', marginBottom: '16px' }}>React is working!</h2>
-      
-      <div style={{
-        padding: '12px',
-        backgroundColor: 'white',
-        borderRadius: '6px',
-        marginBottom: '16px'
-      }}>
-        <p style={{ margin: '0 0 8px 0' }}>If you can see this message, React has successfully initialized.</p>
-        <p style={{ margin: '0', fontWeight: 'bold' }}>Current time: {renderTime.toLocaleTimeString()}</p>
-        <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#4b5563' }}>
-          Component has rendered {renderCount} times
-        </p>
-      </div>
-      
-      <div style={{
-        padding: '12px',
-        backgroundColor: 'rgba(255,255,255,0.6)',
-        borderRadius: '6px',
-        textAlign: 'left',
-        fontSize: '14px'
-      }}>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>Environment Information:</h3>
-        <ul style={{ margin: '0', paddingLeft: '20px' }}>
-          <li><strong>In iframe:</strong> {isInIframe ? 'Yes' : 'No'}</li>
-          <li><strong>React initialized at:</strong> {window.__REACT_INIT_TIME ? new Date(window.__REACT_INIT_TIME).toLocaleTimeString() : 'Unknown'}</li>
-          <li><strong>User agent:</strong> {navigator.userAgent.split(' ').slice(0, 3).join(' ')}...</li>
-          <li><strong>Window size:</strong> {window.innerWidth}x{window.innerHeight}</li>
-        </ul>
-      </div>
+      <SupabaseTest />
     </div>
   );
 }

@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ['react', 'react-dom']
   },
   build: {
     outDir: 'dist',
@@ -56,8 +57,22 @@ export default defineConfig(({ mode }) => ({
     middlewareMode: false
   },
   optimizeDeps: {
-    include: ['react', 'react-dom'],
-    exclude: ['@supabase/supabase-js']
+    include: [
+      'react', 
+      'react-dom', 
+      '@supabase/supabase-js',
+      '@supabase/postgrest-js',
+      '@supabase/realtime-js',
+      '@supabase/functions-js',
+      '@supabase/storage-js',
+      '@supabase/gotrue-js'
+    ],
+    esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
   define: {
     __DEV__: mode === 'development' ? 'true' : 'false',
