@@ -8,6 +8,7 @@ import { initPostHog } from "./lib/posthog"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ErrorBoundary } from "./components/common/ErrorBoundary"
 import { checkEnvironment, diagnoseReactMounting, monitorAppPerformance } from "./lib/debugUtils"
+import { TestComponent } from "./components/debug/TestComponent"
 import "./App.css"
 
 // Create a client
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
 function App() {
   const [mounted, setMounted] = useState(false)
   const [envCheck, setEnvCheck] = useState<{issues: string[], hasCriticalIssues: boolean} | null>(null)
+  const [debugMode, setDebugMode] = useState(true) // Enable debug mode by default
 
   useEffect(() => {
     console.log('App component mounting, timestamp:', Date.now())
@@ -80,8 +82,7 @@ function App() {
   }
 
   // Only show environment issues if they are critical AND we want to block rendering
-  // Currently disabled to prevent false positives
-  if (false && envCheck?.hasCriticalIssues) {
+  if (envCheck?.hasCriticalIssues) {
     return (
       <div className="environment-issue-container">
         <h2>Environment Issues Detected</h2>
@@ -96,6 +97,29 @@ function App() {
         </button>
       </div>
     )
+  }
+
+  // Show debug component in debug mode
+  if (debugMode) {
+    return (
+      <div className="app-debug-mode">
+        <TestComponent />
+        <button 
+          onClick={() => setDebugMode(false)}
+          style={{
+            padding: '8px 16px',
+            margin: '20px',
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Continue to Full App
+        </button>
+      </div>
+    );
   }
 
   // Wrap the entire app in an error boundary

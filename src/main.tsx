@@ -4,13 +4,19 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Simple and direct React initialization
-const rootElement = document.getElementById('root');
-
-if (rootElement) {
+// Simple and direct React initialization with improved error handling
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM content loaded, starting React initialization');
+  
+  const rootElement = document.getElementById('root');
+  
+  if (!rootElement) {
+    console.error('Root element not found - cannot mount React');
+    document.body.innerHTML = '<div>Cannot find root element</div>';
+    return;
+  }
+  
   try {
-    console.log('Starting React initialization');
-    
     // Remove loading fallback if it exists
     const fallback = document.getElementById('loading-fallback');
     if (fallback) {
@@ -45,7 +51,5 @@ if (rootElement) {
       </div>
     `;
   }
-} else {
-  console.error('Root element not found');
-  document.body.innerHTML = '<div>Cannot find root element</div>';
-}
+});
+

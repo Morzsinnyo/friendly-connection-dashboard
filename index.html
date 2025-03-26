@@ -12,6 +12,12 @@
       // Simple check to verify JavaScript is executing
       console.log('JavaScript is running in the document head');
       window.__JS_CHECK = true;
+      
+      // Add error handling for script loading
+      window.addEventListener('error', function(event) {
+        console.error('Script loading error:', event.message);
+        document.getElementById('loading-status')?.textContent = 'Error loading scripts: ' + event.message;
+      }, true);
     </script>
   </head>
 
@@ -22,6 +28,9 @@
         <div style="text-align: center;">
           <p>Loading application...</p>
           <p id="loading-status"></p>
+          <noscript>
+            <p style="color: #e11d48;">JavaScript is required to run this application.</p>
+          </noscript>
         </div>
       </div>
     </div>
@@ -32,14 +41,19 @@
     <script>
       // Check if scripts are loading properly
       console.log('Bottom of body script executed');
-      document.getElementById('loading-status').textContent = 'Scripts loaded. Initializing React...';
+      
+      if (document.getElementById('loading-status')) {
+        document.getElementById('loading-status').textContent = 'Scripts loaded. Initializing React...';
+      }
       
       // Set a timeout to detect if React doesn't initialize
       setTimeout(function() {
         if (!window.__REACT_INITIALIZED && document.getElementById('loading-fallback')) {
           console.error('React failed to initialize after timeout');
-          document.getElementById('loading-status').textContent = 
-            'App initialization timed out. Please check console for errors or refresh the page.';
+          if (document.getElementById('loading-status')) {
+            document.getElementById('loading-status').textContent = 
+              'App initialization timed out. Please check console for errors or refresh the page.';
+          }
         }
       }, 5000);
     </script>
