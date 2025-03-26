@@ -56,10 +56,16 @@ const initReact = () => {
       
       console.log('[MAIN] React app rendered successfully');
       
-      // Signal successful initialization
+      // Signal successful initialization and ensure debug mode is disabled
       window.__REACT_INITIALIZED = true;
       window.__REACT_INIT_TIME = Date.now();
-      window.__DEBUG_ENABLED = false; // Always disable debug mode
+      // Initialize __DEBUG_ENABLED if not already defined
+      if (typeof window.__DEBUG_ENABLED === 'undefined') {
+        window.__DEBUG_ENABLED = false;
+      } else {
+        // Force debug mode off
+        window.__DEBUG_ENABLED = false;
+      }
       
       // In iframe mode, use a more subtle debug signal
       if (isInIframe) {
@@ -75,7 +81,7 @@ const initReact = () => {
         debugSignal.style.borderRadius = '2px';
         debugSignal.style.fontSize = '8px';
         debugSignal.style.zIndex = '9999';
-        debugSignal.textContent = 'R';
+        debugSignal.style.textContent = 'R';
         document.body.appendChild(debugSignal);
       } else {
         // Add visible signal that React is working (larger for non-iframe mode)
@@ -179,7 +185,11 @@ window.addEventListener('message', (event) => {
       }
     }
   } else if (event.data?.type === 'FORCE_DEBUG_OFF') {
-    window.__DEBUG_ENABLED = false;
+    if (typeof window.__DEBUG_ENABLED === 'undefined') {
+      window.__DEBUG_ENABLED = false;
+    } else {
+      window.__DEBUG_ENABLED = false;
+    }
     console.log('[MAIN] Received force debug off message');
     // Notify any components that might be listening for this
     window.dispatchEvent(new CustomEvent('debug-mode-change', { detail: { enabled: false } }));
