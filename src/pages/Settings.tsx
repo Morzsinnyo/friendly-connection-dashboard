@@ -121,7 +121,7 @@ export default function Settings() {
             </Button>
           </div>
           <CalendarSettings calendarId={profile?.calendar_id || null} onCalendarIdUpdate={() => refetch()} isSettingsOpen={isSettingsOpen} onSettingsOpenChange={setIsSettingsOpen} />
-          <Button variant="default" size="sm" onClick={() => window.open('https://calendar.google.com/', '_blank')} className="w-full sm:w-auto bg-[#a7ff83] px-0 mx-0 my-[12px]">
+          <Button variant="default" size="sm" onClick={() => window.open('https://calendar.google.com/', '_blank')} className="w-full sm:w-auto bg-[#a7ff83] mx-0 my-[12px] px-[10px]">
             <Calendar className="h-4 w-4 mr-2" />
             Google Calendar
           </Button>
