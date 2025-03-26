@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -40,14 +41,18 @@ export default defineConfig(({ mode }) => ({
       'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey, Range',
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Expose-Headers': 'Content-Range',
-      'Content-Security-Policy': "frame-ancestors 'self' https://*.lovable.ai https://*.lovable.dev http://localhost:* https://localhost:*",
-      'X-Frame-Options': 'SAMEORIGIN'
+      'Content-Security-Policy': "frame-ancestors * 'self'",
+      'X-Frame-Options': 'ALLOWALL'
     },
     fs: {
       strict: false,
       allow: ['..']
     },
-    cors: true, // Explicitly enable CORS for all routes
+    cors: {
+      origin: '*',
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+      credentials: true
+    },
     middlewareMode: false
   },
   optimizeDeps: {

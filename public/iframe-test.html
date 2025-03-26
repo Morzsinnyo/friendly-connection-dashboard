@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iframe Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-controls {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f3f4f6;
+      border-radius: 8px;
+    }
+    #iframe-container {
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 20px 0;
+    }
+    iframe {
+      width: 100%;
+      height: 500px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+    .info { background-color: #dbeafe; color: #1e40af; }
+    .success { background-color: #dcfce7; color: #166534; }
+    .error { background-color: #fee2e2; color: #b91c1c; }
+    button {
+      padding: 8px 12px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    pre {
+      background-color: #f1f5f9;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Iframe Test Page</h1>
+  <p>This page tests loading the app in an iframe to diagnose connectivity issues.</p>
+  
+  <div class="test-controls">
+    <h3>Test Controls</h3>
+    <button id="reload-iframe">Reload Iframe</button>
+    <button id="send-message">Send Test Message</button>
+    <button id="check-connection">Check Connection</button>
+    <div class="status info" id="test-status">Ready to test</div>
+  </div>
+  
+  <div id="iframe-container">
+    <h3>App Iframe</h3>
+    <iframe id="test-iframe" src="/" allow="accelerometer; camera; geolocation; microphone; autoplay"></iframe>
+  </div>
+  
+  <div>
+    <h3>Communication Log</h3>
+    <pre id="communication-log">// Messages will appear here</pre>
+  </div>
+  
+  <script>
+    // Communication log
+    const log = document.getElementById('communication-log');
+    const status = document.getElementById('test-status');
+    const iframe = document.getElementById('test-iframe');
+    
+    function addLog(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      log.textContent += `[${timestamp}] ${message}\n`;
+      log.scrollTop = log.scrollHeight;
+    }
+    
+    function updateStatus(message, type) {
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+    
+    // Setup message listener
+    window.addEventListener('message', function(event) {
+      addLog(`Received message: ${JSON.stringify(event.data)}`);
+      
+      // Handle specific message types
+      if (event.data?.type === 'IFRAME_LOADED_RESPONSE') {
+        updateStatus('✅ iframe confirmed it is loaded!', 'success');
+      } else if (event.data?.type === 'IFRAME_ERROR') {
+        updateStatus(`❌ iframe reported error: ${event.data.error}`, 'error');
+      } else if (event.data?.type === 'REACT_INITIALIZED') {
+        updateStatus('✅ React app initialized successfully!', 'success');
+      } else if (event.data?.type === 'IFRAME_STATUS' && event.data.status === 'react-running') {
+        updateStatus('✅ React is running in iframe!', 'success');
+      }
+    });
+    
+    // Button event listeners
+    document.getElementById('reload-iframe').addEventListener('click', function() {
+      addLog('Reloading iframe...');
+      iframe.src = iframe.src;
+    });
+    
+    document.getElementById('send-message').addEventListener('click', function() {
+      addLog('Sending test message to iframe...');
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'TEST_MESSAGE',
+          content: 'Hello from parent page!',
+          timestamp: Date.now()
+        }, '*');
+      } catch (e) {
+        addLog(`Error sending message: ${e.message}`, 'error');
+        updateStatus(`❌ Failed to send message: ${e.message}`, 'error');
+      }
+    });
+    
+    document.getElementById('check-connection').addEventListener('click', function() {
+      addLog('Checking iframe connection...');
+      try {
+        iframe.contentWindow.postMessage({
+          type: 'CHECK_IFRAME_LOADED',
+          timestamp: Date.now()
+        }, '*');
+        
+        // Set a timeout to show an error if we don't get a response
+        setTimeout(function() {
+          if (status.textContent !== '✅ iframe confirmed it is loaded!') {
+            updateStatus('❌ No response from iframe - connection failed', 'error');
+          }
+        }, 1000);
+      } catch (e) {
+        addLog(`Error checking connection: ${e.message}`, 'error');
+        updateStatus(`❌ Connection check failed: ${e.message}`, 'error');
+      }
+    });
+    
+    // Initial setup
+    addLog('Test page loaded, monitoring iframe...');
+  </script>
+</body>
+</html>

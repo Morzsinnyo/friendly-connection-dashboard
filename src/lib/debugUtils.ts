@@ -8,6 +8,7 @@ import * as React from 'react';
 // Check for common environment problems
 export function checkEnvironment() {
   const issues: string[] = []
+  const isInIframe = window !== window.parent
   
   // Check for React initialization in the browser context
   try {
@@ -41,6 +42,44 @@ export function checkEnvironment() {
         console.warn('Service workers detected, may cause caching issues:', registrations)
       }
     })
+  }
+  
+  // Iframe-specific checks
+  if (isInIframe) {
+    console.log('Running in iframe, performing iframe-specific checks')
+    
+    // Check if we can communicate with parent
+    try {
+      window.parent.postMessage({ type: 'IFRAME_CHECK' }, '*')
+      console.log('Successfully sent message to parent frame')
+    } catch (error) {
+      console.error('Error communicating with parent frame:', error)
+      issues.push('Cannot communicate with parent frame - security restriction')
+    }
+    
+    // Check for potential restrictive headers
+    const xfoMeta = document.querySelector('meta[http-equiv="X-Frame-Options"]')
+    if (xfoMeta) {
+      const content = xfoMeta.getAttribute('content') || ''
+      if (content === 'DENY' || content === 'SAMEORIGIN') {
+        console.warn('Restrictive X-Frame-Options header detected:', content)
+        
+        if (content === 'DENY') {
+          issues.push('X-Frame-Options set to DENY, which prevents iframe embedding')
+        }
+      }
+    }
+    
+    const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]')
+    if (cspMeta) {
+      const content = cspMeta.getAttribute('content') || ''
+      if (content.includes('frame-ancestors') && 
+          !content.includes('frame-ancestors *') && 
+          !content.includes("frame-ancestors 'self'")) {
+        console.warn('Restrictive Content-Security-Policy frame-ancestors directive detected')
+        issues.push('Restrictive CSP frame-ancestors may prevent iframe embedding')
+      }
+    }
   }
   
   return {
@@ -86,6 +125,36 @@ export function monitorAppPerformance() {
         console.warn('PerformanceObserver for longtask not supported')
       }
     }
+    
+    // Special monitoring for iframe mode
+    const isInIframe = window !== window.parent
+    if (isInIframe) {
+      console.log('Setting up performance monitoring for iframe mode')
+      
+      // Monitor UI responsiveness in iframe
+      let lastFrameTime = performance.now()
+      let frameDrops = 0
+      
+      const checkFrame = () => {
+        const now = performance.now()
+        const elapsed = now - lastFrameTime
+        
+        // If more than 50ms has passed, we may have dropped frames
+        if (elapsed > 50) {
+          frameDrops++
+          console.warn(`Potential frame drop detected: ${elapsed.toFixed(2)}ms since last frame check`)
+          
+          if (frameDrops > 5) {
+            console.error('Multiple frame drops detected, iframe performance may be degraded')
+          }
+        }
+        
+        lastFrameTime = now
+        requestAnimationFrame(checkFrame)
+      }
+      
+      requestAnimationFrame(checkFrame)
+    }
   } catch (error) {
     console.error('Error in performance monitoring:', error)
   }
@@ -111,7 +180,8 @@ export function diagnoseReactMounting() {
           windowSize: `${window.innerWidth}x${window.innerHeight}`,
           devicePixelRatio: window.devicePixelRatio,
           url: window.location.href,
-          scriptCount: document.scripts.length
+          scriptCount: document.scripts.length,
+          inIframe: window !== window.parent
         })
         
         // Simple DOM-based diagnostics - only show if React hasn't rendered anything
@@ -125,10 +195,18 @@ export function diagnoseReactMounting() {
                 <li>Script loading: ${document.scripts.length} scripts on page</li>
                 <li>React Initialized: ${Boolean((window as any).__REACT_INITIALIZED)}</li>
                 <li>React Init Time: ${(window as any).__REACT_INIT_TIME ? new Date((window as any).__REACT_INIT_TIME).toISOString() : 'Never'}</li>
+                <li>In iframe: ${window !== window.parent ? 'Yes' : 'No'}</li>
               </ul>
               <button onclick="window.location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 Reload Page
               </button>
+              ${window !== window.parent ? 
+                `<p style="margin-top: 10px;">
+                  <button onclick="window.open(window.location.href, '_blank')" style="padding: 8px 16px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Open in New Window
+                  </button>
+                </p>` : ''
+              }
             </div>
           `
         }
@@ -141,11 +219,55 @@ export function diagnoseReactMounting() {
   }
 }
 
+// Add iframe-specific detection function
+export function checkIframeCompatibility() {
+  const isInIframe = window !== window.parent
+  if (!isInIframe) return { inIframe: false, issues: [] }
+  
+  const issues: string[] = []
+  let canCommunicate = false
+  
+  try {
+    // Test sending a message to parent
+    window.parent.postMessage({ type: 'IFRAME_COMPATIBILITY_CHECK' }, '*')
+    canCommunicate = true
+  } catch (error) {
+    issues.push(`Communication error: ${error.message}`)
+    canCommunicate = false
+  }
+  
+  // Check for restrictive headers
+  const headers = {
+    csp: document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content'),
+    xfo: document.querySelector('meta[http-equiv="X-Frame-Options"]')?.getAttribute('content')
+  }
+  
+  if (headers.xfo === 'DENY') {
+    issues.push('X-Frame-Options: DENY (prevents embedding)')
+  } else if (headers.xfo === 'SAMEORIGIN') {
+    issues.push('X-Frame-Options: SAMEORIGIN (only allows same-origin embedding)')
+  }
+  
+  if (headers.csp && headers.csp.includes('frame-ancestors') && 
+      !headers.csp.includes('frame-ancestors *') && 
+      !headers.csp.includes("frame-ancestors 'self'")) {
+    issues.push('Restrictive CSP frame-ancestors directive')
+  }
+  
+  return {
+    inIframe: true,
+    canCommunicate,
+    issues,
+    headers
+  }
+}
+
 // Add these to the window for debugging from console
 if (typeof window !== 'undefined') {
   (window as any).__DEBUG_UTILS = {
     checkEnvironment,
     monitorAppPerformance,
-    diagnoseReactMounting
+    diagnoseReactMounting,
+    checkIframeCompatibility
   }
 }

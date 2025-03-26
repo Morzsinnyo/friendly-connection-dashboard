@@ -31,6 +31,12 @@ function App() {
     console.log('[APP] App component mounting, timestamp:', Date.now())
     console.log('[APP] Running in iframe:', isInIframe)
     
+    // For iframe mode, add specific attributes to help debugging
+    if (isInIframe) {
+      document.body.classList.add('in-iframe-mode');
+      document.documentElement.dataset.frameStatus = 'app-mounting';
+    }
+    
     // Run diagnostic functions
     try {
       const envIssues = checkEnvironment()
@@ -62,11 +68,37 @@ function App() {
     
     // Exit debug mode automatically in iframes after a short delay
     if (isInIframe) {
-      console.log('[APP] In iframe, will exit debug mode automatically after 2 seconds')
+      console.log('[APP] In iframe, will exit debug mode automatically after 1 second')
       setTimeout(() => {
         setDebugMode(false)
         console.log('[APP] Auto-exiting debug mode in iframe')
-      }, 2000)
+        document.documentElement.dataset.frameStatus = 'app-running';
+        
+        // Notify parent frame that app is fully running
+        try {
+          window.parent.postMessage({ 
+            type: 'APP_RUNNING', 
+            timestamp: Date.now()
+          }, '*');
+        } catch (err) {
+          console.warn('[APP] Could not notify parent that app is running:', err);
+        }
+      }, 1000)
+    }
+    
+    // Setup listener for iframe-specific messages
+    if (isInIframe) {
+      const messageHandler = (event) => {
+        console.log('[APP] Received message in iframe App component:', event.data);
+        
+        // Handle specific message types here if needed
+        if (event.data?.type === 'EXIT_DEBUG') {
+          setDebugMode(false);
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+      return () => window.removeEventListener('message', messageHandler);
     }
     
     return () => {
@@ -170,6 +202,23 @@ function App() {
         <ThemeProvider>
           <RouterProvider router={router} />
           <Toaster position="top-right" />
+          {isInIframe && (
+            <div 
+              style={{
+                position: 'fixed',
+                bottom: '5px',
+                right: '5px',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                color: '#2563eb',
+                padding: '2px 4px',
+                borderRadius: '2px',
+                fontSize: '9px',
+                zIndex: 9999
+              }}
+            >
+              iframe
+            </div>
+          )}
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

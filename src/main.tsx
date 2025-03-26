@@ -9,11 +9,12 @@ let initializationAttempted = false;
 
 // Configuration for iframe compatibility
 const isInIframe = window !== window.parent;
+window.__IS_IFRAME = isInIframe; // Set this for other components to use
 console.log('[MAIN] Environment check - In iframe:', isInIframe);
 console.log('[MAIN] User agent:', navigator.userAgent);
 console.log('[MAIN] Window location:', window.location.href);
 
-// Robust React initialization function
+// Improved React initialization function
 const initReact = () => {
   // Prevent multiple init attempts
   if (initializationAttempted) {
@@ -29,6 +30,7 @@ const initReact = () => {
     const rootElement = document.getElementById('root');
     
     if (!rootElement) {
+      console.error('[MAIN] Root element not found!');
       throw new Error('Root element not found');
     }
     
@@ -37,50 +39,80 @@ const initReact = () => {
     if (fallback) {
       console.log('[MAIN] Removing loading fallback');
       fallback.remove();
+    } else {
+      console.warn('[MAIN] Loading fallback not found');
     }
     
-    // Create root and render app
-    console.log('[MAIN] Creating React root');
-    const root = createRoot(rootElement);
-    
-    console.log('[MAIN] Rendering React app');
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-    
-    console.log('[MAIN] React app rendered successfully');
-    
-    // Signal successful initialization
-    window.__REACT_INITIALIZED = true;
-    window.__REACT_INIT_TIME = Date.now();
-    
-    // Add visible signal that React is working
-    const debugSignal = document.createElement('div');
-    debugSignal.id = 'react-debug-signal';
-    debugSignal.style.position = 'fixed';
-    debugSignal.style.bottom = '10px';
-    debugSignal.style.right = '10px';
-    debugSignal.style.background = 'green';
-    debugSignal.style.color = 'white';
-    debugSignal.style.padding = '5px';
-    debugSignal.style.borderRadius = '3px';
-    debugSignal.style.fontSize = '10px';
-    debugSignal.style.zIndex = '9999';
-    debugSignal.textContent = 'React Active';
-    document.body.appendChild(debugSignal);
-    
-    // Update any external status indicators
-    const loadingStatus = document.getElementById('loading-status');
-    if (loadingStatus) {
-      loadingStatus.textContent = 'React initialization complete!';
+    // Create root and render app - wrap in try/catch for more specific error reporting
+    try {
+      console.log('[MAIN] Creating React root');
+      const root = createRoot(rootElement);
+      
+      console.log('[MAIN] Rendering React app');
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+      
+      console.log('[MAIN] React app rendered successfully');
+      
+      // Signal successful initialization
+      window.__REACT_INITIALIZED = true;
+      window.__REACT_INIT_TIME = Date.now();
+      
+      // In iframe mode, use a more subtle debug signal
+      if (isInIframe) {
+        console.log('[MAIN] Adding minimal debug signal for iframe mode');
+        const debugSignal = document.createElement('div');
+        debugSignal.id = 'react-debug-signal';
+        debugSignal.style.position = 'fixed';
+        debugSignal.style.bottom = '5px';
+        debugSignal.style.right = '5px';
+        debugSignal.style.background = 'rgba(0,128,0,0.3)';
+        debugSignal.style.color = 'white';
+        debugSignal.style.padding = '3px';
+        debugSignal.style.borderRadius = '2px';
+        debugSignal.style.fontSize = '8px';
+        debugSignal.style.zIndex = '9999';
+        debugSignal.textContent = 'R';
+        document.body.appendChild(debugSignal);
+      } else {
+        // Add visible signal that React is working (larger for non-iframe mode)
+        const debugSignal = document.createElement('div');
+        debugSignal.id = 'react-debug-signal';
+        debugSignal.style.position = 'fixed';
+        debugSignal.style.bottom = '10px';
+        debugSignal.style.right = '10px';
+        debugSignal.style.background = 'green';
+        debugSignal.style.color = 'white';
+        debugSignal.style.padding = '5px';
+        debugSignal.style.borderRadius = '3px';
+        debugSignal.style.fontSize = '10px';
+        debugSignal.style.zIndex = '9999';
+        debugSignal.textContent = 'React Active';
+        document.body.appendChild(debugSignal);
+      }
+      
+      // Update any external status indicators
+      const loadingStatus = document.getElementById('loading-status');
+      if (loadingStatus) {
+        loadingStatus.textContent = 'React initialization complete!';
+      }
+    } catch (renderError) {
+      console.error('[MAIN] Error rendering React app:', renderError);
+      throw renderError; // re-throw for outer error handling
     }
     
     // For iframe scenarios, notify parent
     if (isInIframe) {
       try {
-        window.parent.postMessage({ type: 'REACT_INITIALIZED', success: true }, '*');
+        window.parent.postMessage({ 
+          type: 'REACT_INITIALIZED', 
+          success: true,
+          timestamp: Date.now()
+        }, '*');
+        console.log('[MAIN] Notified parent frame of successful initialization');
       } catch (err) {
         console.warn('[MAIN] Could not communicate with parent frame:', err);
       }
@@ -100,6 +132,7 @@ const initReact = () => {
           <button onclick="window.location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Reload Page
           </button>
+          ${isInIframe ? `<p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Running in iframe mode. <a href="${window.location.href}" target="_blank">Open directly</a></p>` : ''}
         </div>
       `;
     }
@@ -109,8 +142,10 @@ const initReact = () => {
       try {
         window.parent.postMessage({ 
           type: 'REACT_INIT_ERROR', 
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
+          timestamp: Date.now()
         }, '*');
+        console.log('[MAIN] Notified parent frame of initialization failure');
       } catch (err) {
         console.warn('[MAIN] Could not communicate error to parent frame:', err);
       }
@@ -118,21 +153,86 @@ const initReact = () => {
   }
 };
 
-// Multi-stage initialization strategy
+// Add support for message-based initialization
+window.addEventListener('message', (event) => {
+  console.log('[MAIN] Received message:', event.data);
+  
+  // React to specific message types
+  if (event.data?.type === 'INIT_REACT' || event.data?.type === 'FORCE_INIT') {
+    console.log('[MAIN] Received initialization request via postMessage');
+    if (!window.__REACT_INITIALIZED) {
+      initReact();
+    } else {
+      console.log('[MAIN] React already initialized, ignoring init request');
+      // Confirm to parent that we're already running
+      if (isInIframe) {
+        try {
+          window.parent.postMessage({ 
+            type: 'REACT_ALREADY_INITIALIZED',
+            timestamp: Date.now()
+          }, '*');
+        } catch (err) {
+          console.warn('[MAIN] Could not respond to parent frame:', err);
+        }
+      }
+    }
+  } else if (event.data?.type === 'TEST_MESSAGE') {
+    console.log('[MAIN] Received test message:', event.data.content);
+    // Echo back to confirm receipt
+    if (isInIframe) {
+      try {
+        window.parent.postMessage({ 
+          type: 'TEST_RESPONSE',
+          originalMessage: event.data,
+          timestamp: Date.now()
+        }, '*');
+      } catch (err) {
+        console.warn('[MAIN] Could not respond to test message:', err);
+      }
+    }
+  } else if (event.data?.type === 'CHECK_IFRAME_LOADED') {
+    console.log('[MAIN] Received iframe check request');
+    // Respond to confirm we're alive
+    if (isInIframe) {
+      try {
+        window.parent.postMessage({ 
+          type: 'IFRAME_LOADED_RESPONSE',
+          status: 'ok',
+          reactInitialized: !!window.__REACT_INITIALIZED,
+          timestamp: Date.now()
+        }, '*');
+      } catch (err) {
+        console.warn('[MAIN] Could not respond to iframe check:', err);
+      }
+    }
+  }
+});
+
+// Multi-stage initialization strategy with better error reporting
 console.log('[MAIN] Preparing React initialization');
 
-// Immediate initialization if DOM is already loaded
-if (document.readyState === 'loading') {
-  console.log('[MAIN] Document still loading, waiting for DOMContentLoaded');
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log('[MAIN] DOMContentLoaded fired, initializing React');
-    initReact();
-  });
-} else {
-  // DOM already loaded, run immediately
-  console.log('[MAIN] Document already loaded, initializing React immediately');
-  initReact();
-}
+// Document ready handler with timeout safety
+const whenDocumentReady = (callback) => {
+  if (document.readyState === 'loading') {
+    console.log('[MAIN] Document still loading, waiting for DOMContentLoaded');
+    document.addEventListener('DOMContentLoaded', callback);
+    
+    // Safety timeout in case DOMContentLoaded doesn't fire
+    setTimeout(() => {
+      if (document.readyState !== 'loading' && !window.__REACT_INITIALIZED) {
+        console.warn('[MAIN] DOMContentLoaded might have been missed, checking readiness');
+        callback();
+      }
+    }, 1000);
+  } else {
+    // DOM already loaded, run immediately
+    console.log('[MAIN] Document already loaded, initializing React immediately');
+    callback();
+  }
+};
+
+// Initialize React when document is ready
+whenDocumentReady(initReact);
 
 // Backup initialization triggers
 window.addEventListener('load', () => {
@@ -143,22 +243,17 @@ window.addEventListener('load', () => {
   }
 });
 
-// Special handling for iframe scenarios
+// Special handling for iframe scenarios with more aggressive timeouts
 if (isInIframe) {
   console.log('[MAIN] Adding iframe-specific initialization support');
   
-  // Listen for messages from parent
-  window.addEventListener('message', (event) => {
-    console.log('[MAIN] Received message in iframe:', event.data);
-    
-    // Handle initialization request from parent
-    if (event.data?.type === 'INIT_REACT') {
-      console.log('[MAIN] Received initialization request from parent');
-      if (!window.__REACT_INITIALIZED) {
-        initReact();
-      }
+  // Start initialization after a slight delay if not already started
+  setTimeout(() => {
+    if (!window.__REACT_INITIALIZED && !initializationAttempted) {
+      console.log('[IFRAME] Starting delayed initialization for iframe compatibility');
+      initReact();
     }
-  });
+  }, 500);
 }
 
 // Expose initialization function globally for manual triggering
