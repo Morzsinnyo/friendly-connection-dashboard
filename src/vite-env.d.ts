@@ -1,12 +1,13 @@
 
 /// <reference types="vite/client" />
 
+// Define window properties used in the application
 interface Window {
   gapi: any;
-  __REACT_DEVTOOLS_GLOBAL_HOOK__?: any;
-  __REACT_INITIALIZED?: boolean;
-  __REACT_INIT_TIME?: number;
-  posthog?: any; // Added for PostHog
+  __REACT_DEVTOOLS_GLOBAL_HOOK__: any;
+  __REACT_INITIALIZED: boolean;
+  __REACT_INIT_TIME: number;
+  posthog?: any;
   __DEBUG_UTILS?: {
     checkEnvironment: () => { issues: string[], hasCriticalIssues: boolean };
     monitorAppPerformance: () => void;
@@ -14,15 +15,11 @@ interface Window {
   };
 }
 
-// Declare global React variable for browser context
+// Make sure React is available globally
 declare global {
-  // For React global detection
-  const React: {
-    version: string;
-    createElement: Function;
-    Fragment: any;
-    [key: string]: any;
-  };
+  // React must be available when using JSX
+  import React from 'react';
+  namespace JSX {}
 }
 
 // This export is needed to make this a module

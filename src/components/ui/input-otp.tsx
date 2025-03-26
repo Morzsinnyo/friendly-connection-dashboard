@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 import { Dot } from "lucide-react"
@@ -15,6 +16,7 @@ const InputOTP = React.forwardRef<
       containerClassName
     )}
     className={cn("disabled:cursor-not-allowed", className)}
+    maxLength={6} // Add the required maxLength property with a default value of 6
     {...props}
   />
 ))

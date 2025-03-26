@@ -1,3 +1,4 @@
+import * as React from "react";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

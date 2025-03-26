@@ -7,8 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   plugins: [
     react({
-      // Improve React refresh and error handling
-      fastRefresh: true,
+      // Using supported configuration options
       jsxImportSource: "react"
     }),
     mode === 'development' && componentTagger(),
