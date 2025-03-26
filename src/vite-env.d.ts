@@ -13,6 +13,8 @@ interface Window {
     monitorAppPerformance: () => void;
     diagnoseReactMounting: () => void;
   };
+  // Add React to window for debugging purposes
+  React?: any;
 }
 
 // Make sure React is available globally

@@ -1,4 +1,6 @@
 
+import * as React from 'react';
+
 /**
  * Utility functions to help debug React rendering issues
  */
@@ -17,7 +19,7 @@ export function checkEnvironment() {
     }
     
     // Check DevTools presence
-    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+    if (window && (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__) {
       console.log('React DevTools detected, which helps for development')
     }
   } catch (error) {
@@ -100,7 +102,7 @@ export function diagnoseReactMounting() {
         return
       }
       
-      if (!window.__REACT_INITIALIZED && rootEl.childElementCount === 0) {
+      if (!(window as any).__REACT_INITIALIZED && rootEl.childElementCount === 0) {
         console.error('React did not initialize after 5 seconds. No content in root element.')
         
         // Log browser and environment details
@@ -121,8 +123,8 @@ export function diagnoseReactMounting() {
               <ul>
                 <li>Page URL: ${window.location.href}</li>
                 <li>Script loading: ${document.scripts.length} scripts on page</li>
-                <li>React Initialized: ${Boolean(window.__REACT_INITIALIZED)}</li>
-                <li>React Init Time: ${window.__REACT_INIT_TIME ? new Date(window.__REACT_INIT_TIME).toISOString() : 'Never'}</li>
+                <li>React Initialized: ${Boolean((window as any).__REACT_INITIALIZED)}</li>
+                <li>React Init Time: ${(window as any).__REACT_INIT_TIME ? new Date((window as any).__REACT_INIT_TIME).toISOString() : 'Never'}</li>
               </ul>
               <button onclick="window.location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
                 Reload Page
@@ -130,7 +132,7 @@ export function diagnoseReactMounting() {
             </div>
           `
         }
-      } else if (window.__REACT_INITIALIZED) {
+      } else if ((window as any).__REACT_INITIALIZED) {
         console.log('React successfully mounted content')
       }
     }, 5000)
@@ -141,7 +143,7 @@ export function diagnoseReactMounting() {
 
 // Add these to the window for debugging from console
 if (typeof window !== 'undefined') {
-  window.__DEBUG_UTILS = {
+  (window as any).__DEBUG_UTILS = {
     checkEnvironment,
     monitorAppPerformance,
     diagnoseReactMounting

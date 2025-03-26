@@ -67,6 +67,7 @@ function initializeReact() {
     console.log('Rendering App component...')
     
     // Add a timestamp to help with HMR debugging
+    // @ts-ignore - Adding debugging metadata to window
     window.__REACT_INIT_TIME = Date.now()
     
     // Render the application
@@ -79,6 +80,7 @@ function initializeReact() {
     console.log('App rendered successfully at', new Date().toISOString())
     
     // Add a signal to the window that React has initialized successfully
+    // @ts-ignore - Adding debugging metadata to window
     window.__REACT_INITIALIZED = true
   } catch (error) {
     console.error('Fatal error during React initialization:', error)
