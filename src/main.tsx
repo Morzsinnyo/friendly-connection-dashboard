@@ -81,7 +81,7 @@ const initReact = () => {
         debugSignal.style.borderRadius = '2px';
         debugSignal.style.fontSize = '8px';
         debugSignal.style.zIndex = '9999';
-        debugSignal.style.textContent = 'R';
+        debugSignal.textContent = 'R'; // Fix: use element.textContent, not style.textContent
         document.body.appendChild(debugSignal);
       } else {
         // Add visible signal that React is working (larger for non-iframe mode)
@@ -195,7 +195,16 @@ window.addEventListener('message', (event) => {
     window.dispatchEvent(new CustomEvent('debug-mode-change', { detail: { enabled: false } }));
   }
   // Additional message handlers remain unchanged
-  // ... keep existing code (for other message type handlers)
+  else if (event.data?.type === 'DEBUG_ON') {
+    if (typeof window.__DEBUG_ENABLED === 'undefined') {
+      window.__DEBUG_ENABLED = true;
+    } else {
+      window.__DEBUG_ENABLED = true;
+    }
+    console.log('[MAIN] Received debug on message');
+    // Notify any components that might be listening for this
+    window.dispatchEvent(new CustomEvent('debug-mode-change', { detail: { enabled: true } }));
+  }
 });
 
 // Multi-stage initialization strategy with better error reporting
