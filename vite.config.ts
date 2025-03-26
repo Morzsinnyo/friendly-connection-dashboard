@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   plugins: [
     react({
-      fastRefresh: true,
+      // Remove the fastRefresh option as it's not recognized in the type
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
