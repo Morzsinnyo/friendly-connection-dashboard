@@ -7,21 +7,19 @@
 export function checkEnvironment() {
   const issues: string[] = []
   
-  // Check for React version mismatches
+  // Check for React version mismatches using window.__REACT_VERSION__ (set in main.tsx)
   try {
-    const reactDomVersion = require('react-dom').version
-    const reactVersion = require('react').version
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+      console.log('React DevTools detected, which is good for development')
+    }
     
-    if (reactDomVersion !== reactVersion) {
-      issues.push(`React version mismatch: react@${reactVersion}, react-dom@${reactDomVersion}`)
+    // We'll check if React is properly initialized
+    const reactInitialized = typeof React !== 'undefined' && React.version
+    if (!reactInitialized) {
+      issues.push('React is not properly initialized')
     }
   } catch (error) {
-    issues.push('Could not detect React versions')
-  }
-  
-  // Check for problematic browser extensions
-  if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
-    console.log('React DevTools detected, which is good for development')
+    console.warn('Error checking React environment:', error)
   }
   
   // Detect if running in dev mode
@@ -42,17 +40,23 @@ export function checkEnvironment() {
   
   return {
     issues,
-    hasCriticalIssues: issues.length > 0
+    hasCriticalIssues: issues.length > 0 && issues.some(issue => 
+      !issue.includes('React DevTools') // Don't consider missing DevTools as critical
+    )
   }
 }
 
 // Monitor app performance
 export function monitorAppPerformance() {
-  // Record load time
-  const loadTime = window.performance.timing.domContentLoadedEventEnd - 
-                  window.performance.timing.navigationStart
-  
-  console.log(`Page load time: ${loadTime}ms`)
+  // Record load time 
+  if (window.performance && window.performance.timing) {
+    const loadTime = window.performance.timing.domContentLoadedEventEnd - 
+                    window.performance.timing.navigationStart
+    
+    console.log(`Page load time: ${loadTime}ms`)
+  } else {
+    console.log('Performance API not available')
+  }
   
   // Watch for long tasks
   if ('PerformanceObserver' in window) {

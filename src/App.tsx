@@ -33,6 +33,8 @@ function App() {
     
     if (envIssues.hasCriticalIssues) {
       console.error('Critical environment issues detected:', envIssues.issues)
+    } else if (envIssues.issues.length > 0) {
+      console.warn('Non-critical environment issues detected:', envIssues.issues)
     }
     
     monitorAppPerformance()
@@ -65,7 +67,7 @@ function App() {
     }
   }, [])
 
-  // Show environment issues if any were detected
+  // Only show environment issues if they are critical
   if (envCheck?.hasCriticalIssues) {
     return (
       <div className="environment-issue-container">
@@ -75,6 +77,7 @@ function App() {
             <li key={i}>{issue}</li>
           ))}
         </ul>
+        <p>These issues may prevent the application from functioning correctly.</p>
         <button onClick={() => window.location.reload()}>
           Reload Application
         </button>

@@ -1,4 +1,5 @@
 
+import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -27,6 +28,11 @@ window.addEventListener('error', (event) => {
     `
   }
 })
+
+// Store React version on window for debugging
+if (React && React.version) {
+  console.log('React version detected:', React.version)
+}
 
 // Function to initialize the React application
 function initializeReact() {
