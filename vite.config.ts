@@ -5,6 +5,27 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    react({
+      fastRefresh: true,
+    }),
+    mode === 'development' && componentTagger(),
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      }
+    }
+  },
   server: {
     host: "::",
     port: 8080,
@@ -22,26 +43,12 @@ export default defineConfig(({ mode }) => ({
     },
     middlewareMode: false
   },
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: true,
-    rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html')
-      }
-    }
-  },
-  plugins: [
-    react(),
-    mode === 'development' && componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
   optimizeDeps: {
     exclude: ['@supabase/supabase-js']
+  },
+  // Add some diagnostic flags to help troubleshoot rendering issues
+  esbuild: {
+    logLevel: 'info',
+    logLimit: 0,
   }
 }));
