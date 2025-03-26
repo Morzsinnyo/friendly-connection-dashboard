@@ -41,7 +41,9 @@ export default defineConfig(({ mode }) => ({
       'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey, Range',
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Expose-Headers': 'Content-Range',
-      'Content-Type': 'application/javascript'
+      'Content-Type': 'application/javascript',
+      // Add header to allow iframe embedding
+      'X-Frame-Options': 'ALLOW-FROM https://lovable.ai https://lovable.dev http://localhost:* https://localhost:*'
     },
     fs: {
       strict: false,
@@ -57,12 +59,15 @@ export default defineConfig(({ mode }) => ({
   define: {
     __DEV__: mode === 'development',
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || '0.0.0'),
+    // Add a flag for iframe detection
+    __IN_IFRAME__: 'window !== window.parent'
   },
-  // Add some diagnostic flags to help troubleshoot rendering issues
+  // Simplified esbuild config
   esbuild: {
     logLevel: 'info',
     logLimit: 0,
     jsxFactory: 'React.createElement',
-    jsxFragment: 'React.Fragment'
+    jsxFragment: 'React.Fragment',
+    jsx: 'automatic'
   }
 }));

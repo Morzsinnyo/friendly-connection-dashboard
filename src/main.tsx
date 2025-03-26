@@ -4,9 +4,13 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Simple and direct React initialization with improved error handling
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM content loaded, starting React initialization');
+// Immediately check if we're in an iframe
+const isInIframe = window !== window.parent;
+console.log('Environment check - In iframe:', isInIframe);
+
+// Simple and direct React initialization with improved iframe support
+const initReact = () => {
+  console.log('Starting React initialization, timestamp:', Date.now());
   
   const rootElement = document.getElementById('root');
   
@@ -37,6 +41,20 @@ document.addEventListener('DOMContentLoaded', () => {
     window.__REACT_INITIALIZED = true;
     window.__REACT_INIT_TIME = Date.now();
     
+    // Add a visible signal that React is working
+    const debugSignal = document.createElement('div');
+    debugSignal.id = 'react-debug-signal';
+    debugSignal.style.position = 'fixed';
+    debugSignal.style.bottom = '10px';
+    debugSignal.style.right = '10px';
+    debugSignal.style.background = 'green';
+    debugSignal.style.color = 'white';
+    debugSignal.style.padding = '5px';
+    debugSignal.style.borderRadius = '3px';
+    debugSignal.style.fontSize = '10px';
+    debugSignal.textContent = 'React Active';
+    document.body.appendChild(debugSignal);
+    
   } catch (error) {
     console.error('Error initializing React app:', error);
     
@@ -51,5 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       </div>
     `;
+  }
+};
+
+// Run initialization either immediately or on DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initReact);
+} else {
+  // DOM already loaded, run immediately
+  initReact();
+}
+
+// Add a backup initialization for iframe scenarios
+window.addEventListener('load', () => {
+  // If React hasn't initialized by load, try again
+  if (!window.__REACT_INITIALIZED) {
+    console.log('Window load event - React not initialized yet, trying again');
+    initReact();
   }
 });

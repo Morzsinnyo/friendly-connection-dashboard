@@ -8,6 +8,8 @@
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
+    <!-- Allow iframe embedding -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://*.lovable.ai https://*.lovable.dev http://localhost:* https://localhost:*;">
     <script>
       // Simple check to verify JavaScript is executing
       console.log('JavaScript is running in the document head');
@@ -27,7 +29,7 @@
       <div id="loading-fallback" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
         <div style="text-align: center;">
           <p>Loading application...</p>
-          <p id="loading-status"></p>
+          <p id="loading-status">Starting JavaScript...</p>
           <noscript>
             <p style="color: #e11d48;">JavaScript is required to run this application.</p>
           </noscript>
@@ -56,6 +58,21 @@
           }
         }
       }, 5000);
+      
+      // Special handling for iframe scenarios
+      if (window !== window.parent) {
+        console.log('Running in iframe, adding special handling');
+        // Force a re-render after a delay in case of iframe loading issues
+        setTimeout(function() {
+          if (!window.__REACT_INITIALIZED) {
+            console.log('Iframe delayed loading - forcing script reload');
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '/src/main.tsx?force=' + Date.now();
+            document.body.appendChild(script);
+          }
+        }, 2000);
+      }
     </script>
   </body>
 </html>
