@@ -18,19 +18,19 @@ export function DashboardLayout() {
 
   const minSwipeDistance = 50;
 
-  const toggleMobileMenu = () => {
+  const toggleMobileMenu = useCallback(() => {
     console.log("[DashboardLayout] Toggling mobile menu, current state:", !isMobileMenuOpen);
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  }, [isMobileMenuOpen]);
 
-  const onTouchStart = (e: TouchEvent) => {
+  const onTouchStart = useCallback((e: TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
 
-  const onTouchMove = (e: TouchEvent) => {
+  const onTouchMove = useCallback((e: TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
-  };
+  }, []);
 
   const onTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
@@ -58,11 +58,11 @@ export function DashboardLayout() {
       document.removeEventListener('touchmove', onTouchMove);
       document.removeEventListener('touchend', onTouchEnd);
     };
-  }, [onTouchEnd]);
+  }, [onTouchStart, onTouchMove, onTouchEnd]);
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         {/* Desktop Sidebar */}
         <div className="hidden md:block">
           <AppSidebar />
@@ -79,7 +79,7 @@ export function DashboardLayout() {
           {/* Mobile Menu Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 left-0 w-[280px] bg-white border-r transition-transform duration-300 ease-in-out",
+              "fixed inset-y-0 left-0 w-[280px] bg-white dark:bg-gray-900 border-r transition-transform duration-300 ease-in-out",
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             onClick={(e) => e.stopPropagation()}
@@ -87,7 +87,7 @@ export function DashboardLayout() {
             <div className="flex h-full flex-col overflow-hidden">
               {/* Mobile Header */}
               <div className="flex h-14 items-center justify-between px-4 border-b">
-                <span className="font-semibold text-lg text-[#071A52]">LinkUp</span>
+                <span className="font-semibold text-lg text-[#071A52] dark:text-white">LinkUp</span>
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -107,9 +107,9 @@ export function DashboardLayout() {
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
-          {/* Top Bar with Mobile Menu Trigger - Removed "LinkUp" text */}
-          <div className="p-4 flex items-center justify-between border-b bg-white sticky top-0 z-10">
+        <main className="flex-1 overflow-auto bg-background">
+          {/* Top Bar with Mobile Menu Trigger */}
+          <div className="p-4 flex items-center justify-between border-b bg-background sticky top-0 z-10">
             <div className="flex items-center gap-2">
               <Button 
                 variant="ghost" 
@@ -120,7 +120,6 @@ export function DashboardLayout() {
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
-              {/* Removed the LinkUp text from here */}
             </div>
           </div>
 
