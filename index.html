@@ -63,28 +63,18 @@
 
   <body>
     <div id="root">
-      <!-- Clear loading indicator during initialization -->
-      <div id="loading-fallback" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; background-color: #f9fafb;">
-        <div style="text-align: center; max-width: 500px; margin: 0 auto; padding: 2rem; background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-          <h2 style="margin-top: 0; color: #4b5563;">Loading Application</h2>
-          <div style="width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #3b82f6; border-radius: 50%; margin: 1rem auto; animation: spin 1s linear infinite;"></div>
-          <p id="loading-status" style="margin-bottom: 0; color: #6b7280;">Starting JavaScript...</p>
-          <div id="iframe-status" style="margin-top: 1rem; padding: 0.5rem; background-color: #f3f4f6; border-radius: 0.25rem; display: none;">
-            <p style="margin: 0; font-size: 0.875rem; color: #4b5563;">Running in iframe mode</p>
-          </div>
-          <style>
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          </style>
-          <noscript>
-            <p style="color: #e11d48; margin-top: 1rem;">JavaScript is required to run this application.</p>
-          </noscript>
-        </div>
+      <!-- Minimal loading indicator during initialization -->
+      <div id="loading-fallback" style="display: none;">
+        <p id="loading-status">Loading...</p>
+        <noscript>
+          <p style="color: #e11d48; margin-top: 1rem;">JavaScript is required to run this application.</p>
+        </noscript>
       </div>
     </div>
     <!-- GPT Engineer script for the "Select" feature -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <!-- Main application script with cache-busting parameter -->
-    <script type="module" src="/src/main.tsx?v=20241119"></script>
+    <script type="module" src="/src/main.tsx?v=20241120"></script>
     <script>
       console.log('[BODY] Bottom of body script executing, timestamp:', Date.now());
       

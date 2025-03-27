@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
@@ -67,37 +68,40 @@ const initReact = () => {
         window.__DEBUG_ENABLED = false;
       }
       
-      // In iframe mode, use a more subtle debug signal
-      if (isInIframe) {
-        console.log('[MAIN] Adding minimal debug signal for iframe mode');
-        const debugSignal = document.createElement('div');
-        debugSignal.id = 'react-debug-signal';
-        debugSignal.style.position = 'fixed';
-        debugSignal.style.bottom = '5px';
-        debugSignal.style.right = '5px';
-        debugSignal.style.background = 'rgba(0,128,0,0.3)';
-        debugSignal.style.color = 'white';
-        debugSignal.style.padding = '3px';
-        debugSignal.style.borderRadius = '2px';
-        debugSignal.style.fontSize = '8px';
-        debugSignal.style.zIndex = '9999';
-        debugSignal.textContent = 'R'; // Fix: use element.textContent, not style.textContent
-        document.body.appendChild(debugSignal);
-      } else {
-        // Add visible signal that React is working (larger for non-iframe mode)
-        const debugSignal = document.createElement('div');
-        debugSignal.id = 'react-debug-signal';
-        debugSignal.style.position = 'fixed';
-        debugSignal.style.bottom = '10px';
-        debugSignal.style.right = '10px';
-        debugSignal.style.background = 'green';
-        debugSignal.style.color = 'white';
-        debugSignal.style.padding = '5px';
-        debugSignal.style.borderRadius = '3px';
-        debugSignal.style.fontSize = '10px';
-        debugSignal.style.zIndex = '9999';
-        debugSignal.textContent = 'React Active';
-        document.body.appendChild(debugSignal);
+      // Only show debug signals in development mode
+      if (import.meta.env.DEV) {
+        // In iframe mode, use a more subtle debug signal
+        if (isInIframe) {
+          console.log('[MAIN] Adding minimal debug signal for iframe mode');
+          const debugSignal = document.createElement('div');
+          debugSignal.id = 'react-debug-signal';
+          debugSignal.style.position = 'fixed';
+          debugSignal.style.bottom = '5px';
+          debugSignal.style.right = '5px';
+          debugSignal.style.background = 'rgba(0,128,0,0.3)';
+          debugSignal.style.color = 'white';
+          debugSignal.style.padding = '3px';
+          debugSignal.style.borderRadius = '2px';
+          debugSignal.style.fontSize = '8px';
+          debugSignal.style.zIndex = '9999';
+          debugSignal.textContent = 'R'; 
+          document.body.appendChild(debugSignal);
+        } else {
+          // Add visible signal that React is working (larger for non-iframe mode)
+          const debugSignal = document.createElement('div');
+          debugSignal.id = 'react-debug-signal';
+          debugSignal.style.position = 'fixed';
+          debugSignal.style.bottom = '10px';
+          debugSignal.style.right = '10px';
+          debugSignal.style.background = 'green';
+          debugSignal.style.color = 'white';
+          debugSignal.style.padding = '5px';
+          debugSignal.style.borderRadius = '3px';
+          debugSignal.style.fontSize = '10px';
+          debugSignal.style.zIndex = '9999';
+          debugSignal.textContent = 'React Active';
+          document.body.appendChild(debugSignal);
+        }
       }
       
       // Update any external status indicators

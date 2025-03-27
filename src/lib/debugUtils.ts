@@ -7,6 +7,14 @@ import * as React from 'react';
 
 // Check for common environment problems
 export function checkEnvironment() {
+  // Skip extensive checks in production
+  if (!import.meta.env.DEV) {
+    return {
+      issues: [],
+      hasCriticalIssues: false
+    };
+  }
+
   const issues: string[] = []
   const isInIframe = window !== window.parent
   
@@ -91,6 +99,9 @@ export function checkEnvironment() {
 
 // Monitor app performance
 export function monitorAppPerformance() {
+  // Skip in production
+  if (!import.meta.env.DEV) return;
+
   try {
     // Record load time 
     if (window.performance && window.performance.timing) {
@@ -162,6 +173,9 @@ export function monitorAppPerformance() {
 
 // Help identify React mounting issues
 export function diagnoseReactMounting() {
+  // Skip in production
+  if (!import.meta.env.DEV) return;
+
   try {
     setTimeout(() => {
       const rootEl = document.getElementById('root')
@@ -221,6 +235,11 @@ export function diagnoseReactMounting() {
 
 // Add iframe-specific detection function
 export function checkIframeCompatibility() {
+  // Skip detailed checks in production
+  if (!import.meta.env.DEV) {
+    return { inIframe: window !== window.parent, issues: [], canCommunicate: true };
+  }
+
   const isInIframe = window !== window.parent
   if (!isInIframe) return { inIframe: false, issues: [] }
   
@@ -262,8 +281,8 @@ export function checkIframeCompatibility() {
   }
 }
 
-// Add these to the window for debugging from console
-if (typeof window !== 'undefined') {
+// Add these to the window for debugging from console, but only in development mode
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).__DEBUG_UTILS = {
     checkEnvironment,
     monitorAppPerformance,

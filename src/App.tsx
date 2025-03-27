@@ -22,14 +22,14 @@ const queryClient = new QueryClient({
 })
 
 function App() {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(true) // Start as true in production
   const [envCheck, setEnvCheck] = useState<{issues: string[], hasCriticalIssues: boolean} | null>(null)
   const [debugMode, setDebugMode] = useState(false) // Always off by default
   const isInIframe = window !== window.parent
+  const isDev = import.meta.env.DEV
 
   useEffect(() => {
     console.log('[APP] App component mounting, timestamp:', Date.now())
-    console.log('[APP] Running in iframe:', isInIframe)
     
     // For iframe mode, add specific attributes to help debugging
     if (isInIframe) {
@@ -37,23 +37,32 @@ function App() {
       document.documentElement.dataset.frameStatus = 'app-mounting';
     }
     
-    // Run diagnostic functions
-    try {
-      const envIssues = checkEnvironment()
-      setEnvCheck(envIssues)
+    // Only run diagnostics in development mode
+    if (isDev) {
+      setMounted(false) // Only show mounting indicator in dev mode
       
-      if (envIssues.hasCriticalIssues) {
-        console.error('[APP] Critical environment issues detected:', envIssues.issues)
-      } else if (envIssues.issues.length > 0) {
-        console.warn('[APP] Non-critical environment issues detected:', envIssues.issues)
-      } else {
-        console.log('[APP] Environment check passed, no issues detected')
+      try {
+        const envIssues = checkEnvironment()
+        setEnvCheck(envIssues)
+        
+        if (envIssues.hasCriticalIssues) {
+          console.error('[APP] Critical environment issues detected:', envIssues.issues)
+        } else if (envIssues.issues.length > 0) {
+          console.warn('[APP] Non-critical environment issues detected:', envIssues.issues)
+        } else {
+          console.log('[APP] Environment check passed, no issues detected')
+        }
+        
+        monitorAppPerformance()
+        diagnoseReactMounting()
+      } catch (error) {
+        console.error('[APP] Error during environment checks:', error)
       }
       
-      monitorAppPerformance()
-      diagnoseReactMounting()
-    } catch (error) {
-      console.error('[APP] Error during environment checks:', error)
+      // Set mounted to true after a short delay in dev mode
+      setTimeout(() => {
+        setMounted(true)
+      }, 100)
     }
     
     // Initialize PostHog
@@ -63,8 +72,6 @@ function App() {
     } catch (error) {
       console.error('[APP] PostHog initialization error:', error)
     }
-    
-    setMounted(true)
     
     // Always force debug mode off, especially in iframe mode
     if (debugMode) {
@@ -106,10 +113,10 @@ function App() {
     return () => {
       console.log('[APP] App component unmounting')
     }
-  }, [isInIframe, debugMode])
+  }, [isInIframe, debugMode, isDev])
 
-  // Show diagnostic message while app is initializing
-  if (!mounted) {
+  // Only show diagnostic message while app is initializing in development mode
+  if (!mounted && isDev) {
     return <div id="mounting-diagnostic" style={{
       padding: '20px',
       margin: '20px',
@@ -124,8 +131,8 @@ function App() {
     </div>
   }
 
-  // Only show environment issues if they are critical
-  if (envCheck?.hasCriticalIssues) {
+  // Only show environment issues if they are critical and in development mode
+  if (envCheck?.hasCriticalIssues && isDev) {
     return (
       <div className="environment-issue-container" style={{
         padding: '20px',
@@ -158,14 +165,13 @@ function App() {
     )
   }
 
-  // Debug mode is completely bypassed - we always return the main app
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <RouterProvider router={router} />
           <Toaster position="top-right" />
-          {isInIframe && (
+          {isInIframe && isDev && (
             <div 
               style={{
                 position: 'fixed',
